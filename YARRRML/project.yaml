@@ -1,0 +1,175 @@
+prefixes:
+  rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+  rdfs: http://www.w3.org/2000/01/rdf-schema#
+  sio: http://semanticscience.org/resource/
+  dcterms: http://purl.org/dc/terms/
+  orcid: https://orcid.org/
+  this: http://w3id.org/project/data/
+  cbgp: http://w3id.org/ontology#
+sources:
+  project-source:
+    access: "project.csv"
+    referenceFormulation: "csv"
+    iterator: "$"
+mappings:
+
+  project_has_ott_code:
+    sources:
+    - project-source
+
+    s: this:project/$(uniqid)
+    po:
+    - predicates: sio:has-identifier
+      objects:
+        value: this:project/$(uniqid)#ott-identifier
+        type: iri
+
+  ott_code_has_value:
+    sources:
+    - project-source
+    s: this:project/$(uniqid)#ott-identifier
+    po:
+    - predicates: a
+      objects:
+        value: cbgp:ott-identifier
+        type: iri  
+    - predicates: sio:has-value
+      objects:
+        value: $(int_code)
+        datatype: xsd:string
+
+
+  project_has_agency_code:
+    sources:
+    - project-source
+
+    s: this:project/$(uniqid)
+    po:
+    - predicates: sio:has-identifier
+      objects:
+        value: this:project/$(uniqid)#agency-identifier
+        type: iri
+
+
+  agency_code_has_value:
+    sources:
+    - project-source
+    s: this:project/$(uniqid)#agency-identifier
+    po:
+    - predicates: a
+      objects:
+        value: cbgp:agency-identifier
+        type: iri
+    - predicates: sio:has-value
+      objects:
+        value: $(ext_code)
+        datatype: xsd:string
+
+
+  project_has_pi:
+    sources:
+    - project-source
+
+    s: this:project/$(uniqid)
+    po:
+    - predicates: cbgp:has-pi
+      objects:
+        value: this:project/$(uniqid)#pi
+        type: iri
+
+
+  pi_has_value:
+    sources:
+    - project-source
+    s: this:project/$(uniqid)#pi
+    po:
+    - predicates: a
+      objects:
+        value: cbgp:researcher-identifier
+        type: iri
+    - predicates: sio:has-value
+      objects:
+        value: orcid:$(pi)
+        type: iri
+
+
+  project_has_title:
+    sources:
+    - project-source
+    s: this:project/$(uniqid)
+    po:
+    - predicates: dcterms:title
+      objects:
+        value: $(title)
+        datatype: xsd:string
+
+
+  project_has_start:
+    sources:
+    - project-source
+    s: this:project/$(uniqid)
+    po:
+    - predicates: sio:has-start-time
+      objects:
+        value: $(start)
+        datatype: xsd:date
+
+  project_has_end:
+    sources:
+    - project-source
+    s: this:project/$(uniqid)
+    po:
+    - predicates: sio:has-end-time
+      objects:
+        value: $(end)
+        datatype: xsd:date
+
+  project_has_extension:
+    sources:
+    - project-source
+    s: this:project/$(uniqid)
+    po:
+    - predicates: cbgp:extension-until
+      objects:
+        value: $(extension)
+        datatype: xsd:date
+
+  project_has_funding_source:
+    sources:
+    - project-source
+    s: this:project/$(uniqid)
+    po:
+    - predicates: cbgp:funding-source
+      objects:
+        value: $(funding)
+        datatype: xsd:string
+
+  project_has_funding_scope:
+    sources:
+    - project-source
+    s: this:project/$(uniqid)
+    po:
+    - predicates: cbgp:funding-scope
+      objects:
+        value: cbgp:$(project_type)
+        datatype: xsd:string
+
+  project_has_project_member:
+    sources:
+    - project-source
+    s: this:project/$(uniqid)
+    po:
+    - predicates: cbgp:project-member
+      objects:
+        value: orcid:$(member)
+        type: iri
+
+  project_member_team:
+    sources:
+    - project-source
+    s: this:project/$(uniqid)
+    po:
+    - predicates: cbgp:project-member-team
+      objects:
+        value: orcid:$(member_team)
+        type: iri

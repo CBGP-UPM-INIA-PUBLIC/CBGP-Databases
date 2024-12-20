@@ -1,0 +1,30 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix sd: <http://www.w3.org/ns/sparql-service-description#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix sio: <http://semanticscience.org/resource/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix this: <http://w3id.org/project/data/> .
+@prefix cbgp: <http://w3id.org/ontology#> .
+
+<http://w3id.org/project/data/project/1234567890> dcterms:title "this is the title of my project" ;
+	sio:has-end-time "2026-12-31"^^xsd:date ;
+	sio:has-identifier <http://w3id.org/project/data/project/1234567890#agency-identifier>, <http://w3id.org/project/data/project/1234567890#ott-identifier> ;
+	sio:has-start-time " 2024-01-01"^^xsd:date ;
+	cbgp:extension-until "2027-12-31"^^xsd:date ;
+	cbgp:funding-scope "http://w3id.org/ontology#european" ;
+	cbgp:funding-source "H2020" ;
+	cbgp:has-pi <http://w3id.org/project/data/project/1234567890#pi> ;
+	cbgp:project-member orcid:0000-0000-0000-000Y ;
+	cbgp:project-member-team orcid:0000-0000-0000-000Z .
+
+<http://w3id.org/project/data/project/1234567890#agency-identifier> sio:has-value "TED12345" ;
+	rdf:type cbgp:agency-identifier .
+
+<http://w3id.org/project/data/project/1234567890#ott-identifier> sio:has-value "OTT_12345" ;
+	rdf:type cbgp:ott-identifier .
+
+<http://w3id.org/project/data/project/1234567890#pi> sio:has-value orcid:0000-0000-0000-000X ;
+	rdf:type cbgp:researcher-identifier .
+

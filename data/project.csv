@@ -1,0 +1,2 @@
+uniqid,ext_code,int_code,pi,title,start,end,extension,funding,project_type,member,member_team,group_id,institution,award_amount,overhead_pct,cbgp_pct,disbursement,disbursement_year
+1234567890,TED12345,OTT_12345,0000-0000-0000-000X,"this is the title of my project", 2024-01-01,2026-12-31,2027-12-31,H2020,european,0000-0000-0000-000Y,0000-0000-0000-000Z,group_12345,CSIC,"120,000.98",25,15,"50,000.98",2024

@@ -8,8 +8,6 @@ prefixes:
   ror: https://ror.org/
   this: http://w3id.org/project/data/
   cbgp: http://w3id.org/ontology#
-  mail: http://www.w3.org/2006/vcard/ns#
-  bfo: http://purl.allotrope.org/ontologies/result#
   ncit: http://purl.obolibrary.org/obo/
 sources:
   staff-source:

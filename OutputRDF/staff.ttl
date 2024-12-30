@@ -14,7 +14,7 @@
 	rdf:type cbgp:researcher-identifier, foaf:Person ;
 	rdfs:label "Antonio Jesús López de la Iglesia" ;
 	foaf:homepage <https://www.ajinvestiga.es> ;
-	foaf:mbox <mailto:comaj.loig@upm.es> .
+	foaf:mbox <mailto:aj.loig@upm.es> .
 
 <http://w3id.org/project/data/staff/0000-0000-0000-000Y#affil_institution> sio:has-unique-identifier ror:00abcd000 ;
 	rdf:type cbgp:Institution ;

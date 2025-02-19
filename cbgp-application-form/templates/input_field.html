@@ -1,0 +1,35 @@
+<details>
+    <summary>{{xlabel}}</summary>  
+    <div class="form-container">
+        <h4>{{ grouped[0].qlabel }}:</h4>
+        {% for option in grouped %}
+            <label for="{{ option.questionlabel }}">{{ option.questionlabel }}</label>
+            {% if option.wtlabel == "text" %}
+                <input type="text" id="{{ option.questionlabel }}" name="{{ xlabel }}__{{ option.questionlabel }}">
+            {% elif option.wtlabel == "radio" %}
+                <table>
+                    {% for radio in option.radio_options %}
+                        <tr>
+                            <td>
+                                <input type="radio" id="{{ radio.id }}" name="{{ xlabel }}__{{ option.questionlabel }}" value="{{ radio.label }}">
+                            </td>
+                            <td>
+                                <label for="{{ radio.id }}">{{ radio.label }}</label>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            {% endif %}
+            <br><br>
+            {% if option.wtlabel == "date" %}
+                <input type="date" id="{{ option.questionlabel }}" name="{{ xlabel }}__{{ option.questionlabel }}">
+            {%endif%}
+            <br><br>
+            {% if option.wtlabel == "number" %}
+                <input type="number" id="{{ option.questionlabel }}" name="{{ xlabel }}__{{ option.questionlabel }}">
+            {%endif%}
+            <br><br>
+        {% endfor %}
+    </div>
+</details>
+

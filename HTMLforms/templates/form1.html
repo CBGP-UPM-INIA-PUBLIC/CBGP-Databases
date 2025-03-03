@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario Proyectos CBGP</title>
+    <style>
+        body {
+            background-color: #99CC99;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+	    font-size: 30px;
+        }
+
+        h1 {
+	    font-size: 45px;
+            text-align: center;
+            color: #2a7d47;
+        }
+
+	h2 {
+	    font-size: 30px;
+	}
+
+        p {
+            text-align: justify;
+            font-size: 18px;
+            color: #333;
+	    font-size: 20px;    
+            text-align; center;
+        }
+
+        .form-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-between;
+            margin: 0 auto;
+            max-width: 1200px;
+        }
+
+        .form-item {
+            flex: 1 1 calc(33.333% - 20px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-item label {
+            font-weight: bold;
+            color: #2a7d47;
+            font-size: 25px;
+            margin-bottom: 5px;
+        }
+
+        .form-item input,
+        .form-item select,
+        .form-item textarea {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 25px;
+        }
+
+        .form-item button {
+            background-color: #2a7d47;
+            color: #fff;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 25px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .form-item button:hover {
+            background-color: #2F4F4F;
+            transform: scale(1.05);
+        }
+
+        .form-item p {
+            font-size: 20px;
+            color: #666;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        /* Center the submit button */
+        .submit-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .submit-container button {
+            width: 100px;
+	    font-size: 25px;
+	    padding: 15px;
+            color: black;
+            margin-top: 0;
+            margin-bottom: 10px;
+	    border: none;
+            border-radius: 8px;
+	    cursor: pointer;
+	    background-color: #ccc;
+        }
+	.submit-container button:hover {
+            background-color: ##2a7d47;
+            transform: scale(1.05);
+	    color: #fff;
+        }
+
+
+   </style>
+</head>
+<body>
+    <h1>Formulario de Proyectos Asociados</h1>
+    <p style="text-align:center";>        Las respuestas del presente formulario serán utilizadas para la gestión interna de los proyectos de investigación. Por favor, rellene los campos requeridos de forma precisa.
+    </p>
+
+    <form id="dataForm" method="POST" action="/guardar">
+        <div class="form-container">
+            <!-- Column 1 -->
+            <div class="form-item">
+                <label for="nombre">Nombre completo:</label>
+                <input type="text" id="nombre" name="nombre" required>
+
+                <label for="email">Correo Electrónico:</label>
+                <input type="email" id="email" name="email" required>
+
+		<hr style="margin: 40px 0; border: none; border-top: 2px solid #009865;">
+
+                <label for="titulo">Título del proyecto:</label>
+                <textarea id="titulo" name="titulo"></textarea>
+
+                <label for="extcode">Código externo:</label>
+                <textarea id="extcode" name="extcode"></textarea>
+            </div>
+
+            <!-- Column 2 -->
+            <div class="form-item">
+                <label for="intcode">Código interno:</label>
+                <textarea id="intcode" name="intcode"></textarea>
+
+                <label for="startdate">Fecha de inicio:</label>
+                <textarea id="startdate" name="startdate" placeholder="YYYY-mm-dd"></textarea>
+
+                <label for="enddate">Fecha de finalización:</label>
+                <textarea id="enddate" name="enddate" placeholder="YYYY-mm-dd"></textarea>
+
+                <label for="extension">Fecha de extensión:</label>
+                <textarea id="extension" name="extension" placeholder="YYYY-mm-dd"></textarea>
+            </div>
+
+            <!-- Column 3 -->
+            <div class="form-item">
+                <label for="financiadora">Institución financiadora:</label>
+                <textarea id="financiadora" name="financiadora"></textarea>
+
+           <label for="tipo">Tipo de proyecto:</label><br>
+        <select id="tipo" name="tipo" required>
+        <option value="-" disabled selected>-</option>
+        <option value="europeo">Europeo</option>
+        <option value="nacional">Nacional</option>
+        <option value="regional">Regional</option>
+        <option value="art60">Art.60</option>
+        <option value="upmcsic">UPM/CSIC</option>
+        </select><br><br>
+
+<label for="miembrosinv">Equipo de investigación:</label><br>
+        <div id="miembrosinv">
+            <div class="member1-input">
+                <input type="text" name="miembro1[]" placeholder="Nombre del miembro" required>
+            </div>
+        </div>
+        <button type="button" id="add1">Agregar miembro</button><br><br>
+
+<label for="miembroswork">Equipo de trabajo:</label><br>
+        <div id="miembroswork">
+            <div class="member2-input">
+                <input type="text" name="miembro2[]" placeholder="Nombre del miembro" required>
+            </div>
+        </div>
+        <button type="button" id="add2">Agregar miembro</button><br><br>
+
+<h2>Grupo de investigación</h2><br>
+
+<label for="grupoinv">Grupo de investigación:</label><br>
+        <select id="grupoinv" name="grupoinv" required>
+        <option value="-" disabled selected>-</option>
+        <option value="Vicente Carbajosa, Jesús_Redes regulatorias en semilla">Vicente Carbajosa, Jesús_Redes regulatorias en semilla</option>
+        <option value="regional">nombreIP_nombregrupo</option>
+        <option value="art60">nombreIP_nombregrupo</option>
+        <option value="upmcsic">nombreIP_nombregrupo</option>
+    </select><br><br>
+
+<label for="institucion">Institución:</label><br>
+        <select id="institucion" name="institucion" required>
+        <option value="-" disabled selected>-</option>
+        <option value="INIA">INIA</option>
+        <option value="UPM">UPM</option>
+    </select><br><br>
+
+<h2>Financiación</h2><br>
+
+
+<label for="TotalFunding">Financiación total:</label><br>
+        <textarea id="TotalFunding" name="TotalFunding" placeholder="(€)"></textarea><br><br>
+
+<label for="overheads">Gastos generales (%):</label><br>
+        <input type="number" name="overheads[]" placeholder="(€)" step="0.01" required><br><br>
+
+<label for="CBGPoverheads">Gastos generales para el CBGP (%):</label><br>
+        <input type="number" name="CBGPoverheads[]" placeholder="(€)" step="0.01" required><br><br>
+
+<label for="AnnualIncome">Ingresos anuales:</label><br>
+        <p class="label-info">Añade el año y el ingreso (%) correspondiente.</p> <br><br>
+        <div id="incomeContainer">
+            <!-- Entradas dinámicas se añadirán aquí -->
+        </div>
+        <button type="button" id="addIncome">Agregar ingreso</button><br><br>
+
+<label for="AnnualOverheads">Gastos generales anuales:</label><br>
+        <p class="label-info">Añade el año y el gasto (%) correspondiente.</p> <br><br>
+        <div id="overheadsContainer">
+            <!-- Entradas dinámicas se añadirán aquí -->
+        </div>
+        <button type="button" id="addOverheads">Agregar gasto</button><br><br>
+
+<label for="AnnualCBGPoverheads">Gastos generales anuales para el CBGP:</label><br>
+        <p class="label-info">Añade el año y el gasto (%) correspondiente.</p> <br><br>
+        <div id="CBGPoverheadsContainer">
+            <!-- Entradas dinámicas se añadirán aquí -->
+        </div>
+        <button type="button" id="addCBGPoverheads">Agregar gasto</button><br><br>
+
+<hr style="margin: 40px 0; border: none; border-top: 2px solid #009865;">
+
+        <div class="submit-container">
+            <button type="submit">Enviar</button>
+        </div>
+    </form>
+
+    <script>
+    document.getElementById('add1').addEventListener('click', function () {
+            const container = document.getElementById('miembrosinv');
+            const newInputDiv = document.createElement('div');
+            newInputDiv.className = 'member1-input';
+            newInputDiv.innerHTML = `
+                <input type="text" name="miembro1[]" placeholder="Nombre del miembro" required>
+                <button type="button" class="removeMember1">Quitar</button>
+            `;
+
+            container.appendChild(newInputDiv);
+
+            // Add functionality to remove the input field
+            newInputDiv.querySelector('.removeMember1').addEventListener('click', function () {
+                container.removeChild(newInputDiv);
+            });
+        });
+        document.getElementById('add2').addEventListener('click', function () {
+            const container = document.getElementById('miembroswork');
+            const newInputDiv = document.createElement('div');
+            newInputDiv.className = 'member2-input';
+            newInputDiv.innerHTML = `
+                <input type="text" name="miembro2[]" placeholder="Nombre del miembro" required>
+                <button type="button" class="removeMember2">Quitar</button>
+            `;
+
+            container.appendChild(newInputDiv);
+
+            // Add functionality to remove the input field
+            newInputDiv.querySelector('.removeMember2').addEventListener('click', function () {
+                container.removeChild(newInputDiv);
+            });
+        });
+
+        document.getElementById('addIncome').addEventListener('click', function () {
+            const container = document.getElementById('incomeContainer');
+            // Crear un nuevo bloque de entrada
+            const newEntryDiv = document.createElement('div');
+            newEntryDiv.className = 'income-entry';
+            newEntryDiv.innerHTML = `
+                <input type="number" name="year[]" placeholder="Año" min="1900" max="2100" required>
+                <input type="number" name="income[]" placeholder="(€)" required>
+                <button type="button" class="removeIncome">Quitar</button>
+            `;
+            container.appendChild(newEntryDiv);
+            // Agregar funcionalidad para quitar este bloque
+            newEntryDiv.querySelector('.removeIncome').addEventListener('click', function () {
+                container.removeChild(newEntryDiv);
+            });
+        });
+        document.getElementById('addOverheads').addEventListener('click', function () {
+            const container = document.getElementById('overheadsContainer');
+            // Crear un nuevo bloque de entrada
+            const newEntryDiv = document.createElement('div');
+            newEntryDiv.className = 'overheads-entry';
+            newEntryDiv.innerHTML = `
+                <input type="number" name="year[]" placeholder="Año" min="1900" max="2100" required>
+                <input type="number" name="AnnualOverheads[]" placeholder="(€)" required>
+                <button type="button" class="removeOverheads">Quitar</button>
+            `;
+            container.appendChild(newEntryDiv);
+            // Agregar funcionalidad para quitar este bloque
+            newEntryDiv.querySelector('.removeOverheads').addEventListener('click', function () {
+                container.removeChild(newEntryDiv);
+            });
+        });
+        document.getElementById('addCBGPoverheads').addEventListener('click', function () {
+            const container = document.getElementById('CBGPoverheadsContainer');
+            // Crear un nuevo bloque de entrada
+            const newEntryDiv = document.createElement('div');
+            newEntryDiv.className = 'CBGPoverheads-entry';
+            newEntryDiv.innerHTML = `
+                <input type="number" name="year[]" placeholder="Año" min="1900" max="2100" required>
+                <input type="number" name="AnnualCBGPoverheads[]" placeholder="(€)" required>
+                <button type="button" class="removeCBGPoverheads">Quitar</button>
+            `;
+            container.appendChild(newEntryDiv);
+            // Agregar funcionalidad para quitar este bloque
+            newEntryDiv.querySelector('.removeCBGPoverheads').addEventListener('click', function () {
+                container.removeChild(newEntryDiv);
+            });
+        });
+
+    </script>
+</body>
+</html>

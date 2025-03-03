@@ -1,0 +1,31 @@
+        
+
+      <!-- incoming @question has ["label"] and ["cardinality"] and ["widget"] -->
+    <% label = @question["label"]  %>
+    <div id="<%= label %>" style="">
+
+        <h4><%= label %></h4>
+        <% widget = @question["widget"].match(/.*\#(\S+)/)[1] %>
+        <% @value = @pub.public_send(label.downcase.to_sym) %>
+    <!-- @pub =  doi: '', authors: [], affiliations: [], title: '', year: '', date: '', uniqid: ''
+    # if you lowercase the FORM labels you will have the keys to the @pub hash -->
+ 
+    <% @value = [@value] unless @value.is_a? Array  %>
+    <% @value.each do |val| %>
+        <%   @thisval = val %>
+        <%   if widget == "NUM"  %>
+            <%= erb :_smallfield %>
+        <%   elsif widget == "OPEN" %>
+            <%= erb :_field %>
+        <%   elsif widget == "text" %>
+            <%= erb :_text %>
+        <%   elsif widget == "author" %>
+            <%= erb :_author %>
+        <%   elsif widget == "radio" %>
+            <%= erb :_radio %> 
+        <%   elsif widget == "select" %>
+            <%= erb :_select %>
+        <%   end %>
+    <%   end %>
+        
+    </div>

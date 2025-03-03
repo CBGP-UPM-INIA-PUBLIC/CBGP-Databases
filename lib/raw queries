@@ -1,0 +1,82 @@
+# get the URIs and labels for the correct questionaire
+prefix acc: <https://world-duchenne-organization.github.io/Accredited-Duchenne-Centers/vocabularies/accredited-questionnaire.owl#>
+prefix owl: <http://www.w3.org/2002/07/owl#>
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+prefix xml:<http://www.w3.org/XML/1998/namespace>
+prefix xsd:<http://www.w3.org/2001/XMLSchema#>
+prefix rdfs:<http://www.w3.org/2000/01/rdf-schema#>
+PREFIX onto: <http://www.ontotext.com/>
+PREFIX sio: <http://semanticscience.org/resource/>
+
+select ?q (str(?ql) as ?qlabel) ?pp (str(?ppl) as ?pplabel) ?ac (str(?acl) as ?aclabel) from onto:explicit where {
+    
+        ?q rdfs:subClassOf sio:SIO_000171 .
+  		?q rdfs:label "Questionnaire"@en .
+  		?q rdfs:label ?ql .
+  		?pp rdfs:subClassOf ?q .
+  		?pp rdfs:label "Patient"@en .
+  		?pp rdfs:label ?ppl .
+  		?ac rdfs:subClassOf ?pp .
+  		?ac rdfs:label "Child"@en .
+  		?ac rdfs:label ?acl .
+  FILTER langMatches( lang(?ql), "EN" )
+  FILTER langMatches( lang(?ppl), "EN" )
+  FILTER langMatches( lang(?acl), "EN" )
+} limit 100 
+
+
+
+# get sections
+prefix acc: <https://world-duchenne-organization.github.io/Accredited-Duchenne-Centers/vocabularies/accredited-questionnaire.owl#>
+prefix owl: <http://www.w3.org/2002/07/owl#>
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+prefix xml:<http://www.w3.org/XML/1998/namespace>
+prefix xsd:<http://www.w3.org/2001/XMLSchema#>
+prefix rdfs:<http://www.w3.org/2000/01/rdf-schema#>
+PREFIX onto: <http://www.ontotext.com/>
+PREFIX sio: <http://semanticscience.org/resource/>
+
+SELECT ?sec (str(?seclab) as ?label)  from onto:explicit  WHERE {
+  ?sec rdfs:subClassOf <https://accredited.worldduchenne.org/vocabularies/accredited-questionnaire.owl#QPAC0> .
+  ?sec rdfs:label ?seclab .
+  FILTER langMatches( lang(?seclab), "EN" )
+}
+
+
+
+# get section questions in order
+prefix acc: <https://world-duchenne-organization.github.io/Accredited-Duchenne-Centers/vocabularies/accredited-questionnaire.owl#>
+prefix owl: <http://www.w3.org/2002/07/owl#>
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+prefix xml:<http://www.w3.org/XML/1998/namespace>
+prefix xsd:<http://www.w3.org/2001/XMLSchema#>
+prefix rdfs:<http://www.w3.org/2000/01/rdf-schema#>
+PREFIX onto: <http://www.ontotext.com/>
+PREFIX sio: <http://semanticscience.org/resource/>
+PREFIX local: <urn:local:>
+
+SELECT ?q (str(?qlab) as ?label) ?answers ?order  from onto:explicit  WHERE {
+  ?q rdfs:subClassOf <https://accredited.worldduchenne.org/vocabularies/accredited-questionnaire.owl#QPAC1> .
+  ?q rdfs:label ?qlab . 
+  ?q local:answerblock ?answers .
+  ?q local:questionorder ?order
+  FILTER langMatches( lang(?qlab), "EN" )
+} order by ?order
+
+
+# get_question)answers
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+prefix xml:<http://www.w3.org/XML/1998/namespace>
+prefix xsd:<http://www.w3.org/2001/XMLSchema#>
+prefix rdfs:<http://www.w3.org/2000/01/rdf-schema#>
+PREFIX onto: <http://www.ontotext.com/>
+PREFIX sio: <http://semanticscience.org/resource/>
+PREFIX local: <urn:local:>
+
+SELECT DISTINCT ?aid ?label ?order ?widget WHERE {
+    ?aid rdfs:subClassOf <https://accredited.worldduchenne.org/vocabularies/accredited-questionnaire.owl#FCQAN5> .
+    ?aid  <http://www.w3.org/2000/01/rdf-schema#label> ?label .
+    ?aid local:answerorder ?order .
+    ?aid local:widget ?widget .
+    FILTER langMatches( lang(?label), 'EN')
+} ORDER BY ?order

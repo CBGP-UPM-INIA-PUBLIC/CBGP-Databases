@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+  
+  <%= erb :_head %>
+
+  <body>
+    <div class="wrapper">
+
+  
+      <%= erb :_logo_head %>
+
+
+
+      <h1>Accredited Duchenne Centers:  Links for Applicants to Retrieve ADC Staff Comments</h1>
+<!-- # :name, :email, :applicant, :country, :id, :graph, :status, :visibility -->
+
+      <form>
+      <h3>The link below should be sent to <%= @center.name %> (<%= @center.email %>) </h3>
+      <br/>
+      This will generate the document containing ADC Staff comments on their questionnaire answers.  They will be given the opportunity to respond.
+      <br/><br>
+      <a href="<%= @link %>"><%= @link %></a>
+      <br/><br>
+      </form>
+      <h4><a href="/adc/centers">Return to Main Page</a></h4>
+
+    </div>
+    <%= erb :_footer %>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <!--[if lt IE 7]>
+      <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.2/CFInstall.min.js"></script>
+      <script>window.attachEvent("onload",function(){CFInstall.check({mode:"overlay"})})</script>
+    <![endif]-->
+  </body>
+</html>

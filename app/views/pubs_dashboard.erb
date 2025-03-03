@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+  
+  <%= erb :_head %>
+
+  <body>
+  <script>
+    function openActionPanel(cid) {
+      var x = document.getElementById(cid);
+      if (x.style.display === "none") {
+        x.style.display = "block";
+      } else {
+        x.style.display = "none";
+      }
+    }
+  </script>
+
+  
+      <%= erb :_logo_head %>
+
+
+
+    <div style="clear: both;">
+      <br/><br/>
+
+      <h1>CBGP - Publications Dashboard</h1>
+      <br/>
+    </div>
+
+    <div class="databases">
+    
+      <form action="/cbgp/publications" method="POST">
+      <table id="publication_lookup" width="30%">
+        <tr> <th>Add New Publication</th> </tr>
+        <tr> <td>
+          <label for='doi'>DOI Lookup</label>
+          <input type='text' name='doi' id="doi">
+        </td></tr>
+        <tr> <td>
+          <input type="submit" value="Submit"/>
+        </td></tr>
+      </table>
+      </form>
+
+      <form action="/cbgp/validate-publication" method="post">
+      <table id="publication_validate" width="30%">
+        <tr> <th>Validate Publication Before Writing</th> </tr>
+        <tr> <td>
+        <%= erb :_edit_publication %>
+        </td></tr>
+          <input type="submit" value="Submit"/>
+        </td></tr>
+      </table>
+      </form>
+
+    </div>
+
+
+    <div style="clear: both;">
+      <%= erb :_footer %>
+    </div>
+
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <!--[if lt IE 7]>
+      <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.2/CFInstall.min.js"></script>
+      <script>window.attachEvent("onload",function(){CFInstall.check({mode:"overlay"})})</script>
+    <![endif]-->
+  </body>
+</html>
+
+

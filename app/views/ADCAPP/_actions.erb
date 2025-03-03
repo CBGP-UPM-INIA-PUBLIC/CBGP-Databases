@@ -1,0 +1,24 @@
+
+<form action="/adc/retrieve-questionnaires/<%= @center.id %>" style="margin: 5px auto; padding: 5px 5px;">
+<!-- <input type="hidden" name="centername" value="<%= @center.name %>">
+<input type="hidden" name="centercontact" value="<%= @center.email %>"> -->
+<input type="submit" value="Retrieve Completed Questionnaires"/>
+</form>
+<hr/>
+
+
+<form action="/adc/generate-questionnaire-links/<%= @center.id %>" style="margin: 5px auto; padding: 5px 5px;">
+<!-- <input type="hidden" name="centername" value="<%= @center.name %>">
+<input type="hidden" name="centercontact" value="<%= @center.email %>"> -->
+<%= erb :_questionnaire_selector %>&nbsp;&nbsp;<%= erb :_lang_selector %>&nbsp;&nbsp;&nbsp;
+<input type="submit" value="Generate Questionnaire Links">
+</form>
+<hr/>
+
+<form action="/adc/hide-center/<%= @center.id %>" style="margin: 5px auto; padding: 5px 5px;">
+<input type="submit" value="Hide This Center">
+</form>
+<hr/>
+
+
+

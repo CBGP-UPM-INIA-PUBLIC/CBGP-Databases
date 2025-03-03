@@ -1,0 +1,33 @@
+        
+
+      <!-- incoming @section is the thing like "bone health" -->
+      <!-- [:questions=, :sectionlabel=, :sectionid, :lang, :lang=, :sectionlabel, :questions, :get_questions, :sectionid=] -->
+
+      <div id="<%= @section.sectionid %>" style="clear: both;">
+
+        <h3><%= @section.sectionlabel %></h3>
+        <% @section.questions.each do |quest| %>
+          <% @question = quest %>
+          <%= erb :_question_report %>
+        <% end %>
+        <br/><br/>
+        
+        <div style="clear: both;">
+        <center>
+
+          <H4>Comments on this Section from Accredited Duchenne Center Staff:</H4>
+          <div id="adc_comments" style="clear: both;">
+            <em><%= @comments[@section.sectionid] %></em>
+          </div>
+<br/><br/>
+          <H4>Your Response to Accredited Duchenne Center's Staff Comments:</H4><br/>
+          <div class="inputtype" style="clear: both;">
+            <textarea name="<%= @section.sectionid  %>" id="<%= @section.sectionid  %>_RESPONSE" rows="4" cols="50"></textarea>
+          </div>
+        </center>
+        </div>
+
+        <br/><br/>
+
+
+      </div>

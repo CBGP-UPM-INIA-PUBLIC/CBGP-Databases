@@ -1,0 +1,18 @@
+        
+
+      <!-- incoming @section is the thing like "bone health" -->
+      <!-- [:questions=, :sectionlabel=, :sectionid, :lang, :lang=, :sectionlabel, :questions, :get_questions, :sectionid=] -->
+
+      <div id="<%= @section.sectionid %>" style="">
+
+        <h3><%= @section.sectionlabel %></h3>
+          <% questions = @section.questions %>
+          <% questions.each do |quest| %>
+            <% @question = quest %>
+              <%= erb :_question %>
+          <% end %>
+        <br/><br/>
+        <br/><br/>
+
+
+      </div>

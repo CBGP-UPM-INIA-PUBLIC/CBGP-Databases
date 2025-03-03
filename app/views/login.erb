@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+  
+  <%= erb :_head %>
+
+  <body>
+
+  
+      <%= erb :_logo_head %>
+
+
+
+    <div style="clear: both;">
+      <br/><br/>
+
+      <h1>CBGP Databases - Login</h1>
+      <br/>
+    </div>
+
+    <div class="centerlist">
+
+    <h3>Please enter your credentials</h3>
+    </div>
+
+    <% if @error %>
+      <p class="error"><%= @error %></p>
+    <% end %>
+    <form action="/cbgp/login" method="post">
+      <label for="username">Username:</label>
+      <input type="text" name="username" id="username" required>
+      <br><br>
+      <label for="password">Password:</label>
+      <input type="password" name="password" id="password" required>
+      <br><br>
+      <button type="submit">Login</button>
+    </form>
+
+
+    <div style="clear: both;">
+      <%= erb :_footer %>
+    </div>
+
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <!--[if lt IE 7]>
+      <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.2/CFInstall.min.js"></script>
+      <script>window.attachEvent("onload",function(){CFInstall.check({mode:"overlay"})})</script>
+    <![endif]-->
+  </body>
+</html>
+
+

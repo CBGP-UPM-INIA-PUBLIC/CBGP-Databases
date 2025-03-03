@@ -1,0 +1,15 @@
+<!-- @answerblock [:type, :answers, :lang=, :lang, :ablockid=, :answers=, :type=, :ablockid] -->     
+
+          <div class="inputtype">
+          <select name="<%= @question.questionid  %>" id="<%= @answerblock.ablockid  %>" width="70">
+            <option hidden disabled selected value> -- select an option -- </option>
+            <%  @answerblock.answers.each do |answer| %>
+            <!-- answer [:aid, :widget, :answer, :lang, :answerid=, :answerid, :sequence=, :lang=, :sequence, :aid=, :widget=, :answer=, :order=, :order] -->
+
+              <option value="<%= answer.answerid %>"><%=  answer.answer %></option>
+            <% end %>
+          </select>
+          </div>
+    
+
+  

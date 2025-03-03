@@ -1,0 +1,22 @@
+    <div class="popup">
+        
+        <h2>Please Be Aware</h2>
+        <p>
+            Information entered into this page is not saved until you have clicked the "submit" button.<br/> 
+            If you leave the page before submitting, you must start again.
+        </p>
+        <button id="close">I Understand</button>
+    </div>
+    <script>
+      window.addEventListener("load", function(){
+        setTimeout(
+            function open(event){
+                document.querySelector(".popup").style.display = "block";
+            },
+            1
+        )
+      });
+      document.querySelector("#close").addEventListener("click", function(){
+          document.querySelector(".popup").style.display = "none";
+      });
+    </script>

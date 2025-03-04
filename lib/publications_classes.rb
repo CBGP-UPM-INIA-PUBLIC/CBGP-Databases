@@ -1,18 +1,43 @@
 require_relative 'queries'
 require_relative 'core'
 
+# REQUIREMENTS:
+
+# FULL PUBLICATION INFO – example: Taguas, I., Maclot, F., Montes, N., Pagán, I., Fraile, A., García-Arenal, F. 2025. Infection Patterns of Albugo laibachii and Effect on Host Survival and Reproduction in a Wild Population of Arabidopsis thaliana. Plants 14, 568. DOI: 10.3390/plants14040568
+# CORRESPONDING CBGP AUTHOR – Is the corresponding author from CBGP, yes or no
+# DOI NR
+# JOURNAL NAME
+# TITLE OF THE PUBLICATION
+# TYPE (ARTICLE, BOOK)
+# OPEN-ACCESS ARTICLE (YES/NO)
+# DATE OF PUBLICATION
+# Scopus Q (Q1,Q2,Q3,Q4)
+# SCOPUS D1 (YES/NO)
+# SO acknowledgment - IS THERE SEVERO OCHOA ACKONWLEDGEMENT IN THE PUBLICATION? YES/NO
+
+
 module CBGP
   class Publication
-    attr_accessor :doi, :authors, :affiliations, :title, :year, :date, :uniqid
+    attr_accessor :doi, :authors, :affiliations, :title, :year, :date, :uniqid, :cbgp_corresponding
+    attr_accessor :type, :oa, :scopusq, :scopusd1, :sochoa
 
-    def initialize(doi: '', authors: [], affiliations: [], title: '', year: '', date: '', uniqid: '')
-      # GET THE LABELS HERE
+    def initialize(doi: '', authors: [], affiliations: [], 
+                  title: '', year: '', date: '', 
+                  cbgp_corresponding: "false", type: "", 
+                  oa: "false", scopusq: "", scopusd1: "", sochoa: "false", uniqid: '')
+
       @doi = doi
       @authors = authors
       @affiliations = affiliations
       @title = title
       @year = year
       @date = date
+      @cbgp_corresponding = cbgp_corresponding
+      @type = type
+      @oa = oa
+      @scopusq = scopusq
+      @scopusd1 = scopusd1
+      @sochoa = sochoa
       @uniqid = Time.now.to_i unless uniqid
     end
 

@@ -34,7 +34,7 @@
     
       <form action="/cbgp/publications" method="POST">
       <table id="publication_lookup" width="30%">
-        <tr> <th>Add New Publication</th> </tr>
+        <tr> <th>Add/Find Publication</th> </tr>
         <tr> <td>
           <label for='doi'>DOI Lookup</label>
           <input type='text' name='doi' id="doi">
@@ -47,7 +47,7 @@
 
       <form action="/cbgp/validate-publication" method="post">
       <table id="publication_validate" width="30%">
-        <tr> <th>Validate Publication Before Writing</th> </tr>
+        <tr> <th>Validate/Edit Publication</th> </tr>
         <tr> <td>
         <%= erb :_edit_publication %>
         </td></tr>

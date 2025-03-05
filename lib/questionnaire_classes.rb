@@ -5,15 +5,13 @@ class Questionnaire
   attr_accessor :questionnaire_type, :sections, :lang, :questionnaireid
   attr_accessor :status
 
-  def initialize() # questionnaire_type comes in as just the id
+  def initialize(questionnaire_type:, ) # questionnaire_type comes in as just the id
 
     # GET THE LABELS HERE
-    @lang = lang.upcase
+    # @lang = lang.upcase
     @questionnaire_type = questionnaire_type  # its GUID as only the #code
-    @patprof = patprof #  english label
-    @adultchild = adultchild  # english label
     @sections = fill_category_sections
-    @questionnaireid = questionnaireid
+    @questionnaireid = Time.now.to_i
     @status = status
   end
 

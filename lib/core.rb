@@ -10,28 +10,34 @@ def get_databases
 end
 
 
-def generate_form(form: , lang: "EN") # questionnaire_type comes in as code only
-  res = get_form_fields_query(form: form, lang: lang) # SELECT ?field ?label ?widget ?cardinality 
-  warn res.inspect
-  fields = {}
-  res.each do |r|
-    fields[r["field"].to_s] = {}
-    fields[r["field"].to_s]["label"] = r["label"].to_s
-    fields[r["field"].to_s]["widget"] = r["widget"].to_s
-    fields[r["field"].to_s]["cardinality"] = r["cardinality"].to_s
-  end
-  warn "FIELDS"
-  # warn fields.inspect
-  # {"https://w3id.org/CBGP-App#publication-affiliations"=>
-  #   {"label =>"Affiliations", "widget"=>"https://w3id.org/CBGP-App#text", "cardinality"=>"multi"}, 
-  # "https://w3id.org/CBGP-App#publication-authors"=>
-  #   {"label =>"Authors", ...
-  #   {"label =>"Date", ...
-  #   {"label =>"DOI", ...
-  #   {"label =>"Title", ...
-  # }
-  fields
+def generate_questionnaire(questionnaire_type:) # questionnaire_type comes in as code only
+
+  Questionnaire.new(questionnaire_type: questionnaire_type) # questionnaire_type comes in as just the id)
+  # warn questionnaire.inspect
 end
+
+# def generate_form(form: , lang: "EN") # questionnaire_type comes in as code only
+#   res = get_form_fields_query(form: form, lang: lang) # SELECT ?field ?label ?widget ?cardinality 
+#   warn res.inspect
+#   fields = {}
+#   res.each do |r|
+#     fields[r["field"].to_s] = {}
+#     fields[r["field"].to_s]["label"] = r["label"].to_s
+#     fields[r["field"].to_s]["widget"] = r["widget"].to_s
+#     fields[r["field"].to_s]["cardinality"] = r["cardinality"].to_s
+#   end
+#   warn "FIELDS"
+#   # warn fields.inspect
+#   # {"https://w3id.org/CBGP-App#publication-affiliations"=>
+#   #   {"label =>"Affiliations", "widget"=>"https://w3id.org/CBGP-App#text", "cardinality"=>"multi"}, 
+#   # "https://w3id.org/CBGP-App#publication-authors"=>
+#   #   {"label =>"Authors", ...
+#   #   {"label =>"Date", ...
+#   #   {"label =>"DOI", ...
+#   #   {"label =>"Title", ...
+#   # }
+#   fields
+# end
 
 def get_questionnaire_languages
   langs = query_questionnaire_languages

@@ -64,8 +64,13 @@ def set_routes
     cache_control :public, :must_revalidate, max_age: 0
   end
 
-  # ----------------------------------------------------------------------------
 
+
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
   # Main Dashboard
   get '/' do
     redirect '/cbgp/dashboard'
@@ -95,6 +100,10 @@ def set_routes
 
 
   # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
   # Pubs Dashboard and Publications
 
   get '/cbgp/pubs_dashboard' do
@@ -105,11 +114,9 @@ def set_routes
     doi = params[:doi]
     warn "https://api.openaire.eu/search/publications?doi=#{doi}&format=json"
 #    begin
-      json = RestClient.get("https://api.openaire.eu/search/publications?doi=#{doi}&format=json")
-      @pub = CBGP::Publication.load_from_json(json: json) #  doi: '', authors: [], affiliations: [], title: '', year: '', date: '', uniqid: '')
-      # if you lowercase the FORM labels you will have the keys to the @pub hash
-      @form = generate_form(form: "publication", lang: "EN") # fields[fielduri][Label]["cardinality"] = r["cardinality"]
-      halt erb :pubs_dashboard
+    @questionnaire = generate_questionnaire(questionnaire_type: "publication")
+    halt erb q:uestionnaire
+    # halt erb :pubs_dashboard
 #    rescue StandardError => e
 #      halt 422, e.to_s
 #    end

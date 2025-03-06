@@ -1,0 +1,28 @@
+<% @thisval.each do |auth|  %>
+            <div id="authorlist" class="authorlist">
+            <!-- PUT FORM FIELDS IN HERE?  -->
+
+                  <div class="author">
+                        <label for="<%= auth.uniqueid  %>_NAME" style="font-size: .75em;">Name: </label><br/>
+                        <input type="hidden" name = "<%= auth.uniqueid %>_RANK" value="<%= auth.rank %>"/>
+                        <input type='text' 
+                              name="<%= auth.uniqueid  %>_NAME" 
+                              value="<%= auth.name %>" 
+                              id="<%= auth.uniqueid  %>_NAME" 
+                              size="<%= auth.name.length %>"/>
+                  </div>
+
+
+                  <div class="author">
+                        <label for="<%= auth.uniqueid  %>_ORCID" style="font-size: .75em;">ORCiD: </label><br/>
+                        <input type='text' 
+                              name="<%= auth.uniqueid  %>_ORCID" 
+                              value="<%= auth.orcid %>" 
+                              id="<%= auth.uniqueid  %>_ORCID" 
+                              size="20"/>
+                  </div>
+                  <br/><br/>
+            </div>
+
+
+<% end %>

@@ -35,7 +35,12 @@ def set_routes
     scss(:"stylesheets/#{params[:name]}")
   end
 
-  #  LOGIN FUNCTIONS
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+   #  LOGIN FUNCTIONS
 
   get '/cbgp/login' do
     erb :login
@@ -60,6 +65,16 @@ def set_routes
   end
 
   before do
+    public_paths = [
+      '/',              # Usually the login page
+      '/cbgp/login',         # Login page
+      '/cbgp/stylesheets/cbgp.css',         # Login page
+      '/logout'         # Optional: logout route
+    ]
+    
+    # Skip authentication check for public paths
+    return if public_paths.include?(request.path_info)
+    
     halt(401, erb(:unauthorized)) unless logged_in?
     cache_control :public, :must_revalidate, max_age: 0
   end
@@ -112,11 +127,10 @@ def set_routes
 
   post '/cbgp/publications' do
     doi = params[:doi]
-    warn "https://api.openaire.eu/search/publications?doi=#{doi}&format=json"
 #    begin
-    @questionnaire = generate_questionnaire(questionnaire_type: "publication")
-    halt erb q:uestionnaire
-    # halt erb :pubs_dashboard
+    @questionnaire = generate_questionnaire(questionnaire_type: "add-publication")
+    @pub = CBGP::Publication.load_from_doi(doi: doi) if !doi.empty?
+    halt erb :pubs_dashboard
 #    rescue StandardError => e
 #      halt 422, e.to_s
 #    end

@@ -45,16 +45,22 @@
       </table>
       </form>
 
-      <form action="/cbgp/validate-publication" method="post">
-      <table id="publication_validate" width="30%">
-        <tr> <th>Validate/Edit Publication</th> </tr>
-        <tr> <td>
-        <%= erb :_edit_publication %>
-        </td></tr>
-          <input type="submit" value="Submit"/>
-        </td></tr>
-      </table>
-      </form>
+      <% if @pub %>
+        <form action="/cbgp/validate-publication" method="post">
+        <table id="publication_validate" width="30%">
+          <tr> <th>Validate/Edit Publication</th> </tr>
+          <tr><td>
+            <input type="submit" value="Submit Edited Publication"/>
+          </td></tr>
+          <tr> <td>
+          <%= erb :_questionnaire %> 
+          </td></tr>
+          <tr><td>
+            <input type="submit" value="Submit Edited Publication"/>
+          </td></tr>
+        </table>
+        </form>
+      <% end %>
 
     </div>
 

@@ -1,5 +1,7 @@
 require_relative 'queries'
 require_relative 'core'
+require_relative 'datacite_parser'
+require_relative 'openaire_parser'
 
 # REQUIREMENTS:
 
@@ -17,23 +19,27 @@ require_relative 'core'
 
 
 module CBGP
-  class Publication
-    attr_accessor :doi, :authors, :affiliations, :title, :year, :date, :uniqid, :cbgp_corresponding
-    attr_accessor :type, :oa, :scopusq, :scopusd1, :sochoa
 
-    def initialize(doi: '', authors: [], affiliations: [], 
-                  title: '', year: '', date: '', 
-                  cbgp_corresponding: "false", type: "", 
+  class Publication
+    attr_accessor :doi, :authors, :affiliations, :title, :journal, :volume, :full_ref 
+    attr_accessor :date, :uniqid, :cbgp_corresponding
+    attr_accessor :pubtype, :oa, :scopusq, :scopusd1, :sochoa
+
+    def initialize(doi: '', authors: [[]], affiliations: [[]], 
+                  title: '', journal: '', full_ref: '', date: '', 
+                  cbgp_corresponding: "false", pubtype: "", 
                   oa: "false", scopusq: "", scopusd1: "", sochoa: "false", uniqid: '')
 
       @doi = doi
       @authors = authors
       @affiliations = affiliations
       @title = title
-      @year = year
+      @journal = journal
+      @full_ref = full_ref
+      @volume = volume
       @date = date
       @cbgp_corresponding = cbgp_corresponding
-      @type = type
+      @pubtype = pubtype
       @oa = oa
       @scopusq = scopusq
       @scopusd1 = scopusd1
@@ -41,65 +47,13 @@ module CBGP
       @uniqid = Time.now.to_i unless uniqid
     end
 
-    def self.load_from_json(json:)
-      begin
-        oaire = JSON.parse(json)
-      rescue StandardError
-        return false
+    
+    def self.load_from_doi(doi:)
+      # need to check database one day!
+      pub = CBGP::Parsers.openaire_parser(doi: doi)
+      unless pub
+        pub = CBGP::Parsers.datacite_parser(doi: doi)
       end
-      affiliations = []
-      # Define the JSONPath query with a wildcard to match all "rel" elements
-      jpath = JsonPath.new('response.results.result[0].metadata["oaf:entity"]["oaf:result"].rels.rel[*].legalname.$') # the affiliation name
-      # jpath = JsonPath.new('$["response"]["results"]["result"][0]["metadata"]["oaf:entity"]["oaf:result"]["rels"]["rel"][*]["legalname"]')
-      # Execute the query and get all matches
-      results = jpath.on(oaire)
-      # Loop through the results and print each legalname
-      results.each_with_index do |legalname, index|
-        puts "rel[#{index}].legalname: #{legalname}"
-        affiliations << legalname
-      end
-
-      jpath = JsonPath.new('response.results.result[0].metadata["oaf:entity"]["oaf:result"].title[0].$')      
-      title = jpath.on(oaire)
-
-      authors = []
-      jpath = JsonPath.new('response.results.result[0].metadata["oaf:entity"]["oaf:result"].creator[*]')
-      results = jpath.on(oaire)
-      results.each_with_index do |author, index|
-        puts "rel[#{index}].author: #{author}"
-        authors << author
-      end
-
-      date = ''
-      jpath = JsonPath.new('response.results.result[0].metadata["oaf:entity"]["oaf:result"].relevantdate[*]')
-      results = jpath.on(oaire)
-      results.each_with_index do |entity, _index|
-        next unless entity['@classid'] == 'published-print'
-
-        date = entity['$']
-        warn "date #{date}"
-      end
-
-      doi = ''
-      jpath = JsonPath.new('response.results.result[0].metadata["oaf:entity"]["oaf:result"].children.instance[3].pid[*]')
-      results = jpath.on(oaire)
-      results.each_with_index do |entity, _index|
-        next unless entity['@classid'] == 'doi'
-
-        doi = entity['$']
-        warn "doi #{doi}"
-      end
-
-      pub = CBGP::Publication.new(
-        doi: doi,
-        authors: authors,
-        affiliations: affiliations,
-        title: title,
-        year: date,
-        date: date
-      )
-
-      warn "PUB = #{pub.inspect}"
       pub
     end
 
@@ -108,4 +62,14 @@ module CBGP
       write_pub_to_db_query(pub: self)
     end
   end
+  class Publication::Author
+    attr_accessor :uniqueid, :name, :orcid, :rank
+    def initialize(name:, orcid: "", rank: 0)
+      @name = name
+      @orcid = orcid
+      @rank = rank
+      @uniqueid = Time.now.to_i unless @uniqueid
+    end
+  end
+
 end

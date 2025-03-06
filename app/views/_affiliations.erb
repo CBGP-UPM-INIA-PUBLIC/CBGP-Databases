@@ -1,15 +1,22 @@
 <% if @thisval.empty? %>
           <div class="inputtype">
-          <!-- <label for="<%= @label  %>_ANSWER" style="font-size: .75em;"></label><br/> -->
-          <input type='text' name="<%= @question.questionid  %>_ANSWER[]" id="<%= @question.questionid  %>_ANSWER[]" size="70"/>
+          <input 
+          type='text' 
+          name="<%= @question.questionid  %>_ANSWER[]" 
+          id="<%= @question.questionid  %>_ANSWER[]" 
+          size="70"/>
           </div>
 <% else %>
 
       <% @thisval.each do |aff|  %>
 
           <div class="inputtype">
-          <!-- <label for="<%= @label  %>_ANSWER" style="font-size: .75em;"></label><br/> -->
-          <input type='text' name="<%= @question.questionid  %>_ANSWER[]" value="<%= aff %>" id="<%= @question.questionid  %>_ANSWER[]" size="<%= aff.length %>"/>
+          <input 
+          type='text' 
+          name="<%= @question.questionid  %>_ANSWER[]" 
+          value="<%= aff %>" 
+          id="<%= @question.questionid  %>_ANSWER[]" 
+          size="<%= aff.length %>"/>
           </div>
 
       <% end %>

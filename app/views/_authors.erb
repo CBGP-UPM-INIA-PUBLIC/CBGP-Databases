@@ -3,22 +3,22 @@
             <!-- PUT FORM FIELDS IN HERE?  -->
 
                   <div class="author">
-                        <label for="<%= auth.uniqueid  %>_NAME" style="font-size: .75em;">Name: </label><br/>
-                        <input type="hidden" name = "<%= auth.uniqueid %>_RANK" value="<%= auth.rank %>"/>
+                        <label for="<%= @question.questionid  %>_NAME" style="font-size: .75em;">Name: </label><br/>
+                        <input type="hidden" name = "<%= @question.questionid  %>_RANK" value="<%= auth.rank %>"/>
                         <input type='text' 
-                              name="<%= auth.uniqueid  %>_NAME" 
+                              name="<%= @question.questionid  %>_NAME[]" 
                               value="<%= auth.name %>" 
-                              id="<%= auth.uniqueid  %>_NAME" 
+                              id="<%= @question.questionid  %>_NAME" 
                               size="<%= auth.name.length %>"/>
                   </div>
 
 
                   <div class="author">
-                        <label for="<%= auth.uniqueid  %>_ORCID" style="font-size: .75em;">ORCiD: </label><br/>
+                        <label for="<%= @question.questionid  %>_ORCID" style="font-size: .75em;">ORCiD: </label><br/>
                         <input type='text' 
-                              name="<%= auth.uniqueid  %>_ORCID" 
+                              name="<%= @question.questionid  %>_ORCID[]" 
                               value="<%= auth.orcid %>" 
-                              id="<%= auth.uniqueid  %>_ORCID" 
+                              id="<%= @question.questionid  %>_ORCID" 
                               size="20"/>
                   </div>
                   <br/><br/>

@@ -1,0 +1,4 @@
+{
+  "ruby.rubocop.executePath": "/home/osboxes/.rvm/gems/ruby-3.3.0/bin/",
+  "ruby.rubocop.useBundler": true
+}

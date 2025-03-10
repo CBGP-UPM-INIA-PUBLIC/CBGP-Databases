@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+  
+  <%= erb :_head %>
+
+  <body>
+  <script>
+    function openActionPanel(cid) {
+      var x = document.getElementById(cid);
+      if (x.style.display === "none") {
+        x.style.display = "block";
+      } else {
+        x.style.display = "none";
+      }
+    }
+  </script>
+
+  
+      <%= erb :_logo_head %>
+
+
+
+    <div style="clear: both;">
+      <br/><br/>
+
+      <h1>CBGP - Dashboard</h1>
+      <br/>
+    </div>
+
+    <div class="databases">
+    <div style="float: right;">
+    
+    </div>
+    <form action="/cbgp/databases" method="POST">
+    <table id="databases" width="30%">
+      <tr> <th>Select Database </th> </tr>
+      <tr> <td>
+        <select name="database" id="database">
+          <% @databases.each do |d| %>
+            <option value="<%= d[1] %>"> <%= d[0] %></option>
+          <% end %>
+        </select>
+      </td></tr>
+      <tr> <td>
+      <input type="submit" value="Select"/>
+      </td></tr>
+
+    </table>
+
+    </div>
+
+
+    <div style="clear: both;">
+      <%= erb :_footer %>
+    </div>
+
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <!--[if lt IE 7]>
+      <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.2/CFInstall.min.js"></script>
+      <script>window.attachEvent("onload",function(){CFInstall.check({mode:"overlay"})})</script>
+    <![endif]-->
+  </body>
+</html>
+
+

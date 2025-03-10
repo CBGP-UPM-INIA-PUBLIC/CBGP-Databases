@@ -1,0 +1,23 @@
+        
+
+      <!-- questionid, :sequence, :objectclass, :objectmethod, :answerblock, :question, 
+      :selected_answer, :widget, :cardinality -->
+
+    <% label = @question.question  %>
+    <div id="<%= label %>" style="clear: both;">
+
+        <h4 class="question-label"><%= label %></h4>
+        <% widget = @question.widget.match(/.*\#(\S+)/)[1] %>
+        <% @value = @pub.public_send(@question.objectmethod) %> 
+        <!-- value comes from database record -->
+        <!-- value might be an object!  e.g. with CBGP::Publication::Author.  Widget has to deal with that! -->
+        <% @answerblock = @question.answerblock %> 
+ 
+        <!-- widget cardinalilty or widget type should determine if it is an array or not... -->
+        <% @value = [@value] unless @value.is_a? Array  %>
+        <% @value.each do |val| %>
+            <%   @thisval = val %>
+            <%= erb "_#{widget}".to_sym %> 
+        <%   end %>
+        
+    </div>

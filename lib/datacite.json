@@ -1,0 +1,412 @@
+{
+  "indexed": {
+    "date-parts": [
+      [
+        2023,
+        2,
+        10
+      ]
+    ],
+    "date-time": "2023-02-10T13:58:19Z",
+    "timestamp": 1676037499739
+  },
+  "reference-count": 25,
+  "publisher": "Elsevier BV",
+  "issue": "6",
+  "license": [
+    {
+      "start": {
+        "date-parts": [
+          [
+            2007,
+            12,
+            1
+          ]
+        ],
+        "date-time": "2007-12-01T00:00:00Z",
+        "timestamp": 1196467200000
+      },
+      "content-version": "tdm",
+      "delay-in-days": 0,
+      "URL": "https:\/\/www.elsevier.com\/tdm\/userlicense\/1.0\/"
+    },
+    {
+      "start": {
+        "date-parts": [
+          [
+            2013,
+            7,
+            17
+          ]
+        ],
+        "date-time": "2013-07-17T00:00:00Z",
+        "timestamp": 1374019200000
+      },
+      "content-version": "vor",
+      "delay-in-days": 2055,
+      "URL": "https:\/\/www.elsevier.com\/open-access\/userlicense\/1.0\/"
+    }
+  ],
+  "content-domain": {
+    "domain": [],
+    "crossmark-restriction": false
+  },
+  "published-print": {
+    "date-parts": [
+      [
+        2007,
+        12
+      ]
+    ]
+  },
+  "DOI": "10.1016\/j.jbi.2007.10.001",
+  "type": "journal-article",
+  "created": {
+    "date-parts": [
+      [
+        2007,
+        10,
+        26
+      ]
+    ],
+    "date-time": "2007-10-26T06:03:22Z",
+    "timestamp": 1193378602000
+  },
+  "page": "605-608",
+  "source": "Crossref",
+  "is-referenced-by-count": 5,
+  "title": "Intelligent data analysis in biomedicine",
+  "prefix": "10.1016",
+  "volume": "40",
+  "author": [
+    {
+      "given": "John H.",
+      "family": "Holmes",
+      "sequence": "first",
+      "affiliation": []
+    },
+    {
+      "given": "Niels",
+      "family": "Peek",
+      "sequence": "additional",
+      "affiliation": []
+    }
+  ],
+  "member": "78",
+  "reference": [
+    {
+      "key": "10.1016\/j.jbi.2007.10.001_bib1",
+      "series-title": "The elements of statistical learning: data mining, inference, and prediction",
+      "author": "Hastie",
+      "year": "2001"
+    },
+    {
+      "key": "10.1016\/j.jbi.2007.10.001_bib2",
+      "series-title": "Data mining for scientific and engineering applications",
+      "year": "2001"
+    },
+    {
+      "key": "10.1016\/j.jbi.2007.10.001_bib3",
+      "first-page": "113",
+      "article-title": "Intelligent data analysis in medicine",
+      "volume": "Vol. 42",
+      "author": "Lavrac",
+      "year": "2000"
+    },
+    {
+      "key": "10.1016\/j.jbi.2007.10.001_bib4",
+      "series-title": "Knowledge discovery in databases",
+      "article-title": "Knowledge discovery in databases: an overview",
+      "author": "Frawley",
+      "year": "1991"
+    },
+    {
+      "key": "10.1016\/j.jbi.2007.10.001_bib5",
+      "series-title": "Data mining: concepts and techniques",
+      "author": "Han",
+      "year": "2000"
+    },
+    {
+      "key": "10.1016\/j.jbi.2007.10.001_bib6",
+      "series-title": "Advances in knowledge discovery and data mining",
+      "article-title": "The process of knowledge discovery in databases: a human-centered approach",
+      "author": "Brachman",
+      "year": "1996"
+    },
+    {
+      "key": "10.1016\/j.jbi.2007.10.001_bib7",
+      "series-title": "Principles of data mining",
+      "author": "Hand",
+      "year": "2001"
+    },
+    {
+      "key": "10.1016\/j.jbi.2007.10.001_bib8",
+      "doi-asserted-by": "crossref",
+      "first-page": "698",
+      "DOI": "10.1016\/j.jbi.2007.01.004",
+      "article-title": "Mining pathway signatures from microarray data and relevant biological knowledge",
+      "volume": "40",
+      "author": "Panteris",
+      "year": "2007",
+      "journal-title": "J Biomed Inform"
+    },
+    {
+      "key": "10.1016\/j.jbi.2007.10.001_bib9",
+      "doi-asserted-by": "crossref",
+      "first-page": "775",
+      "DOI": "10.1016\/j.jbi.2007.07.006",
+      "article-title": "Selecting differentially expressed genes using minimum probability of classification error",
+      "volume": "40",
+      "author": "Mahata",
+      "year": "2007",
+      "journal-title": "J Biomed Inform"
+    },
+    {
+      "key": "10.1016\/j.jbi.2007.10.001_bib10",
+      "doi-asserted-by": "crossref",
+      "first-page": "726",
+      "DOI": "10.1016\/j.jbi.2007.05.007",
+      "article-title": "An algorithm for modularization of MAPK and Calcium signaling pathways: comparative analysis among different species",
+      "volume": "40",
+      "author": "Nayak",
+      "year": "2007",
+      "journal-title": "J Biomed Inform"
+    },
+    {
+      "key": "10.1016\/j.jbi.2007.10.001_bib11",
+      "doi-asserted-by": "crossref",
+      "first-page": "661",
+      "DOI": "10.1016\/j.jbi.2007.03.010",
+      "article-title": "FreeViz. An intelligent multivariate visualization approach to explorative analysis of biomedical data",
+      "volume": "40",
+      "author": "Demsar",
+      "year": "2007",
+      "journal-title": "J Biomed Inform"
+    },
+    {
+      "key": "10.1016\/j.jbi.2007.10.001_bib12",
+      "doi-asserted-by": "crossref",
+      "first-page": "631",
+      "DOI": "10.1016\/j.jbi.2007.06.007",
+      "article-title": "A method for linking computed image features to histological semantics in neuropathology",
+      "volume": "40",
+      "author": "Lessmann",
+      "year": "2007",
+      "journal-title": "J Biomed Inform"
+    },
+    {
+      "key": "10.1016\/j.jbi.2007.10.001_bib13",
+      "doi-asserted-by": "crossref",
+      "first-page": "750",
+      "DOI": "10.1016\/j.jbi.2007.06.002",
+      "article-title": "Integrating domain knowledge with statistical and data mining methods for high density genomic SNP disease association analysis",
+      "volume": "40",
+      "author": "Dinu",
+      "year": "2007",
+      "journal-title": "J Biomed Inform"
+    },
+    {
+      "issue": "1",
+      "key": "10.1016\/j.jbi.2007.10.001_bib14",
+      "doi-asserted-by": "crossref",
+      "first-page": "45",
+      "DOI": "10.7326\/0003-4819-132-1-200001040-00008",
+      "article-title": "Dimensions of time in illness: an objective view",
+      "volume": "132",
+      "author": "Shahar",
+      "year": "2000",
+      "journal-title": "Ann Intern Med"
+    },
+    {
+      "key": "10.1016\/j.jbi.2007.10.001_bib15",
+      "doi-asserted-by": "crossref",
+      "first-page": "672",
+      "DOI": "10.1016\/j.jbi.2007.09.006",
+      "article-title": "Knowledge construction from time series data using a collaborative exploration approach",
+      "volume": "40",
+      "author": "Guyet",
+      "year": "2007",
+      "journal-title": "J Biomed Inform"
+    },
+    {
+      "key": "10.1016\/j.jbi.2007.10.001_bib16",
+      "doi-asserted-by": "crossref",
+      "first-page": "761",
+      "DOI": "10.1016\/j.jbi.2007.06.003",
+      "article-title": "Precedence temporal networks to represent temporal relationships in gene expression data",
+      "volume": "40",
+      "author": "Sacchi",
+      "year": "2007",
+      "journal-title": "J Biomed Inform"
+    },
+    {
+      "key": "10.1016\/j.jbi.2007.10.001_bib17",
+      "doi-asserted-by": "crossref",
+      "first-page": "642",
+      "DOI": "10.1016\/j.jbi.2007.03.008",
+      "article-title": "Unsupervised clustering of over-the-counter healthcare products into product categories",
+      "volume": "40",
+      "author": "Wallstrom",
+      "year": "2007",
+      "journal-title": "J Biomed Inform"
+    },
+    {
+      "key": "10.1016\/j.jbi.2007.10.001_bib18",
+      "doi-asserted-by": "crossref",
+      "first-page": "609",
+      "DOI": "10.1016\/j.jbi.2007.07.003",
+      "article-title": "Prognostic Bayesian networks. I. Rationale, learning procedure, and clinical use",
+      "volume": "40",
+      "author": "Verduijn",
+      "year": "2007",
+      "journal-title": "J Biomed Inform"
+    },
+    {
+      "key": "10.1016\/j.jbi.2007.10.001_bib19",
+      "doi-asserted-by": "crossref",
+      "first-page": "619",
+      "DOI": "10.1016\/j.jbi.2007.07.004",
+      "article-title": "Prognostic Bayesian networks. II. An application in the domain of cardiac surgery",
+      "volume": "40",
+      "author": "Verduijn",
+      "year": "2007",
+      "journal-title": "J Biomed Inform"
+    },
+    {
+      "key": "10.1016\/j.jbi.2007.10.001_bib20",
+      "doi-asserted-by": "crossref",
+      "first-page": "707",
+      "DOI": "10.1016\/j.jbi.2007.02.003",
+      "article-title": "A new framework for identifying combinatorial regulation of transcription factors: a case study of the yeast cell cycle",
+      "volume": "40",
+      "author": "Wang",
+      "year": "2007",
+      "journal-title": "J Biomed Inform"
+    },
+    {
+      "key": "10.1016\/j.jbi.2007.10.001_bib21",
+      "doi-asserted-by": "crossref",
+      "first-page": "688",
+      "DOI": "10.1016\/j.jbi.2007.05.008",
+      "article-title": "Effects of SVM parameter optimization on discrimination and calibration for post-procedural PCI mortality",
+      "volume": "40",
+      "author": "Matheny",
+      "year": "2007",
+      "journal-title": "J Biomed Inform"
+    },
+    {
+      "key": "10.1016\/j.jbi.2007.10.001_bib22",
+      "doi-asserted-by": "crossref",
+      "first-page": "649",
+      "DOI": "10.1016\/j.jbi.2007.03.007",
+      "article-title": "Discovery and inclusion of SOFA score episodes in mortality prediction",
+      "volume": "40",
+      "author": "Toma",
+      "year": "2007",
+      "journal-title": "J Biomed Inform"
+    },
+    {
+      "key": "10.1016\/j.jbi.2007.10.001_bib23",
+      "doi-asserted-by": "crossref",
+      "first-page": "787",
+      "DOI": "10.1016\/j.jbi.2007.06.005",
+      "article-title": "Towards knowledge-based gene expression data mining",
+      "volume": "40",
+      "author": "Bellazzi",
+      "year": "2007",
+      "journal-title": "J Biomed Inform"
+    },
+    {
+      "key": "10.1016\/j.jbi.2007.10.001_bib24",
+      "article-title": "Predictive data mining in clinical medicine: current issues and guidelines",
+      "author": "Bellazzi",
+      "year": "2006",
+      "journal-title": "Int J Med Inform"
+    },
+    {
+      "key": "10.1016\/j.jbi.2007.10.001_bib25",
+      "doi-asserted-by": "crossref",
+      "first-page": "99",
+      "DOI": "10.1007\/s10618-006-0058-2",
+      "article-title": "Data mining and knowledge discovery 1996\u20132005: overcoming the hype and moving from \u201cuniversity\u201d to \u201cbusiness\u201d and \u201canalytics\u201d",
+      "volume": "15",
+      "author": "Piatetsky-Shapiro",
+      "year": "2007",
+      "journal-title": "Data Min Knowl Disc"
+    }
+  ],
+  "container-title": "Journal of Biomedical Informatics",
+  "original-title": [],
+  "language": "en",
+  "link": [
+    {
+      "URL": "https:\/\/api.elsevier.com\/content\/article\/PII:S1532046407001098?httpAccept=text\/xml",
+      "content-type": "text\/xml",
+      "content-version": "vor",
+      "intended-application": "text-mining"
+    },
+    {
+      "URL": "https:\/\/api.elsevier.com\/content\/article\/PII:S1532046407001098?httpAccept=text\/plain",
+      "content-type": "text\/plain",
+      "content-version": "vor",
+      "intended-application": "text-mining"
+    }
+  ],
+  "deposited": {
+    "date-parts": [
+      [
+        2019,
+        1,
+        3
+      ]
+    ],
+    "date-time": "2019-01-03T05:23:16Z",
+    "timestamp": 1546492996000
+  },
+  "score": 1,
+  "resource": {
+    "primary": {
+      "URL": "https:\/\/linkinghub.elsevier.com\/retrieve\/pii\/S1532046407001098"
+    }
+  },
+  "subtitle": [],
+  "short-title": [],
+  "issued": {
+    "date-parts": [
+      [
+        2007,
+        12
+      ]
+    ]
+  },
+  "references-count": 25,
+  "journal-issue": {
+    "issue": "6",
+    "published-print": {
+      "date-parts": [
+        [
+          2007,
+          12
+        ]
+      ]
+    }
+  },
+  "alternative-id": [
+    "S1532046407001098"
+  ],
+  "URL": "http:\/\/dx.doi.org\/10.1016\/j.jbi.2007.10.001",
+  "relation": {},
+  "ISSN": [
+    "1532-0464"
+  ],
+  "subject": [],
+  "container-title-short": "Journal of Biomedical Informatics",
+  "published": {
+    "date-parts": [
+      [
+        2007,
+        12
+      ]
+    ]
+  }
+}

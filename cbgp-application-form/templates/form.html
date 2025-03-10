@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+
+<form method="POST" action="/submit">
+  
+  <h2>Formulario de bases de datos para el CBGP</h2>
+  <div class="form-column">
+    {% for xlabel, grouped in grouped_options %}
+
+    	{% include "input_field.html" %}
+    
+    {% endfor %}
+  </div>
+
+  <hr>
+  <button type="submit">Enviar</button>
+  
+</form>
+
+
+
+
+
+

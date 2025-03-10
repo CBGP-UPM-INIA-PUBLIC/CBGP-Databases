@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+  
+  <%= erb :_head %>
+
+  <body>
+
+  
+      <%= erb :_logo_head %>
+
+
+
+    <div style="clear: both;">
+      <br/><br/>
+
+      <h1>Accredited Duchenne Centers - Questionnaire List</h1>
+      <br/>
+    </div>
+
+    <div class="questionnairelist">
+      <center>
+      <h3>Center Name: <%= @center.name %></h3>
+      <h4>Center ID: <%= @center.id %><br/></h4>
+      <h4>E-mail: <%= @center.email %></h4>
+      <br/><br/>
+      </center>
+
+      <table id="centers" width="100%">
+        <tr> <th>Questionnaire Type</th><th>Code</th><th>Date</th><th>Action</th></tr>
+        <% @discovered_questionnaires.each do |d| %>
+          <% @discovered = d %>
+          <tr><td><%= d[:type] %></td><td><%= d[:questionnaire_type] %></td><td><%= d[:date] %></td>
+          <td> <%= erb :_comment_on_questionnaire_button %>&nbsp;&nbsp;<%= erb :_send_report_to_center_button %>&nbsp;&nbsp;<%= erb :_generate_final_report_button %></tr>
+        <% end %>
+      </table>
+    </div>
+
+
+    <div style="clear: both;">
+      <%= erb :_footer %>
+    </div>
+
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <!--[if lt IE 7]>
+      <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.2/CFInstall.min.js"></script>
+      <script>window.attachEvent("onload",function(){CFInstall.check({mode:"overlay"})})</script>
+    <![endif]-->
+  </body>
+</html>
+
+

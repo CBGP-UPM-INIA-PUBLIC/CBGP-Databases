@@ -1,0 +1,890 @@
+{
+  "response": {
+    "header": {
+      "query": {
+        "$": "(oaftype exact result) and (resulttypeid exact publication) and ((pidclassid exact \"doi\" and pid exact \"10.1093/bib/3.4.331\"))"
+      },
+      "locale": {
+        "$": "en_US"
+      },
+      "size": {
+        "$": 10
+      },
+      "page": {
+        "$": 1
+      },
+      "total": {
+        "$": 1
+      },
+      "fields": null
+    },
+    "results": {
+      "result": [
+        {
+          "header": {
+            "dri:objIdentifier": {
+              "$": "doi_dedup___::a40c2c4f661b388bb3ab543ba822a558"
+            },
+            "dri:dateOfCollection": {
+              "$": "2024-12-18T16:23:43.434"
+            },
+            "dri:dateOfTransformation": null
+          },
+          "metadata": {
+            "oaf:entity": {
+              "@xsi:schemaLocation": "http://namespace.openaire.eu/oaf https://www.openaire.eu/schema/1.0/oaf-1.0.xsd",
+              "oaf:result": {
+                "collectedfrom": [
+                  {
+                    "@name": "UnpayWall",
+                    "@id": "openaire____::8ac8380272269217cb09a928c8caa993"
+                  },
+                  {
+                    "@name": "Crossref",
+                    "@id": "openaire____::081b82f96300b6a6e3d282bad31cb6e2"
+                  },
+                  {
+                    "@name": "Microsoft Academic Graph",
+                    "@id": "openaire____::5f532a3fc4f1ea403f37070f59a7a53a"
+                  },
+                  {
+                    "@name": "Europe PubMed Central",
+                    "@id": "opendoar____::8b6dd7db9af49e67306feb59a8bdc52c"
+                  }
+                ],
+                "originalId": [
+                  {
+                    "$": "10.1093/bib/3.4.331"
+                  },
+                  {
+                    "$": "50|doiboost____|a40c2c4f661b388bb3ab543ba822a558"
+                  },
+                  {
+                    "$": "12511062"
+                  },
+                  {
+                    "$": "1996902131"
+                  }
+                ],
+                "pid": [
+                  {
+                    "@classid": "doi",
+                    "@classname": "Digital Object Identifier",
+                    "@schemeid": "dnet:pid_types",
+                    "@schemename": "dnet:pid_types",
+                    "$": "10.1093/bib/3.4.331"
+                  },
+                  {
+                    "@classid": "pmid",
+                    "@classname": "PubMed ID",
+                    "@schemeid": "dnet:pid_types",
+                    "@schemename": "dnet:pid_types",
+                    "@inferred": false,
+                    "@provenanceaction": "sysimport:actionset",
+                    "@trust": "0.9",
+                    "$": 12511062
+                  },
+                  {
+                    "@classid": "mag_id",
+                    "@classname": "Microsoft Academic Graph Identifier",
+                    "@schemeid": "dnet:pid_types",
+                    "@schemename": "dnet:pid_types",
+                    "$": 1996902131
+                  }
+                ],
+                "measure": [
+                  {
+                    "@id": "influence",
+                    "@score": "6.034509E-8",
+                    "@class": "C2"
+                  },
+                  {
+                    "@id": "popularity",
+                    "@score": "2.7029653E-8",
+                    "@class": "C4"
+                  },
+                  {
+                    "@id": "influence_alt",
+                    "@score": "280",
+                    "@class": "C3"
+                  },
+                  {
+                    "@id": "popularity_alt",
+                    "@score": "2.7944727",
+                    "@class": "C4"
+                  },
+                  {
+                    "@id": "impulse",
+                    "@score": "60",
+                    "@class": "C3"
+                  }
+                ],
+                "title": [
+                  {
+                    "@classid": "main title",
+                    "@classname": "main title",
+                    "@schemeid": "dnet:dataCite_title",
+                    "@schemename": "dnet:dataCite_title",
+                    "$": "BioMOBY: An open source biological web services proposal"
+                  },
+                  {
+                    "@classid": "main title",
+                    "@classname": "main title",
+                    "@schemeid": "dnet:dataCite_title",
+                    "@schemename": "dnet:dataCite_title",
+                    "@inferred": false,
+                    "@provenanceaction": "sysimport:actionset",
+                    "@trust": "0.9",
+                    "$": "BioMOBY: an open source biological web services proposal."
+                  },
+                  {
+                    "@classid": "main title",
+                    "@classname": "main title",
+                    "@schemeid": "dnet:dataCite_title",
+                    "@schemename": "dnet:dataCite_title",
+                    "$": "biomoby an open source biological web services proposal"
+                  }
+                ],
+                "bestaccessright": {
+                  "@classid": "OPEN",
+                  "@classname": "Open Access",
+                  "@schemeid": "dnet:access_modes",
+                  "@schemename": "dnet:access_modes"
+                },
+                "creator": [
+                  {
+                    "@rank": "1",
+                    "@orcid": "0000-0003-1917-6789",
+                    "$": "Matthew G. Links"
+                  },
+                  {
+                    "@rank": "2",
+                    "@orcid": "0000-0001-6960-357x",
+                    "$": "Mark Wilkinson"
+                  }
+                ],
+                "dateofacceptance": {
+                  "$": "2002-01-01"
+                },
+                "description": {
+                  "$": "BioMOBY is an Open Source research project which aims to generate an architecture for the discovery and distribution of biological data through web services; data and services are decentralised, but the availability of these resources, and the instructions for interacting with them, are registered in a central location called MOBY Central. BioMOBY adds to the web services paradigm, as exemplified by Universal Data Discovery and Integration (UDDI), by having an object-driven registry query system with object and service ontologies. This allows users to traverse expansive and disparate data sets where each possible next step is presented based on the data object currently in-hand. Moreover, a path from the current data object to a desired final data object could be automatically discovered using the registry. Native BioMOBY objects are lightweight XML, and make up both the query and the response of a simple object access protocol (SOAP) transaction."
+                },
+                "subject": [
+                  {
+                    "@classid": "FOS",
+                    "@classname": "Fields of Science and Technology classification",
+                    "@schemeid": "dnet:subject_classification_typologies",
+                    "@schemename": "dnet:subject_classification_typologies",
+                    "@inferred": true,
+                    "@inferenceprovenance": "update",
+                    "@provenanceaction": "subject:fos",
+                    "$": "0301 basic medicine"
+                  },
+                  {
+                    "@classid": "keyword",
+                    "@classname": "keyword",
+                    "@schemeid": "dnet:subject_classification_typologies",
+                    "@schemename": "dnet:subject_classification_typologies",
+                    "@inferred": false,
+                    "@provenanceaction": "sysimport:actionset",
+                    "@trust": "0.9",
+                    "$": "Internet"
+                  },
+                  {
+                    "@classid": "keyword",
+                    "@classname": "keyword",
+                    "@schemeid": "dnet:subject_classification_typologies",
+                    "@schemename": "dnet:subject_classification_typologies",
+                    "@inferred": false,
+                    "@provenanceaction": "sysimport:actionset",
+                    "@trust": "0.9",
+                    "$": "International Cooperation"
+                  },
+                  {
+                    "@classid": "FOS",
+                    "@classname": "Fields of Science and Technology classification",
+                    "@schemeid": "dnet:subject_classification_typologies",
+                    "@schemename": "dnet:subject_classification_typologies",
+                    "@inferred": true,
+                    "@inferenceprovenance": "update",
+                    "@provenanceaction": "subject:fos",
+                    "$": "0206 medical engineering"
+                  },
+                  {
+                    "@classid": "keyword",
+                    "@classname": "keyword",
+                    "@schemeid": "dnet:subject_classification_typologies",
+                    "@schemename": "dnet:subject_classification_typologies",
+                    "@inferred": false,
+                    "@provenanceaction": "sysimport:actionset",
+                    "@trust": "0.9",
+                    "$": "Information Storage and Retrieval"
+                  },
+                  {
+                    "@classid": "FOS",
+                    "@classname": "Fields of Science and Technology classification",
+                    "@schemeid": "dnet:subject_classification_typologies",
+                    "@schemename": "dnet:subject_classification_typologies",
+                    "@inferred": true,
+                    "@inferenceprovenance": "update",
+                    "@provenanceaction": "subject:fos",
+                    "$": "02 engineering and technology"
+                  },
+                  {
+                    "@classid": "FOS",
+                    "@classname": "Fields of Science and Technology classification",
+                    "@schemeid": "dnet:subject_classification_typologies",
+                    "@schemename": "dnet:subject_classification_typologies",
+                    "@inferred": true,
+                    "@inferenceprovenance": "update",
+                    "@provenanceaction": "subject:fos",
+                    "$": "03 medical and health sciences"
+                  },
+                  {
+                    "@classid": "keyword",
+                    "@classname": "keyword",
+                    "@schemeid": "dnet:subject_classification_typologies",
+                    "@schemename": "dnet:subject_classification_typologies",
+                    "@inferred": false,
+                    "@provenanceaction": "sysimport:actionset",
+                    "@trust": "0.9",
+                    "$": "User-Computer Interface"
+                  },
+                  {
+                    "@classid": "keyword",
+                    "@classname": "keyword",
+                    "@schemeid": "dnet:subject_classification_typologies",
+                    "@schemename": "dnet:subject_classification_typologies",
+                    "@inferred": false,
+                    "@provenanceaction": "sysimport:actionset",
+                    "@trust": "0.9",
+                    "$": "Computer Communication Networks"
+                  },
+                  {
+                    "@classid": "keyword",
+                    "@classname": "keyword",
+                    "@schemeid": "dnet:subject_classification_typologies",
+                    "@schemename": "dnet:subject_classification_typologies",
+                    "@inferred": false,
+                    "@provenanceaction": "sysimport:actionset",
+                    "@trust": "0.9",
+                    "$": "Humans"
+                  },
+                  {
+                    "@classid": "keyword",
+                    "@classname": "keyword",
+                    "@schemeid": "dnet:subject_classification_typologies",
+                    "@schemename": "dnet:subject_classification_typologies",
+                    "@inferred": false,
+                    "@provenanceaction": "sysimport:actionset",
+                    "@trust": "0.9",
+                    "$": "Database Management Systems"
+                  },
+                  {
+                    "@classid": "keyword",
+                    "@classname": "keyword",
+                    "@schemeid": "dnet:subject_classification_typologies",
+                    "@schemename": "dnet:subject_classification_typologies",
+                    "@inferred": false,
+                    "@provenanceaction": "sysimport:actionset",
+                    "@trust": "0.9",
+                    "$": "Databases, Nucleic Acid"
+                  }
+                ],
+                "language": {
+                  "@classid": "und",
+                  "@classname": "Undetermined",
+                  "@schemeid": "dnet:languages",
+                  "@schemename": "dnet:languages"
+                },
+                "relevantdate": [
+                  {
+                    "@classid": "created",
+                    "@classname": "created",
+                    "@schemeid": "dnet:dataCite_date",
+                    "@schemename": "dnet:dataCite_date",
+                    "$": "2006-01-18"
+                  },
+                  {
+                    "@classid": "published-print",
+                    "@classname": "published-print",
+                    "@schemeid": "dnet:dataCite_date",
+                    "@schemename": "dnet:dataCite_date",
+                    "$": "2002-01-01"
+                  }
+                ],
+                "publisher": {
+                  "$": "Oxford University Press (OUP)"
+                },
+                "source": {
+                  "$": "Crossref"
+                },
+                "resulttype": {
+                  "@classid": "publication",
+                  "@classname": "publication",
+                  "@schemeid": "dnet:result_typologies",
+                  "@schemename": "dnet:result_typologies"
+                },
+                "resourcetype": {
+                  "@classid": "publication",
+                  "@classname": "publication",
+                  "@schemeid": "dnet:result_typologies",
+                  "@schemename": "dnet:result_typologies"
+                },
+                "isgreen": {
+                  "$": false
+                },
+                "openaccesscolor": {
+                  "$": "bronze"
+                },
+                "isindiamondjournal": {
+                  "$": false
+                },
+                "publiclyfunded": {
+                  "$": false
+                },
+                "journal": {
+                  "@issn": "1467-5463",
+                  "@eissn": "1477-4054",
+                  "@ep": "341",
+                  "@sp": "331",
+                  "@vol": "3",
+                  "$": "Briefings in Bioinformatics"
+                },
+                "context": [
+                  {
+                    "@id": "uarctic",
+                    "@label": "UArctic",
+                    "@type": "ri"
+                  },
+                  {
+                    "@id": "knowmad",
+                    "@label": "Knowmad Institut",
+                    "@type": "community"
+                  }
+                ],
+                "datainfo": {
+                  "inferred": {
+                    "$": true
+                  },
+                  "deletedbyinference": {
+                    "$": false
+                  },
+                  "trust": {
+                    "$": "0.8"
+                  },
+                  "inferenceprovenance": {
+                    "$": "dedup-result-decisiontree-v4"
+                  },
+                  "provenanceaction": {
+                    "@classid": "sysimport:dedup",
+                    "@classname": "Inferred by OpenAIRE",
+                    "@schemeid": "dnet:provenanceActions",
+                    "@schemename": "dnet:provenanceActions"
+                  }
+                },
+                "rels": {
+                  "rel": [
+                    {
+                      "@inferred": false,
+                      "@trust": "0.9",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:actionset",
+                      "to": {
+                        "@class": "hasAuthorInstitution",
+                        "@scheme": "dnet:result_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::43bb1e9cc0e4bdc6d80ae3f8b698c02b"
+                      },
+                      "legalshortname": {
+                        "$": "NRC"
+                      },
+                      "country": {
+                        "@classid": "US",
+                        "@classname": "United States",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "websiteurl": {
+                        "$": "http://www.nationalacademies.org/nasem/"
+                      },
+                      "legalname": {
+                        "$": "National Academies of Sciences, Engineering, and Medicine"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.9",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:actionset",
+                      "to": {
+                        "@class": "hasAuthorInstitution",
+                        "@scheme": "dnet:result_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::c4545964c85f760cc6e81958038e3f57"
+                      },
+                      "legalname": {
+                        "$": "University of Saskatchewan"
+                      },
+                      "websiteurl": {
+                        "$": "https://www.usask.ca/"
+                      },
+                      "country": {
+                        "@classid": "CA",
+                        "@classname": "Canada",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "University of Saskatchewan"
+                      }
+                    },
+                    {
+                      "@inferred": true,
+                      "@trust": "1.0",
+                      "@inferenceprovenance": "openaire:affiliation",
+                      "@provenanceaction": "result:organization:openaireinference",
+                      "to": {
+                        "@class": "hasAuthorInstitution",
+                        "@scheme": "dnet:result_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::235525ba8db05d0a6a6eaa740fcbe321"
+                      },
+                      "country": {
+                        "@classid": "CA",
+                        "@classname": "Canada",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "websiteurl": {
+                        "$": "http://www.nrc-cnrc.gc.ca/eng/#"
+                      },
+                      "legalname": {
+                        "$": "National Research Council Canada"
+                      },
+                      "legalshortname": {
+                        "$": "CNRC"
+                      }
+                    },
+                    {
+                      "@inferred": true,
+                      "@trust": "1.0",
+                      "@inferenceprovenance": "openaire:affiliation",
+                      "@provenanceaction": "result:organization:openaireinference",
+                      "to": {
+                        "@class": "hasAuthorInstitution",
+                        "@scheme": "dnet:result_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::c2340a023472a5c5cd297cb43f72e213"
+                      },
+                      "websiteurl": {
+                        "$": "http://www.nrc-cnrc.gc.ca/eng"
+                      },
+                      "legalname": {
+                        "$": "Plant Biotechnology Institute"
+                      },
+                      "legalshortname": {
+                        "$": "NRC-PBI"
+                      },
+                      "country": {
+                        "@classid": "CA",
+                        "@classname": "Canada",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      }
+                    }
+                  ]
+                },
+                "children": {
+                  "result": [
+                    {
+                      "@objidentifier": "pmid________::bb6a145b32c6ec5bd01d74f868c1affe",
+                      "title": {
+                        "@classid": "main title",
+                        "@classname": "main title",
+                        "@schemeid": "dnet:dataCite_title",
+                        "@schemename": "dnet:dataCite_title",
+                        "@inferred": false,
+                        "@provenanceaction": "sysimport:actionset",
+                        "@trust": "0.9",
+                        "$": "BioMOBY: an open source biological web services proposal."
+                      },
+                      "description": {
+                        "$": "BioMOBY is an Open Source research project which aims to generate an architecture for the discovery and distribution of biological data through web services; data and services are decentralised, but the availability of these resources, and the instructions for interacting with them, are registered in a central location called MOBY Central. BioMOBY adds to the web services paradigm, as exemplified by Universal Data Discovery and Integration (UDDI), by having an object-driven registry query system"
+                      },
+                      "creator": [
+                        {
+                          "$": "Matthew, Links"
+                        },
+                        {
+                          "$": "Mark D, Wilkinson"
+                        }
+                      ],
+                      "resulttype": {
+                        "@classid": "publication",
+                        "@classname": "publication",
+                        "@schemeid": "dnet:result_typologies",
+                        "@schemename": "dnet:result_typologies"
+                      },
+                      "collectedfrom": {
+                        "@name": "Europe PubMed Central",
+                        "@id": "opendoar____::8b6dd7db9af49e67306feb59a8bdc52c"
+                      },
+                      "pid": {
+                        "@classid": "pmid",
+                        "@classname": "PubMed ID",
+                        "@schemeid": "dnet:pid_types",
+                        "@schemename": "dnet:pid_types",
+                        "@inferred": false,
+                        "@provenanceaction": "sysimport:actionset",
+                        "@trust": "0.9",
+                        "$": 12511062
+                      },
+                      "dateofacceptance": {
+                        "$": "2003-01-04"
+                      },
+                      "instance": {
+                        "accessright": {
+                          "@classid": "UNKNOWN",
+                          "@classname": "not available",
+                          "@schemeid": "dnet:access_modes",
+                          "@schemename": "dnet:access_modes"
+                        },
+                        "hostedby": {
+                          "@name": "Briefings in Bioinformatics",
+                          "@id": "issn___print::f949fbf19f4cae5c3b4c1dd592b36761"
+                        },
+                        "dateofacceptance": {
+                          "$": "2003-01-04"
+                        },
+                        "instancetype": {
+                          "@classid": "0001",
+                          "@classname": "Article",
+                          "@schemeid": "dnet:publication_resource",
+                          "@schemename": "dnet:publication_resource"
+                        },
+                        "refereed": {
+                          "@classid": "0002",
+                          "@classname": "nonPeerReviewed",
+                          "@schemeid": "dnet:review_levels",
+                          "@schemename": "dnet:review_levels"
+                        },
+                        "url": {
+                          "$": "https://pubmed.ncbi.nlm.nih.gov/12511062"
+                        },
+                        "webresource": {
+                          "url": {
+                            "$": "https://pubmed.ncbi.nlm.nih.gov/12511062"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "@objidentifier": "doi_________::a40c2c4f661b388bb3ab543ba822a558",
+                      "instance": [
+                        {
+                          "accessright": {
+                            "@classid": "UNKNOWN",
+                            "@classname": "not available",
+                            "@schemeid": "dnet:access_modes",
+                            "@schemename": "dnet:access_modes"
+                          },
+                          "hostedby": {
+                            "@name": "Briefings in Bioinformatics",
+                            "@id": "issn___print::f949fbf19f4cae5c3b4c1dd592b36761"
+                          },
+                          "dateofacceptance": {
+                            "$": "2002-01-01"
+                          },
+                          "instancetype": {
+                            "@classid": "0001",
+                            "@classname": "Article",
+                            "@schemeid": "dnet:publication_resource",
+                            "@schemename": "dnet:publication_resource"
+                          },
+                          "refereed": {
+                            "@classid": "0001",
+                            "@classname": "peerReviewed",
+                            "@schemeid": "dnet:review_levels",
+                            "@schemename": "dnet:review_levels"
+                          },
+                          "url": {
+                            "$": "https://doi.org/10.1093/bib/3.4.331"
+                          },
+                          "webresource": {
+                            "url": {
+                              "$": "https://doi.org/10.1093/bib/3.4.331"
+                            }
+                          }
+                        },
+                        {
+                          "accessright": {
+                            "@classid": "OPEN",
+                            "@classname": "Open Access",
+                            "@schemeid": "dnet:access_modes",
+                            "@schemename": "dnet:access_modes"
+                          },
+                          "hostedby": {
+                            "@name": "Briefings in Bioinformatics",
+                            "@id": "issn___print::f949fbf19f4cae5c3b4c1dd592b36761"
+                          },
+                          "instancetype": {
+                            "@classid": "0001",
+                            "@classname": "Article",
+                            "@schemeid": "dnet:publication_resource",
+                            "@schemename": "dnet:publication_resource"
+                          },
+                          "refereed": {
+                            "@classid": "0002",
+                            "@classname": "nonPeerReviewed",
+                            "@schemeid": "dnet:review_levels",
+                            "@schemename": "dnet:review_levels"
+                          },
+                          "url": {
+                            "$": "https://academic.oup.com/bib/article-pdf/3/4/331/9731798/331.pdf"
+                          },
+                          "webresource": {
+                            "url": {
+                              "$": "https://academic.oup.com/bib/article-pdf/3/4/331/9731798/331.pdf"
+                            }
+                          }
+                        }
+                      ],
+                      "pid": {
+                        "@classid": "doi",
+                        "@classname": "Digital Object Identifier",
+                        "@schemeid": "dnet:pid_types",
+                        "@schemename": "dnet:pid_types",
+                        "$": "10.1093/bib/3.4.331"
+                      },
+                      "title": {
+                        "@classid": "main title",
+                        "@classname": "main title",
+                        "@schemeid": "dnet:dataCite_title",
+                        "@schemename": "dnet:dataCite_title",
+                        "$": "BioMOBY: An open source biological web services proposal"
+                      },
+                      "creator": {
+                        "$": "M. D. Wilkinson"
+                      },
+                      "dateofacceptance": {
+                        "$": "2002-01-01"
+                      },
+                      "publisher": {
+                        "$": "Oxford University Press (OUP)"
+                      },
+                      "resulttype": {
+                        "@classid": "publication",
+                        "@classname": "publication",
+                        "@schemeid": "dnet:result_typologies",
+                        "@schemename": "dnet:result_typologies"
+                      },
+                      "collectedfrom": [
+                        {
+                          "@name": "Crossref",
+                          "@id": "openaire____::081b82f96300b6a6e3d282bad31cb6e2"
+                        },
+                        {
+                          "@name": "UnpayWall",
+                          "@id": "openaire____::8ac8380272269217cb09a928c8caa993"
+                        }
+                      ]
+                    }
+                  ],
+                  "instance": [
+                    {
+                      "accessright": {
+                        "@classid": "UNKNOWN",
+                        "@classname": "not available",
+                        "@schemeid": "dnet:access_modes",
+                        "@schemename": "dnet:access_modes"
+                      },
+                      "collectedfrom": {
+                        "@name": "Europe PubMed Central",
+                        "@id": "opendoar____::8b6dd7db9af49e67306feb59a8bdc52c"
+                      },
+                      "hostedby": {
+                        "@name": "Briefings in Bioinformatics",
+                        "@id": "issn___print::f949fbf19f4cae5c3b4c1dd592b36761"
+                      },
+                      "dateofacceptance": {
+                        "$": "2003-01-04"
+                      },
+                      "instancetype": {
+                        "@classid": "0001",
+                        "@classname": "Article",
+                        "@schemeid": "dnet:publication_resource",
+                        "@schemename": "dnet:publication_resource"
+                      },
+                      "pid": {
+                        "@classid": "pmid",
+                        "@classname": "PubMed ID",
+                        "@schemeid": "dnet:pid_types",
+                        "@schemename": "dnet:pid_types",
+                        "@inferred": false,
+                        "@provenanceaction": "sysimport:actionset",
+                        "@trust": "0.9",
+                        "$": 12511062
+                      },
+                      "alternateidentifier": {
+                        "@classid": "doi",
+                        "@classname": "Digital Object Identifier",
+                        "@schemeid": "dnet:pid_types",
+                        "@schemename": "dnet:pid_types",
+                        "$": "10.1093/bib/3.4.331"
+                      },
+                      "refereed": {
+                        "@classid": "0002",
+                        "@classname": "nonPeerReviewed",
+                        "@schemeid": "dnet:review_levels",
+                        "@schemename": "dnet:review_levels"
+                      },
+                      "webresource": {
+                        "url": {
+                          "$": "https://pubmed.ncbi.nlm.nih.gov/12511062"
+                        }
+                      }
+                    },
+                    {
+                      "accessright": {
+                        "@classid": "UNKNOWN",
+                        "@classname": "not available",
+                        "@schemeid": "dnet:access_modes",
+                        "@schemename": "dnet:access_modes"
+                      },
+                      "collectedfrom": {
+                        "@name": "Crossref",
+                        "@id": "openaire____::081b82f96300b6a6e3d282bad31cb6e2"
+                      },
+                      "hostedby": {
+                        "@name": "Briefings in Bioinformatics",
+                        "@id": "issn___print::f949fbf19f4cae5c3b4c1dd592b36761"
+                      },
+                      "dateofacceptance": {
+                        "$": "2002-01-01"
+                      },
+                      "instancetype": {
+                        "@classid": "0001",
+                        "@classname": "Article",
+                        "@schemeid": "dnet:publication_resource",
+                        "@schemename": "dnet:publication_resource"
+                      },
+                      "pid": {
+                        "@classid": "doi",
+                        "@classname": "Digital Object Identifier",
+                        "@schemeid": "dnet:pid_types",
+                        "@schemename": "dnet:pid_types",
+                        "$": "10.1093/bib/3.4.331"
+                      },
+                      "refereed": {
+                        "@classid": "0001",
+                        "@classname": "peerReviewed",
+                        "@schemeid": "dnet:review_levels",
+                        "@schemename": "dnet:review_levels"
+                      },
+                      "webresource": {
+                        "url": {
+                          "$": "https://doi.org/10.1093/bib/3.4.331"
+                        }
+                      }
+                    },
+                    {
+                      "accessright": {
+                        "@classid": "OPEN",
+                        "@classname": "Open Access",
+                        "@schemeid": "dnet:access_modes",
+                        "@schemename": "dnet:access_modes"
+                      },
+                      "collectedfrom": {
+                        "@name": "UnpayWall",
+                        "@id": "openaire____::8ac8380272269217cb09a928c8caa993"
+                      },
+                      "hostedby": {
+                        "@name": "Briefings in Bioinformatics",
+                        "@id": "issn___print::f949fbf19f4cae5c3b4c1dd592b36761"
+                      },
+                      "instancetype": {
+                        "@classid": "0001",
+                        "@classname": "Article",
+                        "@schemeid": "dnet:publication_resource",
+                        "@schemename": "dnet:publication_resource"
+                      },
+                      "pid": {
+                        "@classid": "doi",
+                        "@classname": "Digital Object Identifier",
+                        "@schemeid": "dnet:pid_types",
+                        "@schemename": "dnet:pid_types",
+                        "$": "10.1093/bib/3.4.331"
+                      },
+                      "refereed": {
+                        "@classid": "0002",
+                        "@classname": "nonPeerReviewed",
+                        "@schemeid": "dnet:review_levels",
+                        "@schemename": "dnet:review_levels"
+                      },
+                      "webresource": {
+                        "url": {
+                          "$": "https://academic.oup.com/bib/article-pdf/3/4/331/9731798/331.pdf"
+                        }
+                      }
+                    },
+                    {
+                      "accessright": {
+                        "@classid": "UNKNOWN",
+                        "@classname": "not available",
+                        "@schemeid": "dnet:access_modes",
+                        "@schemename": "dnet:access_modes"
+                      },
+                      "collectedfrom": {
+                        "@name": "Microsoft Academic Graph",
+                        "@id": "openaire____::5f532a3fc4f1ea403f37070f59a7a53a"
+                      },
+                      "hostedby": {
+                        "@name": "Briefings in Bioinformatics",
+                        "@id": "issn___print::f949fbf19f4cae5c3b4c1dd592b36761"
+                      },
+                      "instancetype": {
+                        "@classid": "0043",
+                        "@classname": "Journal",
+                        "@schemeid": "dnet:publication_resource",
+                        "@schemename": "dnet:publication_resource"
+                      },
+                      "pid": [
+                        {
+                          "@classid": "doi",
+                          "@classname": "Digital Object Identifier",
+                          "@schemeid": "dnet:pid_types",
+                          "@schemename": "dnet:pid_types",
+                          "$": "10.1093/bib/3.4.331"
+                        },
+                        {
+                          "@classid": "mag_id",
+                          "@classname": "Microsoft Academic Graph Identifier",
+                          "@schemeid": "dnet:pid_types",
+                          "@schemename": "dnet:pid_types",
+                          "$": 1996902131
+                        }
+                      ],
+                      "refereed": {
+                        "@classid": "0002",
+                        "@classname": "nonPeerReviewed",
+                        "@schemeid": "dnet:review_levels",
+                        "@schemename": "dnet:review_levels"
+                      },
+                      "webresource": {
+                        "url": {
+                          "$": "http://biomoby.open-bio.org/wilkinson_links_2002.pdf"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "browseResults": null
+  }
+}

@@ -1,0 +1,204 @@
+/* Styling the Body element 
+i.e. Color, Font, Alignment */
+body {
+  background-color: #144506;
+  font-family: Calibri;
+}
+
+.error {
+  color: white;
+  text-align: center;
+  font-size: 2em;
+}
+
+/* Styling the Form (Color, Padding, Shadow) */
+form {
+  background-color: #fff;
+  max-width: 900px;
+  margin: 50px auto;
+  padding: 30px 20px;
+  box-shadow: 2px 5px 10px rgba(0, 0, 0, 0.5);
+}
+div.centerlist {
+  background-color: #fff;
+  max-width: 1200px;
+  margin: 50px auto;
+  padding: 30px 20px;
+  box-shadow: 2px 5px 10px rgba(0, 0, 0, 0.5);
+}
+div.questionnairelist {
+  background-color: #fff;
+  max-width: 1200px;
+  margin: 50px auto;
+  padding: 30px 20px;
+  box-shadow: 2px 5px 10px rgba(0, 0, 0, 0.5);
+}
+th, td {
+padding: 15px;
+}
+th {
+  font-size: 25px;
+  font-weight: 100;
+}
+
+
+#databases {
+font-family: Arial, Helvetica, sans-serif;
+border-collapse: collapse;
+width: 100%;
+}
+
+#databases table {
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 40%;
+  margin-left: 100;
+  // margin-right: auto;
+  }
+  
+#databases td, #customers th {
+border: 1px solid #ddd;
+padding: 8px;
+}
+
+#databases tr:nth-child(even){background-color: #bdedc8;}
+
+#databases tr:hover {background-color: #f2f2f2;}
+
+#databases th {
+padding-top: 12px;
+padding-bottom: 12px;
+text-align: left;
+background-color: #f2f2f2;
+color: #114203;
+}
+
+#cbgp_comments {
+  width: 700px;
+  border: solid #114203 2px;
+}
+#center_responses {
+  width: 700px;
+  border: solid #114203 2px;
+}
+
+H1, H2, H3, H4 {
+  text-align: center;
+}
+
+.field-label {
+  text-align: left;
+  padding-bottom: 5px;
+}
+
+h1 {
+  font-size: 30px;
+  font-weight: 600;
+  color: white;
+  font-family: "Calibri",sans-serif;
+
+  }
+  
+
+h3 {
+font-size: 40px;
+font-weight: 600;
+background-image: linear-gradient(to left, #0d5704, #114203);
+color: transparent;
+background-clip: text;
+-webkit-background-clip: text;
+}
+// div.inputtype { text-align: center; }
+
+.author {
+  float: left
+}
+.authorlist {
+  clear: both
+}
+
+.popup{
+  background-color: #e0dbdb;
+  width: 450px;
+  padding: 30px 40px;
+  position: absolute;
+  transform: translate(-50%,-50%);
+  left: 50%;
+  top: 50%;
+  border-radius: 8px;
+  font-family: "Calibri",sans-serif;
+  display: none;
+  text-align: center;
+}
+.popup button{
+  display: block;
+  margin:  0 0 20px auto;
+  background-color: transparent;
+  font-size: 15px;
+  color: #114203;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+.popup p{
+  font-size: 12px;
+  text-align: center;
+  margin: 20px 0;
+  line-height: 25px;
+}
+
+
+
+/* Styling form-control Class */
+      .form-control {
+          text-align: left;
+          margin-bottom: 25px;
+          margin-left: 50px;
+          
+      }
+
+      /* Styling form-control Label */
+      .form-control label {
+          display: block;
+          margin-bottom: 10px;
+      }
+
+      /* Styling form-control input, 
+      select, textarea */
+      .form-control input,
+      .form-control select,
+      .form-control textarea {
+          border: 1px solid #777;
+          border-radius: 2px;
+          font-family: inherit;
+          padding: 10px;
+          display: block;
+          width: 95%;
+          text-align: center;
+          align: center;
+
+      }
+
+      /* Styling form-control Radio 
+      button and Checkbox */
+      .form-control input[type="radio"],
+      .form-control input[type="checkbox"] {
+          display: inline-block;
+          width: auto;
+          text-align: center;
+          align: left;
+          padding-left: 100px;
+      }
+
+      /* Styling Button */
+      button {
+          background-color: #9cbd6f;
+          border: 1px solid #777;
+          border-radius: 2px;
+          font-family: inherit;
+          font-size: 21px;
+          display: block;
+          width: 100%;
+          margin-top: 50px;
+          margin-bottom: 20px;
+      }

@@ -1,0 +1,15 @@
+
+<!-- @answerblock [:type, :answers, :lang=, :lang, :ablockid=, :answers=, :type=, :ablockid] -->  
+            <div style="padding-left: 100px">   
+            Multiple selections are allowed:<br/>
+            <% index = 1 %>
+            <%  @answerblock.answers.each do |answer| %>
+              <div style="clear: both;">
+              <!-- answer [:aid, :widget, :answer, :lang, :answerid=, :answerid, :sequence=, :lang=, :sequence, :aid=, :widget=, :answer=, :order=, :order] -->
+                <label for="<%= @answerblock.ablockid  %>_<%= index %>" style="font-size: .85em;"><%= answer.answer %></label>
+                <input type="checkbox" id="<%= @answerblock.ablockid  %>_<%= index %>" name="<%= @question.questionid  %>[]" value="<%= answer.answerid %>" style="float:left;"><br/>
+                <% index += 1 %>
+              </div>
+              <% end %>
+            </div>
+  

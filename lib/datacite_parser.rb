@@ -27,10 +27,10 @@ module CBGP
       authors = []
       jpath = JsonPath.new('author[*]')
       results = jpath.on(dcite)
-      results.each_with_index do |author, _index|
+      results.each_with_index do |author, index|
         orcid = author['ORCID'].gsub(/https?\:\/\/orcid.org\//, "") if author['ORCID']
         aut = CBGP::Publication::Author.new(name: "#{author['given']} #{author['family']}", orcid: orcid,
-                                            rank: _index)
+                                            rank: "#{index.to_i + 1}")  # start rank at 1 not 0
         authors << aut
       end
       jpath = JsonPath.new('created["date-time"]')

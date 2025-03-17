@@ -51,8 +51,8 @@ module CBGP
     def self.load_from_doi(doi:)
 
       res = retrieve_pub_graph_query(doi: doi)
-      abort "graph query failed" unless res
-      if res
+      # abort "graph query failed" unless res.first
+      if res.first
         pub = CBGP::Parsers.publication_database_parser(doi: doi, graph: res.first[:g])
       else
         # need to check database one day!

@@ -112,6 +112,106 @@ end
 ###################### Publications ##################
 ###################### Publications ##################
 
+# core = retrieve_publication_core_query(doi: doi, graph: graph)
+# auths = retrieve_publication_auths_query(doi: doi, graph: graph)
+# affils = retrieve_publication_affils_query(doi: doi, graph: graph)
+
+def retrieve_publication_core_query(doi:, graph:)
+  publication = <<READ_PUB
+      #{PREFIXES}
+
+SELECT   ?doi ?scopusq ?scopusd1 ?oa ?sochoa ?pubtype ?title ?date ?journal ?volume
+WHERE{ GRAPH <#{graph}> { 
+            ?publicationn rdf:type sio:SIO_000087 ; 
+                sio:SIO_000671 ?idn ;
+                cbgp:has_scopus_q ?scopusqn ;
+                cbgp:has_scopus_d ?scopusd1n ;
+                cbgp:is_open_access ?oan ;
+                cbgp:has_so_acknowledgement ?sochoan ;
+                cbgp:cbgp_corresponding ?cbgp_correspondingn ;
+                cbgp:is_publication_type ?pubtypen ;
+                cbgp:has_title ?titlen ;
+                cbgp:has_volume ?volumen ;
+                cbgp:has_publication_year ?yearn ;
+                cbgp:is_published_in ?journaln . 
+                        
+            ?idn  sio:SIO_000300 ?doi ;
+                          rdf:type sio:SIO_000115 ; 
+                          rdf:type edam:data_1188 . 
+
+            ?scopusqn  sio:SIO_000300 ?scopusq ;
+                          rdf:type cbgp:scopusq . 
+
+            ?scopusd1n  sio:SIO_000300 ?scopusd1 ;
+                          rdf:type cbgp:scopusd1 . 
+
+            ?oan  sio:SIO_000300 ?oa ;
+                          rdf:type cbgp:oa . 
+
+            ?sochoan  sio:SIO_000300 ?sochoa ;
+                          rdf:type cbgp:sochoa . 
+
+            ?cbgp_correspondingn  sio:SIO_000300 ?cbgp_corresponding ;
+                          rdf:type cbgp:cbgp_corresponding . 
+
+            ?pubtypen  sio:SIO_000300 ?pubtype ;
+                          rdf:type cbgp:pubtype . 
+
+            ?titlen  sio:SIO_000300 ?title ;
+                          rdf:type cbgp:title .
+
+            ?daten  sio:SIO_000300 ?date ;
+                          rdf:type sio:SIO_001314 . 
+
+            ?journaln  sio:SIO_000300 ?journal ;
+                          rdf:type cbgp:journal ;
+                          rdf:type obo:GSSO_004587 .
+
+            ?volumen  sio:SIO_000300 ?volume ;
+                          rdf:type cbgp:volume .
+
+                }}
+
+READ_PUB
+    PUBLICATIONS.query(publication)
+end
+
+def retrieve_publication_affils_query(doi:, graph:)
+
+    publication = <<READ_AFFILS
+    #{PREFIXES}
+    SELECT ?affiliation
+    WHERE { GRAPH <#{graph}> { 
+          ?publication cbgp:has_affiliation ?affiliationn .
+
+          ?affiliationn  sio:SIO_000300 ?affiliation ;
+                        rdf:type sio:SIO_000012 .  # organization
+    }}
+READ_AFFILS
+    PUBLICATIONS.query(publication)
+end
+
+def retrieve_publication_auths_query(doi:, graph:)
+  publication = <<READ_AUTHORS
+  #{PREFIXES}
+  SELECT ?name ?orcid ?rank
+  WHERE { GRAPH <#{graph}> { 
+        ?publication cbgp:has_author ?authorn .
+
+        ?authorn  sio:SIO_000300 ?name ;
+                      sio:SIO_000671 ?authidn ;
+                      rdf:type ncit:NCIT_C42781 .  # Author
+        ?authidn sio:SIO_000300 ?orcid ;
+                      rdf:type edam:data_4022 ; # ORCiD Identifier
+                      cbgp:author_rank ?rank.  
+
+  }}
+READ_AUTHORS
+warn "publication is: \n\n #{publication}\n\n"
+  PUBLICATIONS.query(publication)
+end
+
+
 def retrieve_pub_graph_query(doi:)
 
   retpub = <<SELECT_PUB
@@ -126,7 +226,7 @@ def retrieve_pub_graph_query(doi:)
   }}
 
 SELECT_PUB
-  pubexists = SPARQL.parse(retpub)  # validate query or die
+  # pubexists = SPARQL.parse(retpub)  # validate query or die
   PUBLICATIONS.query(retpub)
 end
 
@@ -155,11 +255,12 @@ INSERT DATA { GRAPH pub:container {
                 cbgp:has_scopus_q pubgraph:scopusq ;
                 cbgp:has_scopus_d pubgraph:scopusd1 ;
                 cbgp:is_open_access pubgraph:oa ;
+                cbgp:cbgp_corresponding pubgraph:cbgp_corresponding ;
                 cbgp:has_so_acknowledgement pubgraph:sochoa ;
                 cbgp:is_publication_type pubgraph:pubtype ;
                 cbgp:has_title pubgraph:title ;
-                cbgp:has_title pubgraph:journal ;
-                cbgp:has_title pubgraph:volume ;
+                cbgp:has_journal pubgraph:journal ;
+                cbgp:has_volume pubgraph:volume ;
                 cbgp:has_publication_year pubgraph:year ;
                 cbgp:is_published_in pubgraph:journal . 
                         
@@ -178,6 +279,9 @@ INSERT DATA { GRAPH pub:container {
 
             pubgraph:sochoa  sio:SIO_000300 "#{pub.sochoa}" ;
                           rdf:type cbgp:sochoa . 
+
+            pubgraph:cbgp_corresponding  sio:SIO_000300 "#{pub.cbgp_corresponding}" ;
+                          rdf:type cbgp:cbgp_corresponding . 
 
             pubgraph:pubtype  sio:SIO_000300 "#{pub.pubtype}" ;
                           rdf:type cbgp:pubtype . 
@@ -234,6 +338,7 @@ WRITE_AFFILS
                         sio:SIO_000671 pubgraph:author_#{authid}_id ;
                         rdf:type ncit:NCIT_C42781 .  # Author
           pubgraph:author_#{authid}_id sio:SIO_000300 "#{author.orcid}" ;
+                        cbgp:author_rank "#{author.rank}" ;
                         rdf:type edam:data_4022 .  # ORCiD Identifier
 
     }}

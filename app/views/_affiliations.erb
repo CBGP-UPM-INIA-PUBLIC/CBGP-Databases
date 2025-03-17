@@ -1,5 +1,5 @@
 <% if @thisval.empty? %>
-          <div class="inputtype">
+          <div class="affiliation">
           <input 
           type='text' 
           name="<%= @question.questionid  %>_ANSWER[]" 
@@ -10,7 +10,7 @@
 
       <% @thisval.each do |aff|  %>
 
-          <div class="inputtype">
+          <div class="affiliation">
           <input 
           type='text' 
           name="<%= @question.questionid  %>_ANSWER[]" 

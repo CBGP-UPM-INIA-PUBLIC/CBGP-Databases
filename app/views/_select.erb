@@ -7,7 +7,11 @@
               <div style="clear: both;">
               <!-- answer [:aid, :widget, :answer, :lang, :answerid=, :answerid, :sequence=, :lang=, :sequence, :aid=, :widget=, :answer=, :order=, :order] -->
                 <label for="<%= @answerblock.ablockid  %>_<%= index %>" style="font-size: .85em;"><%= answer.answer %></label>
-                <input type="checkbox" id="<%= @answerblock.ablockid  %>_<%= index %>" name="<%= @question.questionid  %>[]" value="<%= answer.answerid %>" style="float:left;"><br/>
+                <% if answer.answer == @thisval %>
+                  <input type="checkbox" checked = "checked" id="<%= @answerblock.ablockid  %>_<%= index %>" name="<%= @question.questionid  %>[]" value="<%= answer.answerid %>" style="float:left;"><br/>
+                <% else %>
+                  <input type="checkbox" id="<%= @answerblock.ablockid  %>_<%= index %>" name="<%= @question.questionid  %>[]" value="<%= answer.answerid %>" style="float:left;"><br/>
+                <% end %>
                 <% index += 1 %>
               </div>
               <% end %>

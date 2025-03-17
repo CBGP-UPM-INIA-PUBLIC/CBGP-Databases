@@ -1,412 +1,915 @@
 {
   "indexed": {
     "date-parts": [
-      [
-        2023,
-        2,
-        10
-      ]
+      [2025, 2, 21]
     ],
-    "date-time": "2023-02-10T13:58:19Z",
-    "timestamp": 1676037499739
+    "date-time": "2025-02-21T21:31:15Z",
+    "timestamp": 1740173475387,
+    "version": "3.37.3"
   },
-  "reference-count": 25,
-  "publisher": "Elsevier BV",
-  "issue": "6",
+  "reference-count": 32,
+  "publisher": "Springer Science and Business Media LLC",
+  "issue": "1",
   "license": [
     {
       "start": {
         "date-parts": [
-          [
-            2007,
-            12,
-            1
-          ]
+          [2016, 3, 15]
         ],
-        "date-time": "2007-12-01T00:00:00Z",
-        "timestamp": 1196467200000
+        "date-time": "2016-03-15T00:00:00Z",
+        "timestamp": 1458000000000
       },
       "content-version": "tdm",
       "delay-in-days": 0,
-      "URL": "https:\/\/www.elsevier.com\/tdm\/userlicense\/1.0\/"
+      "URL": "https://creativecommons.org/licenses/by/4.0"
     },
     {
       "start": {
         "date-parts": [
-          [
-            2013,
-            7,
-            17
-          ]
+          [2016, 3, 15]
         ],
-        "date-time": "2013-07-17T00:00:00Z",
-        "timestamp": 1374019200000
+        "date-time": "2016-03-15T00:00:00Z",
+        "timestamp": 1458000000000
       },
       "content-version": "vor",
-      "delay-in-days": 2055,
-      "URL": "https:\/\/www.elsevier.com\/open-access\/userlicense\/1.0\/"
+      "delay-in-days": 0,
+      "URL": "https://creativecommons.org/licenses/by/4.0"
     }
   ],
   "content-domain": {
-    "domain": [],
+    "domain": [
+      "link.springer.com"
+    ],
     "crossmark-restriction": false
   },
-  "published-print": {
-    "date-parts": [
-      [
-        2007,
-        12
-      ]
-    ]
-  },
-  "DOI": "10.1016\/j.jbi.2007.10.001",
+  "abstract": "\u003Cjats:title\u003EAbstract\u003C/jats:title\u003E\u003Cjats:p\u003EThere is an urgent need to improve the infrastructure supporting the reuse of scholarly data. A diverse set of stakeholders—representing academia, industry, funding agencies, and scholarly publishers—have come together to design and jointly endorse a concise and measureable set of principles that we refer to as the FAIR Data Principles. The intent is that these may act as a guideline for those wishing to enhance the reusability of their data holdings. Distinct from peer initiatives that focus on the human scholar, the FAIR Principles put specific emphasis on enhancing the ability of machines to automatically find and use the data, in addition to supporting its reuse by individuals. This Comment is the first formal publication of the FAIR Principles, and includes the rationale behind them, and some exemplar implementations in the community.\u003C/jats:p\u003E",
+  "DOI": "10.1038/sdata.2016.18",
   "type": "journal-article",
   "created": {
     "date-parts": [
-      [
-        2007,
-        10,
-        26
-      ]
+      [2016, 3, 15]
     ],
-    "date-time": "2007-10-26T06:03:22Z",
-    "timestamp": 1193378602000
+    "date-time": "2016-03-15T14:23:08Z",
+    "timestamp": 1458051788000
   },
-  "page": "605-608",
+  "update-policy": "https://doi.org/10.1007/springer_crossmark_policy",
   "source": "Crossref",
-  "is-referenced-by-count": 5,
-  "title": "Intelligent data analysis in biomedicine",
-  "prefix": "10.1016",
-  "volume": "40",
+  "is-referenced-by-count": 10039,
+  "title": "The FAIR Guiding Principles for scientific data management and stewardship",
+  "prefix": "10.1038",
+  "volume": "3",
   "author": [
     {
-      "given": "John H.",
-      "family": "Holmes",
+      "ORCID": "https://orcid.org/0000-0001-6960-357X",
+      "authenticated-orcid": false,
+      "given": "Mark D.",
+      "family": "Wilkinson",
       "sequence": "first",
       "affiliation": []
     },
     {
-      "given": "Niels",
-      "family": "Peek",
+      "ORCID": "https://orcid.org/0000-0003-4727-9435",
+      "authenticated-orcid": false,
+      "given": "Michel",
+      "family": "Dumontier",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0002-0209-4480",
+      "authenticated-orcid": false,
+      "given": "IJsbrand Jan",
+      "family": "Aalbersberg",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0003-0179-7384",
+      "authenticated-orcid": false,
+      "given": "Gabrielle",
+      "family": "Appleton",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0002-8042-4131",
+      "authenticated-orcid": false,
+      "given": "Myles",
+      "family": "Axton",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0003-2829-6715",
+      "authenticated-orcid": false,
+      "given": "Arie",
+      "family": "Baak",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0003-4155-5910",
+      "authenticated-orcid": false,
+      "given": "Niklas",
+      "family": "Blomberg",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0003-0327-638X",
+      "authenticated-orcid": false,
+      "given": "Jan-Willem",
+      "family": "Boiten",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0002-1164-1351",
+      "authenticated-orcid": false,
+      "given": "Luiz Bonino",
+      "family": "da Silva Santos",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0002-7618-7292",
+      "authenticated-orcid": false,
+      "given": "Philip E.",
+      "family": "Bourne",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "given": "Jildau",
+      "family": "Bouwman",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0001-8686-0017",
+      "authenticated-orcid": false,
+      "given": "Anthony J.",
+      "family": "Brookes",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0003-4060-7360",
+      "authenticated-orcid": false,
+      "given": "Tim",
+      "family": "Clark",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0003-1304-1939",
+      "authenticated-orcid": false,
+      "given": "Mercè",
+      "family": "Crosas",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0001-5654-2392",
+      "authenticated-orcid": false,
+      "given": "Ingrid",
+      "family": "Dillo",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0001-8599-7345",
+      "authenticated-orcid": false,
+      "given": "Olivier",
+      "family": "Dumon",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0001-6444-1436",
+      "authenticated-orcid": false,
+      "given": "Scott",
+      "family": "Edmunds",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0002-5301-3142",
+      "authenticated-orcid": false,
+      "given": "Chris T.",
+      "family": "Evelo",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0002-4368-8058",
+      "authenticated-orcid": false,
+      "given": "Richard",
+      "family": "Finkers",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0003-3499-8262",
+      "authenticated-orcid": false,
+      "given": "Alejandra",
+      "family": "Gonzalez-Beltran",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0002-5711-4872",
+      "authenticated-orcid": false,
+      "given": "Alasdair J.G.",
+      "family": "Gray",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0003-0183-6910",
+      "authenticated-orcid": false,
+      "given": "Paul",
+      "family": "Groth",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0003-1219-2137",
+      "authenticated-orcid": false,
+      "given": "Carole",
+      "family": "Goble",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0001-5212-7052",
+      "authenticated-orcid": false,
+      "given": "Jeffrey S.",
+      "family": "Grethe",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0001-8641-4930",
+      "authenticated-orcid": false,
+      "given": "Jaap",
+      "family": "Heringa",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0003-4450-3112",
+      "authenticated-orcid": false,
+      "given": "Peter A.C",
+      "family": "’t Hoen",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0001-6825-9439",
+      "authenticated-orcid": false,
+      "given": "Rob",
+      "family": "Hooft",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0002-1267-0234",
+      "authenticated-orcid": false,
+      "given": "Tobias",
+      "family": "Kuhn",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "given": "Ruben",
+      "family": "Kok",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0002-7352-1400",
+      "authenticated-orcid": false,
+      "given": "Joost",
+      "family": "Kok",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0003-2401-4223",
+      "authenticated-orcid": false,
+      "given": "Scott J.",
+      "family": "Lusher",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0002-8406-3871",
+      "authenticated-orcid": false,
+      "given": "Maryann E.",
+      "family": "Martone",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "given": "Albert",
+      "family": "Mons",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0001-9610-5728",
+      "authenticated-orcid": false,
+      "given": "Abel L.",
+      "family": "Packer",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0003-3165-5344",
+      "authenticated-orcid": false,
+      "given": "Bengt",
+      "family": "Persson",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0001-9853-5668",
+      "authenticated-orcid": false,
+      "given": "Philippe",
+      "family": "Rocca-Serra",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0002-8691-772X",
+      "authenticated-orcid": false,
+      "given": "Marco",
+      "family": "Roos",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "given": "Rene",
+      "family": "van Schaik",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0001-5306-5690",
+      "authenticated-orcid": false,
+      "given": "Susanna-Assunta",
+      "family": "Sansone",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0001-8888-635X",
+      "authenticated-orcid": false,
+      "given": "Erik",
+      "family": "Schultes",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0002-7516-6246",
+      "authenticated-orcid": false,
+      "given": "Thierry",
+      "family": "Sengstag",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0003-1386-0731",
+      "authenticated-orcid": false,
+      "given": "Ted",
+      "family": "Slater",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "given": "George",
+      "family": "Strawn",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0002-0979-3401",
+      "authenticated-orcid": false,
+      "given": "Morris A.",
+      "family": "Swertz",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0002-7633-1442",
+      "authenticated-orcid": false,
+      "given": "Mark",
+      "family": "Thompson",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "given": "Johan",
+      "family": "van der Lei",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0003-1377-9386",
+      "authenticated-orcid": false,
+      "given": "Erik",
+      "family": "van Mulligen",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0002-4836-6568",
+      "authenticated-orcid": false,
+      "given": "Jan",
+      "family": "Velterop",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0001-9773-4008",
+      "authenticated-orcid": false,
+      "given": "Andra",
+      "family": "Waagmeester",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "given": "Peter",
+      "family": "Wittenburg",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0002-1279-5133",
+      "authenticated-orcid": false,
+      "given": "Katherine",
+      "family": "Wolstencroft",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0001-6935-9028",
+      "authenticated-orcid": false,
+      "given": "Jun",
+      "family": "Zhao",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "https://orcid.org/0000-0003-3934-0072",
+      "authenticated-orcid": false,
+      "given": "Barend",
+      "family": "Mons",
       "sequence": "additional",
       "affiliation": []
     }
   ],
-  "member": "78",
+  "member": "297",
+  "published-online": {
+    "date-parts": [
+      [2016, 3, 15]
+    ]
+  },
   "reference": [
     {
-      "key": "10.1016\/j.jbi.2007.10.001_bib1",
-      "series-title": "The elements of statistical learning: data mining, inference, and prediction",
-      "author": "Hastie",
-      "year": "2001"
+      "key": "BFsdata201618_CR1",
+      "doi-asserted-by": "publisher",
+      "first-page": "e1002295",
+      "DOI": "10.1371/journal.pbio.1002295",
+      "volume": "13",
+      "author": "DG Roche",
+      "year": "2015",
+      "unstructured": "Roche, D. G., Kruuk, L. E. B., Lanfear, R. & Binning, S. A. Public Data Archiving in Ecology and Evolution: How Well Are We Doing? PLOS Biol. 13, e1002295 (2015).",
+      "journal-title": "PLOS Biol."
     },
     {
-      "key": "10.1016\/j.jbi.2007.10.001_bib2",
-      "series-title": "Data mining for scientific and engineering applications",
-      "year": "2001"
-    },
-    {
-      "key": "10.1016\/j.jbi.2007.10.001_bib3",
-      "first-page": "113",
-      "article-title": "Intelligent data analysis in medicine",
-      "volume": "Vol. 42",
-      "author": "Lavrac",
-      "year": "2000"
-    },
-    {
-      "key": "10.1016\/j.jbi.2007.10.001_bib4",
-      "series-title": "Knowledge discovery in databases",
-      "article-title": "Knowledge discovery in databases: an overview",
-      "author": "Frawley",
-      "year": "1991"
-    },
-    {
-      "key": "10.1016\/j.jbi.2007.10.001_bib5",
-      "series-title": "Data mining: concepts and techniques",
-      "author": "Han",
-      "year": "2000"
-    },
-    {
-      "key": "10.1016\/j.jbi.2007.10.001_bib6",
-      "series-title": "Advances in knowledge discovery and data mining",
-      "article-title": "The process of knowledge discovery in databases: a human-centered approach",
-      "author": "Brachman",
-      "year": "1996"
-    },
-    {
-      "key": "10.1016\/j.jbi.2007.10.001_bib7",
-      "series-title": "Principles of data mining",
-      "author": "Hand",
-      "year": "2001"
-    },
-    {
-      "key": "10.1016\/j.jbi.2007.10.001_bib8",
+      "key": "BFsdata201618_CR2",
       "doi-asserted-by": "crossref",
-      "first-page": "698",
-      "DOI": "10.1016\/j.jbi.2007.01.004",
-      "article-title": "Mining pathway signatures from microarray data and relevant biological knowledge",
-      "volume": "40",
-      "author": "Panteris",
-      "year": "2007",
-      "journal-title": "J Biomed Inform"
+      "unstructured": "Bechhofer, S. et al. Research Objects: Towards Exchange and Reuse of Digital Knowledge. Nat. Preced. 10.1038/npre.2010.4626.1 (2010).",
+      "DOI": "10.1038/npre.2010.4626.1"
     },
     {
-      "key": "10.1016\/j.jbi.2007.10.001_bib9",
-      "doi-asserted-by": "crossref",
-      "first-page": "775",
-      "DOI": "10.1016\/j.jbi.2007.07.006",
-      "article-title": "Selecting differentially expressed genes using minimum probability of classification error",
-      "volume": "40",
-      "author": "Mahata",
-      "year": "2007",
-      "journal-title": "J Biomed Inform"
+      "key": "BFsdata201618_CR3",
+      "doi-asserted-by": "publisher",
+      "first-page": "D36",
+      "DOI": "10.1093/nar/gks1195",
+      "volume": "41",
+      "author": "DA Benson",
+      "year": "2013",
+      "unstructured": "Benson, D. A. et al. GenBank. Nucleic Acids Res. 41, D36–D42 (2013).",
+      "journal-title": "Nucleic Acids Res."
     },
     {
-      "key": "10.1016\/j.jbi.2007.10.001_bib10",
-      "doi-asserted-by": "crossref",
-      "first-page": "726",
-      "DOI": "10.1016\/j.jbi.2007.05.007",
-      "article-title": "An algorithm for modularization of MAPK and Calcium signaling pathways: comparative analysis among different species",
-      "volume": "40",
-      "author": "Nayak",
-      "year": "2007",
-      "journal-title": "J Biomed Inform"
+      "key": "BFsdata201618_CR4",
+      "doi-asserted-by": "publisher",
+      "first-page": "980",
+      "DOI": "10.1038/nsb1203-980",
+      "volume": "10",
+      "author": "H Berman",
+      "year": "2003",
+      "unstructured": "Berman, H., Henrick, K. & Nakamura, H. Announcing the worldwide Protein Data Bank. Nat. Struct. Biol. 10, 980–980 (2003).",
+      "journal-title": "Nat. Struct. Biol."
     },
     {
-      "key": "10.1016\/j.jbi.2007.10.001_bib11",
-      "doi-asserted-by": "crossref",
-      "first-page": "661",
-      "DOI": "10.1016\/j.jbi.2007.03.010",
-      "article-title": "FreeViz. An intelligent multivariate visualization approach to explorative analysis of biomedical data",
-      "volume": "40",
-      "author": "Demsar",
-      "year": "2007",
-      "journal-title": "J Biomed Inform"
+      "key": "BFsdata201618_CR5",
+      "doi-asserted-by": "publisher",
+      "first-page": "D204",
+      "DOI": "10.1093/nar/gku989",
+      "volume": "43",
+      "author": "The Uniprot Consortium",
+      "year": "2015",
+      "unstructured": "The Uniprot Consortium. UniProt: a hub for protein information. Nucleic Acids Res. 43, D204–D212 (2015).",
+      "journal-title": "Nucleic Acids Res."
     },
     {
-      "key": "10.1016\/j.jbi.2007.10.001_bib12",
-      "doi-asserted-by": "crossref",
-      "first-page": "631",
-      "DOI": "10.1016\/j.jbi.2007.06.007",
-      "article-title": "A method for linking computed image features to histological semantics in neuropathology",
-      "volume": "40",
-      "author": "Lessmann",
-      "year": "2007",
-      "journal-title": "J Biomed Inform"
-    },
-    {
-      "key": "10.1016\/j.jbi.2007.10.001_bib13",
-      "doi-asserted-by": "crossref",
-      "first-page": "750",
-      "DOI": "10.1016\/j.jbi.2007.06.002",
-      "article-title": "Integrating domain knowledge with statistical and data mining methods for high density genomic SNP disease association analysis",
-      "volume": "40",
-      "author": "Dinu",
-      "year": "2007",
-      "journal-title": "J Biomed Inform"
+      "key": "BFsdata201618_CR6",
+      "doi-asserted-by": "publisher",
+      "first-page": "9",
+      "DOI": "10.1051/aas:2000332",
+      "volume": "143",
+      "author": "M Wenger",
+      "year": "2000",
+      "unstructured": "Wenger, M. et al. The SIMBAD astronomical database-The CDS reference database for astronomical objects. Astron. Astrophys. Suppl. Ser. 143, 9–22 (2000).",
+      "journal-title": "Astron. Astrophys. Suppl. Ser."
     },
     {
       "issue": "1",
-      "key": "10.1016\/j.jbi.2007.10.001_bib14",
-      "doi-asserted-by": "crossref",
-      "first-page": "45",
-      "DOI": "10.7326\/0003-4819-132-1-200001040-00008",
-      "article-title": "Dimensions of time in illness: an objective view",
-      "volume": "132",
-      "author": "Shahar",
-      "year": "2000",
-      "journal-title": "Ann Intern Med"
+      "key": "BFsdata201618_CR7",
+      "first-page": "p2",
+      "volume": "17",
+      "author": "M Crosas",
+      "year": "2011",
+      "unstructured": "Crosas, M. \"The Dataverse Network®: An Open-Source Application for Sharing, Discovering and Preserving Data\". D-Lib Mag 17 (1), p2 (2011).",
+      "journal-title": "D-Lib Mag"
     },
     {
-      "key": "10.1016\/j.jbi.2007.10.001_bib15",
+      "key": "BFsdata201618_CR8",
+      "unstructured": "White, H. C., Carrier, S., Thompson, A., Greenberg, J. & Scherle, R. The Dryad data repository: A Singapore framework metadata architecture in a DSpace environment. Univ. Göttingen, p157 (2008)."
+    },
+    {
+      "key": "BFsdata201618_CR9",
+      "doi-asserted-by": "publisher",
+      "first-page": "279",
+      "DOI": "10.2218/ijdc.v8i1.260",
+      "volume": "8",
+      "author": "D Lecarpentier",
+      "year": "2013",
+      "unstructured": "Lecarpentier, D. et al. EUDAT: A New Cross-Disciplinary Data Infrastructure for Science. Int. J. Digit. Curation 8, 279–287 (2013).",
+      "journal-title": "Int. J. Digit. Curation"
+    },
+    {
+      "key": "BFsdata201618_CR10",
+      "doi-asserted-by": "publisher",
+      "first-page": "635",
+      "DOI": "10.1093/biosci/biv095",
+      "volume": "65",
+      "author": "ME Martone",
+      "year": "2015",
+      "unstructured": "Martone, M. E. FORCE11: Building the Future for Research Communications and e-Scholarship. Bioscience 65, 635 (2015).",
+      "journal-title": "Bioscience"
+    },
+    {
+      "key": "BFsdata201618_CR11",
       "doi-asserted-by": "crossref",
-      "first-page": "672",
-      "DOI": "10.1016\/j.jbi.2007.09.006",
-      "article-title": "Knowledge construction from time series data using a collaborative exploration approach",
-      "volume": "40",
-      "author": "Guyet",
+      "unstructured": "White, E. et al. Nine simple ways to make it easier to (re)use your data. Ideas Ecol. Evol. 6 (2013).",
+      "DOI": "10.4033/iee.2013.6b.6.f"
+    },
+    {
+      "key": "BFsdata201618_CR12",
+      "doi-asserted-by": "publisher",
+      "first-page": "e1003285",
+      "DOI": "10.1371/journal.pcbi.1003285",
+      "volume": "9",
+      "author": "GK Sandve",
+      "year": "2013",
+      "unstructured": "Sandve, G. K., Nekrutenko, A., Taylor, J. & Hovig, E. Ten Simple Rules for Reproducible Computational Research. PLoS Comput. Biol. 9, e1003285 (2013).",
+      "journal-title": "PLoS Comput. Biol."
+    },
+    {
+      "key": "BFsdata201618_CR13",
+      "volume-title": "D-Lib Magazine",
+      "author": "M Altman",
       "year": "2007",
-      "journal-title": "J Biomed Inform"
+      "unstructured": "Altman, M. & King, G. in D-Lib Magazine 13, no. 3/4 (2007)."
     },
     {
-      "key": "10.1016\/j.jbi.2007.10.001_bib16",
-      "doi-asserted-by": "crossref",
-      "first-page": "761",
-      "DOI": "10.1016\/j.jbi.2007.06.003",
-      "article-title": "Precedence temporal networks to represent temporal relationships in gene expression data",
-      "volume": "40",
-      "author": "Sacchi",
-      "year": "2007",
-      "journal-title": "J Biomed Inform"
+      "key": "BFsdata201618_CR14",
+      "doi-asserted-by": "publisher",
+      "first-page": "33",
+      "DOI": "10.1186/s12918-015-0174-y",
+      "volume": "9",
+      "author": "K Wolstencroft",
+      "year": "2015",
+      "unstructured": "Wolstencroft, K. et al. SEEK: a systems biology data and model management platform. BMC Syst. Biol. 9, 33 (2015).",
+      "journal-title": "BMC Syst. Biol."
     },
     {
-      "key": "10.1016\/j.jbi.2007.10.001_bib17",
-      "doi-asserted-by": "crossref",
-      "first-page": "642",
-      "DOI": "10.1016\/j.jbi.2007.03.008",
-      "article-title": "Unsupervised clustering of over-the-counter healthcare products into product categories",
-      "volume": "40",
-      "author": "Wallstrom",
-      "year": "2007",
-      "journal-title": "J Biomed Inform"
+      "key": "BFsdata201618_CR15",
+      "doi-asserted-by": "publisher",
+      "first-page": "468",
+      "DOI": "10.1186/1471-2105-12-468",
+      "volume": "12",
+      "author": "A Bauch",
+      "year": "2011",
+      "unstructured": "Bauch, A. et al. openBIS: a flexible framework for managing and analyzing complex data in biology research. BMC Bioinformatics 12, 468 (2011).",
+      "journal-title": "BMC Bioinformatics"
     },
     {
-      "key": "10.1016\/j.jbi.2007.10.001_bib18",
-      "doi-asserted-by": "crossref",
-      "first-page": "609",
-      "DOI": "10.1016\/j.jbi.2007.07.003",
-      "article-title": "Prognostic Bayesian networks. I. Rationale, learning procedure, and clinical use",
-      "volume": "40",
-      "author": "Verduijn",
-      "year": "2007",
-      "journal-title": "J Biomed Inform"
+      "key": "BFsdata201618_CR16",
+      "doi-asserted-by": "publisher",
+      "first-page": "121",
+      "DOI": "10.1038/ng.1054",
+      "volume": "44",
+      "author": "S-A Sansone",
+      "year": "2012",
+      "unstructured": "Sansone, S.-A. et al. Toward interoperable bioscience data. Nat. Genet. 44, 121–126 (2012).",
+      "journal-title": "Nat. Genet."
     },
     {
-      "key": "10.1016\/j.jbi.2007.10.001_bib19",
-      "doi-asserted-by": "crossref",
-      "first-page": "619",
-      "DOI": "10.1016\/j.jbi.2007.07.004",
-      "article-title": "Prognostic Bayesian networks. II. An application in the domain of cardiac surgery",
-      "volume": "40",
-      "author": "Verduijn",
-      "year": "2007",
-      "journal-title": "J Biomed Inform"
-    },
-    {
-      "key": "10.1016\/j.jbi.2007.10.001_bib20",
-      "doi-asserted-by": "crossref",
-      "first-page": "707",
-      "DOI": "10.1016\/j.jbi.2007.02.003",
-      "article-title": "A new framework for identifying combinatorial regulation of transcription factors: a case study of the yeast cell cycle",
-      "volume": "40",
-      "author": "Wang",
-      "year": "2007",
-      "journal-title": "J Biomed Inform"
-    },
-    {
-      "key": "10.1016\/j.jbi.2007.10.001_bib21",
-      "doi-asserted-by": "crossref",
-      "first-page": "688",
-      "DOI": "10.1016\/j.jbi.2007.05.008",
-      "article-title": "Effects of SVM parameter optimization on discrimination and calibration for post-procedural PCI mortality",
-      "volume": "40",
-      "author": "Matheny",
-      "year": "2007",
-      "journal-title": "J Biomed Inform"
-    },
-    {
-      "key": "10.1016\/j.jbi.2007.10.001_bib22",
-      "doi-asserted-by": "crossref",
-      "first-page": "649",
-      "DOI": "10.1016\/j.jbi.2007.03.007",
-      "article-title": "Discovery and inclusion of SOFA score episodes in mortality prediction",
-      "volume": "40",
-      "author": "Toma",
-      "year": "2007",
-      "journal-title": "J Biomed Inform"
-    },
-    {
-      "key": "10.1016\/j.jbi.2007.10.001_bib23",
-      "doi-asserted-by": "crossref",
-      "first-page": "787",
-      "DOI": "10.1016\/j.jbi.2007.06.005",
-      "article-title": "Towards knowledge-based gene expression data mining",
-      "volume": "40",
-      "author": "Bellazzi",
-      "year": "2007",
-      "journal-title": "J Biomed Inform"
-    },
-    {
-      "key": "10.1016\/j.jbi.2007.10.001_bib24",
-      "article-title": "Predictive data mining in clinical medicine: current issues and guidelines",
-      "author": "Bellazzi",
-      "year": "2006",
-      "journal-title": "Int J Med Inform"
-    },
-    {
-      "key": "10.1016\/j.jbi.2007.10.001_bib25",
-      "doi-asserted-by": "crossref",
-      "first-page": "99",
-      "DOI": "10.1007\/s10618-006-0058-2",
-      "article-title": "Data mining and knowledge discovery 1996\u20132005: overcoming the hype and moving from \u201cuniversity\u201d to \u201cbusiness\u201d and \u201canalytics\u201d",
+      "key": "BFsdata201618_CR17",
+      "doi-asserted-by": "publisher",
+      "first-page": "S4",
+      "DOI": "10.1186/1471-2105-15-S14-S4",
       "volume": "15",
-      "author": "Piatetsky-Shapiro",
-      "year": "2007",
-      "journal-title": "Data Min Knowl Disc"
+      "author": "A González-Beltrán",
+      "year": "2014",
+      "unstructured": "González-Beltrán, A., Maguire, E., Sansone, S.-A. & Rocca-Serra, P. linkedISA: semantic representation of ISA-Tab experimental metadata. BMC Bioinformatics 15, S4 (2014).",
+      "journal-title": "BMC Bioinformatics"
+    },
+    {
+      "key": "BFsdata201618_CR18",
+      "doi-asserted-by": "publisher",
+      "first-page": "e0127612",
+      "DOI": "10.1371/journal.pone.0127612",
+      "volume": "10",
+      "author": "A González-Beltrán",
+      "year": "2015",
+      "unstructured": "González-Beltrán, A. et al. From Peer-Reviewed to Peer-Reproduced in Scholarly Publishing: The Complementary Roles of Data Models and Workflows in Bioinformatics. PLoS ONE 10, e0127612 (2015).",
+      "journal-title": "PLoS ONE"
+    },
+    {
+      "key": "BFsdata201618_CR19",
+      "first-page": "1",
+      "volume": "7603/2012",
+      "author": "L Harland",
+      "year": "2012",
+      "unstructured": "Harland, L. Open PHACTS: A Semantic Knowledge Infrastructure for Public and Commercial Drug Discovery Research. Knowl. Eng. Knowl. Manag. Lect. Notes Comput. Sci. 7603/2012, 1–7 (2012).",
+      "journal-title": "Knowl. Eng. Knowl. Manag. Lect. Notes Comput. Sci."
+    },
+    {
+      "key": "BFsdata201618_CR20",
+      "doi-asserted-by": "publisher",
+      "first-page": "12",
+      "DOI": "10.1016/j.websem.2014.03.003",
+      "volume": "29",
+      "author": "P Groth",
+      "year": "2014",
+      "unstructured": "Groth, P. et al. API-centric Linked Data integration: The Open PHACTS Discovery Platform case study. Web Semant. Sci. Serv. Agents World Wide Web 29, 12–18 (2014).",
+      "journal-title": "Web Semant. Sci. Serv. Agents World Wide Web"
+    },
+    {
+      "key": "BFsdata201618_CR21",
+      "doi-asserted-by": "publisher",
+      "first-page": "235",
+      "DOI": "10.1093/nar/28.1.235",
+      "volume": "28",
+      "author": "HM Berman",
+      "year": "2000",
+      "unstructured": "Berman, H. M. et al. The Protein Data Bank. Nucleic Acids Res. 28, 235–242 (2000).",
+      "journal-title": "Nucleic Acids Res."
+    },
+    {
+      "key": "BFsdata201618_CR22",
+      "doi-asserted-by": "publisher",
+      "first-page": "571",
+      "DOI": "10.1016/S0076-6879(97)77032-0",
+      "volume": "277",
+      "author": "PE Bourne",
+      "year": "1997",
+      "unstructured": "Bourne, P. E., Berman, H. M., Watenpaugh, K., Westbrook, J. D. & Fitzgerald, P. M. D. The macromolecular crystallographic information file (mmCIF). Meth. Enzym 277, 571–590 (1997).",
+      "journal-title": "Meth. Enzym"
+    },
+    {
+      "key": "BFsdata201618_CR23",
+      "doi-asserted-by": "publisher",
+      "first-page": "D345",
+      "DOI": "10.1093/nar/gku1214",
+      "volume": "43",
+      "author": "PW Rose",
+      "year": "2015",
+      "unstructured": "Rose, P. W. et al. The RCSB Protein Data Bank: views of structural biology for basic and applied research and education. Nucleic Acids Res. 43, D345–D356 (2015).",
+      "journal-title": "Nucleic Acids Res."
+    },
+    {
+      "key": "BFsdata201618_CR24",
+      "doi-asserted-by": "publisher",
+      "first-page": "D453",
+      "DOI": "10.1093/nar/gkr811",
+      "volume": "40",
+      "author": "AR Kinjo",
+      "year": "2012",
+      "unstructured": "Kinjo, A. R. et al. Protein Data Bank Japan (PDBj): maintaining a structural data archive and resource description framework format. Nucleic Acids Res. 40, D453–D460 (2012).",
+      "journal-title": "Nucleic Acids Res."
+    },
+    {
+      "key": "BFsdata201618_CR25",
+      "doi-asserted-by": "publisher",
+      "first-page": "D285",
+      "DOI": "10.1093/nar/gkt1180",
+      "volume": "42",
+      "author": "A Gutmanas",
+      "year": "2014",
+      "unstructured": "Gutmanas, A. et al. PDBe: Protein Data Bank in Europe. Nucleic Acids Res. 42, D285–D291 (2014).",
+      "journal-title": "Nucleic Acids Res."
+    },
+    {
+      "key": "BFsdata201618_CR26",
+      "doi-asserted-by": "publisher",
+      "first-page": "D204",
+      "DOI": "10.1093/nar/gku989",
+      "volume": "43",
+      "author": "UniProt Consortium",
+      "year": "2015",
+      "unstructured": "UniProt Consortium. UniProt: a hub for protein information. Nucleic Acids Res. 43, D204–D212 (2015).",
+      "journal-title": "Nucleic Acids Res."
+    },
+    {
+      "key": "BFsdata201618_CR27",
+      "doi-asserted-by": "publisher",
+      "first-page": "e1",
+      "DOI": "10.7717/peerj-cs.1",
+      "volume": "1",
+      "author": "J Starr",
+      "year": "2015",
+      "unstructured": "Starr, J. et al. Achieving human and machine accessibility of cited data in scholarly publications. PeerJ Comput. Sci. 1, e1 (2015).",
+      "journal-title": "PeerJ Comput. Sci."
+    },
+    {
+      "key": "BFsdata201618_CR28",
+      "unstructured": "Wilkinson, M., Dumontier, M. & Durbin, P. DataFairPort: The Perl libraries version 0.231 10.5281/zenodo.33584 (2015)."
+    },
+    {
+      "key": "BFsdata201618_CR29",
+      "unstructured": "Data Citation Synthesis Group: Joint Declaration of Data Citation Principles. San Diego CA: FORCE11 https://www.force11.org/datacitation (2014)."
+    },
+    {
+      "key": "BFsdata201618_CR30",
+      "doi-asserted-by": "publisher",
+      "unstructured": "Ohno-machado, L. et al. NIH BD2K bioCADDIE white paper—Data Discovery Index. http://dx.doi.org/10.6084/m9.figshare.1362572 (2015).",
+      "DOI": "10.6084/m9.figshare.1362572"
+    },
+    {
+      "key": "BFsdata201618_CR31",
+      "unstructured": "NIH BD2K bioCADDIE WG3 Members. WG3-MetadataSpecifications: NIH BD2K bioCADDIE Data Discovery Index WG3 Metadata Specification v1 doi:10.5281/zenodo.28019 (2015)."
+    },
+    {
+      "key": "BFsdata201618_CR32",
+      "doi-asserted-by": "crossref",
+      "first-page": "1148",
+      "DOI": "10.1093/jamia/ocv048",
+      "volume": "22",
+      "author": "MA Musen",
+      "year": "2015",
+      "unstructured": "Musen, M. A. et al. The center for expanded data annotation and retrieval. J. Am. Med. Informatics Assoc. 22, 1148–1152 (2015).",
+      "journal-title": "J. Am. Med. Informatics Assoc."
     }
   ],
-  "container-title": "Journal of Biomedical Informatics",
+  "updated-by": [
+    {
+      "updated": {
+        "date-parts": [
+          [2019, 3, 19]
+        ],
+        "date-time": "2019-03-19T00:00:00Z",
+        "timestamp": 1552953600000
+      },
+      "DOI": "10.1038/s41597-019-0009-6",
+      "type": "addendum",
+      "source": "publisher",
+      "label": "Addendum"
+    }
+  ],
+  "container-title": "Scientific Data",
   "original-title": [],
   "language": "en",
   "link": [
     {
-      "URL": "https:\/\/api.elsevier.com\/content\/article\/PII:S1532046407001098?httpAccept=text\/xml",
-      "content-type": "text\/xml",
+      "URL": "https://www.nature.com/articles/sdata201618.pdf",
+      "content-type": "application/pdf",
       "content-version": "vor",
       "intended-application": "text-mining"
     },
     {
-      "URL": "https:\/\/api.elsevier.com\/content\/article\/PII:S1532046407001098?httpAccept=text\/plain",
-      "content-type": "text\/plain",
+      "URL": "https://www.nature.com/articles/sdata201618",
+      "content-type": "text/html",
       "content-version": "vor",
       "intended-application": "text-mining"
+    },
+    {
+      "URL": "https://www.nature.com/articles/sdata201618.pdf",
+      "content-type": "application/pdf",
+      "content-version": "vor",
+      "intended-application": "similarity-checking"
     }
   ],
   "deposited": {
     "date-parts": [
-      [
-        2019,
-        1,
-        3
-      ]
+      [2023, 1, 4]
     ],
-    "date-time": "2019-01-03T05:23:16Z",
-    "timestamp": 1546492996000
+    "date-time": "2023-01-04T12:47:12Z",
+    "timestamp": 1672836432000
   },
   "score": 1,
   "resource": {
     "primary": {
-      "URL": "https:\/\/linkinghub.elsevier.com\/retrieve\/pii\/S1532046407001098"
+      "URL": "https://www.nature.com/articles/sdata201618"
     }
   },
   "subtitle": [],
   "short-title": [],
   "issued": {
     "date-parts": [
-      [
-        2007,
-        12
-      ]
+      [2016, 3, 15]
     ]
   },
-  "references-count": 25,
+  "references-count": 32,
   "journal-issue": {
-    "issue": "6",
-    "published-print": {
+    "issue": "1",
+    "published-online": {
       "date-parts": [
-        [
-          2007,
-          12
-        ]
+        [2016, 12, 20]
       ]
     }
   },
   "alternative-id": [
-    "S1532046407001098"
+    "BFsdata201618"
   ],
-  "URL": "http:\/\/dx.doi.org\/10.1016\/j.jbi.2007.10.001",
-  "relation": {},
+  "URL": "http://dx.doi.org/10.1038/sdata.2016.18",
+  "relation": {
+    "has-review": [
+      {
+        "id-type": "doi",
+        "id": "10.3410/f.726216348.793543848",
+        "asserted-by": "object"
+      }
+    ]
+  },
   "ISSN": [
-    "1532-0464"
+    "2052-4463"
   ],
   "subject": [],
-  "container-title-short": "Journal of Biomedical Informatics",
+  "container-title-short": "Sci Data",
   "published": {
     "date-parts": [
-      [
-        2007,
-        12
-      ]
+      [2016, 3, 15]
     ]
-  }
+  },
+  "assertion": [
+    {
+      "value": "10 December 2015",
+      "order": 1,
+      "name": "received",
+      "label": "Received",
+      "group": {
+        "name": "ArticleHistory",
+        "label": "Article History"
+      }
+    },
+    {
+      "value": "12 February 2016",
+      "order": 2,
+      "name": "accepted",
+      "label": "Accepted",
+      "group": {
+        "name": "ArticleHistory",
+        "label": "Article History"
+      }
+    },
+    {
+      "value": "15 March 2016",
+      "order": 3,
+      "name": "first_online",
+      "label": "First Online",
+      "group": {
+        "name": "ArticleHistory",
+        "label": "Article History"
+      }
+    },
+    {
+      "value": "M.A. is the \u003Ci\u003ENature Genetics\u003C/i\u003E’ Editor in Chief; S.A.S. is \u003Ci\u003EScientific Data\u003C/i\u003E’s Honorary Academic Editor and consultant.",
+      "order": 1,
+      "name": "Ethics",
+      "group": {
+        "name": "EthicsHeading",
+        "label": "Competing interests"
+      }
+    }
+  ],
+  "article-number": "160018"
 }

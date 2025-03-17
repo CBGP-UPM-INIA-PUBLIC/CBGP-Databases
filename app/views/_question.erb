@@ -8,6 +8,8 @@
 
         <h4 class="question-label"><%= label %></h4>
         <% widget = @question.widget.match(/.*\#(\S+)/)[1] %>
+        <!--           <% warn "#{@question.objectmethod} applied to : #{@pub.inspect} \n\n\n" %> -->
+
         <% @value = @pub.public_send(@question.objectmethod) %> 
         <!-- value comes from database record -->
         <!-- value might be an object!  e.g. with CBGP::Publication::Author.  Widget has to deal with that! -->

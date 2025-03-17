@@ -2,11 +2,15 @@
 
           <div class="inputtype">
           <select name="<%= @question.questionid  %>" id="<%= @answerblock.ablockid  %>" width="70">
-            <option hidden disabled selected value> -- select an option -- </option>
+            <option hidden disabled value selected> -- select an option -- </option>
             <%  @answerblock.answers.each do |answer| %>
+            <!-- <% warn "#{@answerblock.ablockid} THISVAL: #{@thisval}" %> -->
             <!-- answer [:aid, :widget, :answer, :lang, :answerid=, :answerid, :sequence=, :lang=, :sequence, :aid=, :widget=, :answer=, :order=, :order] -->
-
-              <option value="<%= answer.answerid %>"><%=  answer.answer %></option>
+              <% if answer.answer == @thisval %>
+                <option value="<%= answer.answerid %>" selected="selected"><%=  answer.answer %></option>
+              <% else %>
+                <option value="<%= answer.answerid %>"><%=  answer.answer %></option>
+              <% end %>
             <% end %>
           </select>
           </div>

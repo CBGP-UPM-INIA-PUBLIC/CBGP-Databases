@@ -136,4 +136,23 @@ def set_routes
 #    end
 #    halt 403
   end
+
+
+  post '/cbgp/validate-publication' do
+
+    view = "<table>"
+      
+    params.each do |key, val|
+      view += "<tr>"
+      view += "<td>#{key}</td><td>#{val}</td>"
+      view += "</tr>"
+    end
+    view += "</table>"
+    content_type 'text/html'
+    view
+  end
+
+
+
+
 end

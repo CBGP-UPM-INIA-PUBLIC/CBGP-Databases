@@ -27,8 +27,8 @@ module CBGP
 
     def initialize(doi: '', authors: [[]], affiliations: [[]], 
                   title: '', journal: '', full_ref: '', date: '', 
-                  cbgp_corresponding: "false", pubtype: "", 
-                  oa: "false", scopusq: "", scopusd1: "", sochoa: "false", uniqid: '')
+                  cbgp_corresponding: "No", pubtype: "", 
+                  oa: "No", scopusq: "", scopusd1: "", sochoa: "No", uniqid: '')
 
       @doi = doi
       @authors = authors
@@ -44,24 +44,36 @@ module CBGP
       @scopusq = scopusq
       @scopusd1 = scopusd1
       @sochoa = sochoa
-      @uniqid = Time.now.to_i unless uniqid
+      @uniqid = Time.now.to_i unless uniqid.match(/S/)
     end
 
     
     def self.load_from_doi(doi:)
-      # need to check database one day!
-      pub = CBGP::Parsers.openaire_parser(doi: doi)
-      unless pub
+
+      res = retrieve_pub_graph_query(doi: doi)
+      abort "graph query failed" unless res
+      if res
+        pub = CBGP::Parsers.publication_database_parser(doi: doi, graph: res.first[:g])
+      else
+        # need to check database one day!
         pub = CBGP::Parsers.datacite_parser(doi: doi)
+        if pub
+          pub = CBGP::Parsers.openaire_affiliations(pub: pub, doi: doi)  # fill-in affiliations only
+        else
+          pub = CBGP::Parsers.openaire_parser(doi: doi)
+        end
+        CBGP::Publication.write_to_db(pub: pub)
       end
-      pub
+      return pub
     end
 
-    def write_to_db
-      warn inspect
-      write_pub_to_db_query(pub: self)
+    def self.write_to_db(pub:)
+      write_pub_to_db_query(pub: pub)
     end
+
   end
+
+
   class Publication::Author
     attr_accessor :uniqueid, :name, :orcid, :rank
     def initialize(name:, orcid: "", rank: 0)

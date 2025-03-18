@@ -3,6 +3,11 @@
             <!-- PUT FORM FIELDS IN HERE?  -->
 
                   <div class="author">
+                        <input type='hidden' 
+                              name="<%= @question.questionid  %>_RANK[]" 
+                              value="<%= auth.rank %>"/>
+                  </div>
+                  <div class="author">
                         <label for="<%= @question.questionid  %>_NAME" style="font-size: .75em;">Name: </label><br/>
                         <input type='text' 
                               name="<%= @question.questionid  %>_NAME[]" 

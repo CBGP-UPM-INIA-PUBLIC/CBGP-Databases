@@ -2,8 +2,8 @@
           <div class="affiliation">
           <input 
           type='text' 
-          name="<%= @question.questionid  %>_ANSWER[]" 
-          id="<%= @question.questionid  %>_ANSWER[]" 
+          name="<%= @question.questionid  %>[]" 
+          id="<%= @question.questionid  %>" 
           size="70"/>
           </div>
 <% else %>
@@ -13,9 +13,9 @@
           <div class="affiliation">
           <input 
           type='text' 
-          name="<%= @question.questionid  %>_ANSWER[]" 
+          name="<%= @question.questionid  %>[]" 
           value="<%= aff %>" 
-          id="<%= @question.questionid  %>_ANSWER[]" 
+          id="<%= @question.questionid  %>" 
           size="<%= aff.length %>"/>
           </div>
 

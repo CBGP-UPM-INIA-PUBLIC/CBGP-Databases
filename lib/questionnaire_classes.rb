@@ -113,3 +113,26 @@ class QuestionnaireAnswer
     @answer = answer
   end
 end
+
+class QuestionnaireField
+  attr_accessor :fieldid, :label, :answerblock, :objectclass, :objectmethod, :questionorder, :cardinality, :widgettype
+  def initialize()
+
+  end
+
+  def self.create_from_ontology(fieldid:)
+    field = QuestionnaireField.new
+    res = field_query(fieldid: fieldid).first  # should only be one
+    field.fieldid = fieldid.to_s
+    field.label = res[:label].to_s
+    field.answerblock = res[:answerblock].to_s
+    field.objectclass = res[:objectclass].to_s
+    field.objectmethod = res[:objectmethod].to_s
+    field.questionorder = res[:questionorder].to_s
+    field.cardinality = res[:cardinality].to_s
+    field.widgettype = res[:widgettype].to_s
+
+    field
+  end
+
+end

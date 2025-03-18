@@ -139,17 +139,20 @@ def set_routes
 
 
   post '/cbgp/validate-publication' do
+    @questionnaire = generate_questionnaire(questionnaire_type: "add-publication")
+    @pub = CBGP::Publication.load_from_params(params: params)
+    halt erb :pubs_dashboard
 
-    view = "<table>"
+    # view = "<table>"
       
-    params.each do |key, val|
-      view += "<tr>"
-      view += "<td>#{key}</td><td>#{val}</td>"
-      view += "</tr>"
-    end
-    view += "</table>"
-    content_type 'text/html'
-    view
+    # params.each do |key, val|
+    #   view += "<tr>"
+    #   view += "<td>#{key}</td><td>#{val}</td>"
+    #   view += "</tr>"
+    # end
+    # view += "</table>"
+    # content_type 'text/html'
+    # view
   end
 
 

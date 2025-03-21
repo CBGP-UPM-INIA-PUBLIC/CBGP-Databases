@@ -4,7 +4,7 @@ require 'linkeddata'
 require 'sparql'
 require 'sparql/client'
 
-host = 'localhost:7200'
+host = ENV['GRAPHDB_HOST'] || 'localhost:7200'
 ONTOLOGY = RDF::Repository.load('https://w3id.org/CBGP-App#')
 PUBLICATIONS = SPARQL::Client.new("http://cbgp:cbgp@#{host}/repositories/publications")
 PUBLICATIONS_UPDATE = SPARQL::Client.new("http://cbgp:cbgp@#{host}/repositories/publications/statements")

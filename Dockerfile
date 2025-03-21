@@ -2,6 +2,8 @@ FROM ruby:3.3.0
 
 ENV LANG="en_US.UTF-8" LANGUAGE="en_US:UTF-8" LC_ALL="C.UTF-8"
 
+RUN apt-get update --fix-missing -q
+RUN apt-get -y dist-upgrade --fix-missing -q
 RUN apt-get update -q
 RUN apt-get install -y --no-install-recommends build-essential nano
 RUN  apt-get install -y --no-install-recommends libxml++2.6-dev  libraptor2-0 && \

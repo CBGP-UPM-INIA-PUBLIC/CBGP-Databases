@@ -1,3 +1,4 @@
+require 'json'
 module CBGP
   class Parsers
     def self.datacite_parser(doi:)

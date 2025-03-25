@@ -43,3 +43,11 @@ gem 'xml-simple', '~>1.1.8'
 # end
 
 gem "jsonpath", "~> 1.1"
+
+gem "sparql", "~> 3.3"
+
+gem "sparql-client", "~> 3.3"
+
+gem "pony", "~> 1.13"
+
+gem "compass", "~> 1.0"

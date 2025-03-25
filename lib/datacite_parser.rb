@@ -6,13 +6,20 @@ module CBGP
         'Accept' => 'application/vnd.citationstyles.csl+json'
       }
       dcite = nil
+      retry_attempts = 0
       begin
         warn "https://doi.org/#{doi}"
         json = RestClient.get("https://doi.org/#{doi}", headers)
         dcite = JSON.parse(json)
       rescue StandardError => e
         warn "error #{e.inspect}"
-        return false
+        retry_attempts += 1
+        if retry_attempts < 5
+          retry
+        else
+          warn "failed.  next"
+          return false
+        end
       end
 
       jpath = JsonPath.new('["container-title"]')
@@ -29,16 +36,23 @@ module CBGP
       jpath = JsonPath.new('author[*]')
       results = jpath.on(dcite)
       results.each_with_index do |author, index|
-        orcid = author['ORCID'].gsub(/https?\:\/\/orcid.org\//, "") if author['ORCID']
-        aut = CBGP::Publication::Author.new(name: "#{author['given']} #{author['family']}", orcid: orcid,
+        aname = "Authorship not found in record"
+        orcid = "" 
+        if author.respond_to? "[]"
+          orcid = author['ORCID'].gsub(/https?\:\/\/orcid.org\//, "") if author['ORCID']
+          aname = "#{author['given']} #{author['family']}"
+        end
+
+        aut = CBGP::Publication::Author.new(name: aname, orcid: orcid,
                                             rank: "#{index.to_i + 1}")  # start rank at 1 not 0
         authors << aut
       end
+      
       jpath = JsonPath.new('created["date-time"]')
       results = jpath.on(dcite).first
-      # warn "results #{results.inspect}"
-      date = results[0..9] # comes back as dateand time
-      warn "DCDATE", date, "\n\n"
+      date = "1900-01-01"
+      date = results[0..9] if results # comes back as dateand time - TODO can also be "issued", which is more complex
+      # warn "DCDATE", date, "\n\n"
 
       jpath = JsonPath.new('DOI')
       doi = jpath.on(dcite).first

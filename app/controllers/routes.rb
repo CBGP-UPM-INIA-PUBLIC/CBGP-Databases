@@ -1,6 +1,6 @@
 # frozen_string_literal: false
 
-# require "compass"
+require "compass"  # gives us sass/scss
 require 'json'
 require_relative '../../lib/core'
 
@@ -8,6 +8,8 @@ def set_routes
   # Compass.add_project_configuration(File.join(Sinatra::Application.root, "config", "compass.rb"))
 
   configure do
+    set :bind, '0.0.0.0'  # Bind to all interfaces
+    set :port, 4567       # Explicitly set the port (optional, since 4567 is your target)
     set :server_settings, timeout: 180
     set :root,  File.dirname(__FILE__)
     set :views, Proc.new { File.join(root, '../views') }
@@ -27,6 +29,13 @@ def set_routes
 
     def current_user
       session[:username]
+    end
+
+    def scss(template, options = {})
+      # Render SCSS using Compass
+      Compass.sass_engine_options[:load_paths] ||= []
+      Compass.sass_engine_options[:load_paths] << File.join(settings.root, 'stylesheets')
+      render :scss, template, options
     end
   end
 

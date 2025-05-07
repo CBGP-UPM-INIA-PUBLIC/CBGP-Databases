@@ -31,7 +31,7 @@ def get_questionnaire_sections_query(questionnaire_type:)
     #{PREFIXES}
 
     SELECT ?sec (str(?seclab) as ?label)  WHERE {
-      cbgp:#{questionnaire_type} local:has-fields ?sec .
+      cbgp:#{questionnaire_type} local:has-fields ?sec . #  "add-publications", "add-project" "add-member"
       ?sec rdfs:label ?seclab .
     }
 GET_CATEGORY_SECTIONS
@@ -119,7 +119,7 @@ def retrieve_publication_core_query(doi:, graph:)
 
     SELECT   ?doi ?scopusq ?scopusd1 ?oa ?sochoa ?pubtype ?title ?date ?journal ?volume
     WHERE{ GRAPH <#{graph}> {
-                ?publicationn rdf:type sio:SIO_000087 ;
+                ?publicationn rdf:type sio:SIO_000087 ;  # n equates to "node", without n is "value"
                     sio:SIO_000671 ?idn ;
                     cbgp:has_scopus_q ?scopusqn ;
                     cbgp:has_scopus_d ?scopusd1n ;
@@ -147,6 +147,7 @@ def retrieve_publication_core_query(doi:, graph:)
 
                 ?sochoan  sio:SIO_000300 ?sochoa ;
                               rdf:type cbgp:sochoa .
+
                 ?cbgp_correspondingn  sio:SIO_000300 ?cbgp_corresponding ;
                               rdf:type cbgp:cbgp_corresponding .
 

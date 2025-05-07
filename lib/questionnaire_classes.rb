@@ -4,7 +4,7 @@ require_relative 'core'
 class Questionnaire
   attr_accessor :questionnaire_type, :sections, :questionnaireid
 
-  def initialize(questionnaire_type:) # questionnaire_type comes in as just the id
+  def initialize(questionnaire_type:) # questionnaire_type  "add-publications", "add-project" "add-member"
     # GET THE LABELS HERE
     # @lang = lang.upcase
     @questionnaire_type = questionnaire_type # its GUID as only the #code
@@ -15,14 +15,16 @@ class Questionnaire
   def fill_category_sections
     sects = []
     warn "getting category sections #{@questionnaire_type}"
-    results = get_questionnaire_sections_query(questionnaire_type: @questionnaire_type)
+    results = get_questionnaire_sections_query(questionnaire_type: @questionnaire_type) # "add-publications", "add-project" "add-member"
+    # SELECT ?sec (str(?seclab) as ?label)  WHERE {
+    #   cbgp:#{questionnaire_type} local:has-fields ?sec . #  "add-publications", "add-project" "add-member"
+    #   ?sec rdfs:label ?seclab .
     warn "SECTIONS QUERY #{results.inspect}"
-    # questionnaire_type = Add/Edit publications (#add-publication) has-fields Publication Questions (#new-publication-questions)
 
     results.each do |res| # get general information first
-      section = res[:sec].to_s # comes in as full URL
+      section = res[:sec].to_s # comes in as full URI  e.g. https://w3id.org/CBGP-App#new-publication-questions
       sectionid = section.gsub(/.*\#/, '') # remove everything up to the hash in the URL
-      warn "getting section #{section}"
+      warn "getting section #{section}" # new-publication-questions
       seclabel = res[:label].to_s
       sects << QuestionnaireSection.new(sectionid: sectionid, sectionlabel: seclabel)
     end
@@ -33,18 +35,18 @@ end
 class QuestionnaireSection
   attr_accessor :sectionid, :questions, :sectionlabel, :lang, :wdo_comment, :center_response
 
-  def initialize(sectionid:, sectionlabel:) # sectionid comes in as identifier only
+  def initialize(sectionid:, sectionlabel:) # sectionid comes in as identifier only e.g. new-publication-questions
     @sectionid = sectionid
     @sectionlabel = sectionlabel
-    @questions = get_questions
+    @questions = get_questions(sectionid: @sectionid)
     @wdo_comment = nil
     @center_response = nil
   end
 
   def get_questions
     qs = []
-    results = get_section_questions_query(sectionid: @sectionid)
-    # ?q (str(?qlab) as ?label) ?widget ?class ?method ?cardinality ?answers ?sequence 
+    results = get_section_questions_query(sectionid:)
+    # ?q (str(?qlab) as ?label) ?widget ?class ?method ?cardinality ?answers ?sequence
     results.each do |res|
       qurl = res[:q].to_s # comes in as full URL
       qid = qurl.gsub(/.*\#/, '') # everything up to the hash in the URL
@@ -66,7 +68,8 @@ class QuestionnaireSection
 end
 
 class QuestionnaireQuestion
-  attr_accessor :questionid, :sequence, :objectclass, :objectmethod, :answerblock, :question, :selected_answer, :widget, :cardinality
+  attr_accessor :questionid, :sequence, :objectclass, :objectmethod, :answerblock, :question, :selected_answer,
+                :widget, :cardinality
 
   def initialize(questionid:, sequence:, objectclass:, objectmethod:, answerblockid:, question:, widget:, cardinality:) # questionid and answerblockid comes in as fragment only
     @question = question # text in the correct language
@@ -85,7 +88,7 @@ end
 class QuestionnaireAnswerBlock
   attr_accessor :ablockid, :answers, :type
 
-  def initialize(ablockid:) # ablockid comes in as fragment only
+  def initialize(ablockid:) # answer ablockid comes in as fragment only
     @ablockid = ablockid
     @answers = []
 
@@ -116,13 +119,13 @@ end
 
 class QuestionnaireField
   attr_accessor :fieldid, :label, :answerblock, :objectclass, :objectmethod, :questionorder, :cardinality, :widgettype
-  def initialize()
 
+  def initialize
   end
 
   def self.create_from_ontology(fieldid:)
     field = QuestionnaireField.new
-    res = field_query(fieldid: fieldid).first  # should only be one
+    res = field_query(fieldid: fieldid).first # should only be one
     field.fieldid = fieldid.to_s
     field.label = res[:label].to_s
     field.answerblock = res[:answerblock].to_s
@@ -134,5 +137,4 @@ class QuestionnaireField
 
     field
   end
-
 end

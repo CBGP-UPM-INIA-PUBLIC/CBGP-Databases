@@ -26,18 +26,18 @@
     <div style="clear: both;">
       <br/><br/>
 
-      <h1>CBGP - Publications Dashboard</h1>
+      <h1>CBGP - Projects Dashboard</h1>
       <br/>
     </div>
 
     <div class="databases">
     
-      <form action="/cbgp/publications" method="POST">
-      <table id="publication_lookup" width="30%">
-        <tr> <th>Add/Find Publication</th> </tr>
+      <form action="/cbgp/projects" method="POST">
+      <table id="projects_lookup" width="30%">
+        <tr> <th>Add/Find Project</th> </tr>
         <tr> <td>
-          <label for='doi'>DOI Lookup</label>
-          <input type='text' name='doi' id="doi">
+          <label for='cbgp_id'>CBGP ID Lookup</label>
+          <input type='text' name='internal_identifier' id="internal_identifier">
         </td></tr>
         <tr> <td>
           <input type="submit" value="Submit"/>
@@ -45,22 +45,20 @@
       </table>
       </form>
 
-      <% if @pub %>
-        <form action="/cbgp/validate-publication" method="post">
-        <table id="publication_validate" width="30%">
-          <tr> <th>Validate/Edit Publication</th> </tr>
+        <form action="/cbgp/validate-project" method="post">
+        <table id="project_validate" width="30%">
+          <tr> <th>Validate/Edit Project</th> </tr>
           <tr><td>
-            <input type="submit" value="Submit Edited Publication"/>
+            <input type="submit" value="Submit Edited Project"/>
           </td></tr>
           <tr> <td>
           <%= erb :_questionnaire %> 
           </td></tr>
           <tr><td>
-            <input type="submit" value="Submit Edited Publication"/>
+            <input type="submit" value="Submit Edited Project"/>
           </td></tr>
         </table>
         </form>
-      <% end %>
 
     </div>
 

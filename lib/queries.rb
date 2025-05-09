@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require 'linkeddata'
-require 'sparql'
-require 'sparql/client'
+require "linkeddata"
+require "sparql"
+require "sparql/client"
 
-host = ENV['GRAPHDB_HOST'] || 'localhost:7200'
-ONTOLOGY = RDF::Repository.load('https://w3id.org/CBGP-App#')
+host = ENV["GRAPHDB_HOST"] || "localhost:7200"
+ONTOLOGY = RDF::Repository.load("https://w3id.org/CBGP-App#")
 PUBLICATIONS = SPARQL::Client.new("http://cbgp:cbgp@#{host}/repositories/publications")
 PUBLICATIONS_UPDATE = SPARQL::Client.new("http://cbgp:cbgp@#{host}/repositories/publications/statements")
 
@@ -27,14 +27,14 @@ PREFIX local: <urn:local:>
 def get_questionnaire_sections_query(questionnaire_type:)
   # questionnaire_type = Add/Edit publications (#add-publication) has-fields Publication Questions (#new-publication-questions)
 
-  qs = <<GET_CATEGORY_SECTIONS
+  qs = <<GET_QUESTIONNAIRE_SECTIONS
     #{PREFIXES}
 
     SELECT ?sec (str(?seclab) as ?label)  WHERE {
       cbgp:#{questionnaire_type} local:has-fields ?sec . #  "add-publications", "add-project" "add-member"
       ?sec rdfs:label ?seclab .
     }
-GET_CATEGORY_SECTIONS
+GET_QUESTIONNAIRE_SECTIONS
   qs = SPARQL.parse(qs)
   qs.execute(ONTOLOGY)
 end
@@ -49,7 +49,7 @@ def get_section_questions_query(sectionid:) # sectionid  must be just teh ID
     ?q local:widget-type ?widget .
     ?q local:widget-cardinality ?cardinality .
     ?q local:answer-block ?answers .
-    ?q local:object-class ?class .
+    OPTIONAL {?q local:object-class ?class }.
     ?q local:object-method ?method .
     ?q local:question-order ?sequence .
   } order by ?sequence
@@ -343,7 +343,7 @@ def field_query(fieldid:)
       WHERE {
           cbgp:#{fieldid} rdfs:label ?label ;
             local:answer-block ?answerblock ;
-            local:object-class ?objectclass ;
+            OPTIONAL {local:object-class ?objectclass };
             local:object-method ?objectmethod ;
             local:question-order ?questionorder ;
             local:widget-cardinality ?cardinality ;

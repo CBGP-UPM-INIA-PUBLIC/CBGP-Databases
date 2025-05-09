@@ -1,5 +1,5 @@
-require_relative 'queries'
-require_relative 'core'
+require_relative "queries"
+require_relative "core"
 
 class Questionnaire
   attr_accessor :questionnaire_type, :sections, :questionnaireid
@@ -8,13 +8,13 @@ class Questionnaire
     # GET THE LABELS HERE
     # @lang = lang.upcase
     @questionnaire_type = questionnaire_type # its GUID as only the #code
-    @sections = fill_category_sections
+    @sections = get_sections
     @questionnaireid = Time.now.to_i
   end
 
-  def fill_category_sections
+  def get_sections
     sects = []
-    warn "getting category sections #{@questionnaire_type}"
+    warn "getting sections for #{@questionnaire_type}"
     results = get_questionnaire_sections_query(questionnaire_type: @questionnaire_type) # "add-publications", "add-project" "add-member"
     # SELECT ?sec (str(?seclab) as ?label)  WHERE {
     #   cbgp:#{questionnaire_type} local:has-fields ?sec . #  "add-publications", "add-project" "add-member"
@@ -23,10 +23,11 @@ class Questionnaire
 
     results.each do |res| # get general information first
       section = res[:sec].to_s # comes in as full URI  e.g. https://w3id.org/CBGP-App#new-publication-questions
-      sectionid = section.gsub(/.*\#/, '') # remove everything up to the hash in the URL
+      sectionid = section.gsub(/.*\#/, "") # remove everything up to the hash in the URL
       warn "getting section #{section}" # new-publication-questions
       seclabel = res[:label].to_s
       sects << QuestionnaireSection.new(sectionid: sectionid, sectionlabel: seclabel)
+      warn "QUESTIONNAIRE SECTIONS #{sects.inspect}"
     end
     sects
   end
@@ -43,16 +44,16 @@ class QuestionnaireSection
     @center_response = nil
   end
 
-  def get_questions
+  def get_questions(sectionid:)
     qs = []
-    results = get_section_questions_query(sectionid:)
+    results = get_section_questions_query(sectionid: sectionid)
     # ?q (str(?qlab) as ?label) ?widget ?class ?method ?cardinality ?answers ?sequence
     results.each do |res|
       qurl = res[:q].to_s # comes in as full URL
-      qid = qurl.gsub(/.*\#/, '') # everything up to the hash in the URL
+      qid = qurl.gsub(/.*\#/, "") # everything up to the hash in the URL
       question = res[:label].to_s
       answerblock = res[:answers].to_s # check that this is a URI an dnot a fr4agtment
-      answerblockid = answerblock.gsub(/.*\#/, '') # everything up to the hash in the URL
+      answerblockid = answerblock.gsub(/.*\#/, "") # everything up to the hash in the URL
       sequence = res[:sequence].to_i
       widget = res[:widget].to_s
       objectclass = res[:class].to_s
@@ -60,7 +61,7 @@ class QuestionnaireSection
       cardinality = res[:cardinality].to_s
       qs << QuestionnaireQuestion.new(
         questionid: qid, question: question, answerblockid: answerblockid, sequence: sequence,
-        widget: widget, cardinality: cardinality, objectclass: objectclass, objectmethod: objectmethod
+        widget: widget, cardinality: cardinality, objectclass: objectclass, objectmethod: objectmethod,
       )
     end
     qs
@@ -92,10 +93,10 @@ class QuestionnaireAnswerBlock
     @ablockid = ablockid
     @answers = []
 
-    if @ablockid == 'FREE'  # a text box or text field
-      @type = 'FREE'
-    elsif @ablockid == 'NUM' # text field numerical
-      @type = 'NUM'
+    if @ablockid == "FREE" # a text box or text field
+      @type = "FREE"
+    elsif @ablockid == "NUM" # text field numerical
+      @type = "NUM"
     else
       results = get_answer_block_query(ablockid: @ablockid) #    SELECT DISTINCT ?aid ?label ?order
       results.each do |result|
@@ -111,7 +112,7 @@ class QuestionnaireAnswer
 
   def initialize(answerid:, answer:, sequence:)
     @answerid = answerid
-    @answerid = @answerid.gsub(/.*\#/, '') # everything up to the hash in the URL
+    @answerid = @answerid.gsub(/.*\#/, "") # everything up to the hash in the URL
     @sequence = sequence
     @answer = answer
   end

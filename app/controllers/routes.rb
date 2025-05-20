@@ -189,7 +189,8 @@ def set_routes
     halt erb :projects
   end
 
-  post "/cbgp/projects" do
+    # This comes from the top part of projects.erb, wehre there's a CBGP ID field that can be posted
+  post "/cbgp/projects" do  
     #    begin
     cbgp_id = params["cbgp_id"]
     @questionnaire = generate_questionnaire(questionnaire_type: "add-project")
@@ -205,6 +206,7 @@ def set_routes
     #    halt 403
   end
 
+    # This comes from the bottom part of projects.erb, the questionnaire section, posted as params
   post "/cbgp/validate-project" do
     @questionnaire = generate_questionnaire(questionnaire_type: "add-project")
     @entry = CBGP::Project.load_from_params(params: params)

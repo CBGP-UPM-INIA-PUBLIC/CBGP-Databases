@@ -50,7 +50,7 @@ def get_section_questions_query(sectionid:) # sectionid  must be just teh ID
     ?q local:widget-cardinality ?cardinality .
     ?q local:answer-block ?answers .
     OPTIONAL {?q local:object-class ?class }.
-    ?q local:object-method ?method .
+    ?q local:method ?method .
     ?q local:question-order ?sequence .
   } order by ?sequence
 
@@ -344,7 +344,7 @@ def field_query(fieldid:)
           cbgp:#{fieldid} rdfs:label ?label ;
             local:answer-block ?answerblock ;
             OPTIONAL {local:object-class ?objectclass };
-            local:object-method ?objectmethod ;
+            local:method ?objectmethod ;
             local:question-order ?questionorder ;
             local:widget-cardinality ?cardinality ;
             local:widget-type ?widgettype .

@@ -25,51 +25,23 @@
 
     <div style="clear: both;">
       <br/><br/>
-
-      <h1>CBGP - Publications Dashboard</h1>
+      <h1>CBGP - Publications Upload</h1>
       <br/>
     </div>
-    <% if defined?(messages) && messages.any? %>
-    <div class="error-messages">
-      <ul>
-        <% messages.each do |mes| %>
-          <li><%= mes %></li>
-        <% end %>
-      </ul>
-    </div>
-    <% end %>
 
     <div class="databases">
     
-      <form action="/cbgp/publications" method="POST">
+      <form action="/cbgp/publications/bulk" method="POST">
       <table id="publication_lookup" width="30%">
-        <tr> <th>Add/Find Publication</th> </tr>
+        <tr> <th>Add Publications in Bulk</th> </tr>
         <tr> <td>
-          <label for='doi'>DOI Lookup</label>
-          <input type='text' name='doi' id="doi">
+          <label for='dois'>DOI List (one per line)</label>
+          <textarea id="dois" name="dois" rows="10" cols="50"></textarea><br>
         </td></tr>
         <tr> <td>
           <input type="submit" value="Submit"/>
         </td></tr>
-        <tr> <td>
-          <a href="/cbgp/publications/bulk"><h4>Switch to Bulk Upload</h4></a>
-        </td></tr>
       </table>
-      </form>
-
-      <form action="/cbgp/validate-publication" method="post">
-        <table id="publication_validate" width="30%">
-          <tr> <th>Validate/Edit Publication</th> </tr>
-          <tr><td>
-            <input type="submit" value="Submit Edited Publication"/>
-          </td></tr>
-          <tr> <td>
-          <%= erb :_questionnaire %> 
-          </td></tr>
-          <tr><td>
-            <input type="submit" value="Submit Edited Publication"/>
-          </td></tr>
-        </table>
       </form>
  
     </div>

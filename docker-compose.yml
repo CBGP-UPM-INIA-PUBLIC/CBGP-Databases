@@ -11,7 +11,7 @@ services:
       - cbgp-default
 
   cbgp-databases:
-    image: markw/cbgp-databases:0.0.1
+    image: markw/cbgp-databases:0.0.3
     restart: always
     hostname: databases
     environment:

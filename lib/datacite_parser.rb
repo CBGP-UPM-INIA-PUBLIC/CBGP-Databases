@@ -31,6 +31,7 @@ module CBGP
 
       jpath = JsonPath.new('title')
       title = jpath.on(dcite).first
+      title = Sanitize.fragment(title)
 
       authors = []
       jpath = JsonPath.new('author[*]')
@@ -40,7 +41,9 @@ module CBGP
         orcid = "" 
         if author.respond_to? "[]"
           orcid = author['ORCID'].gsub(/https?\:\/\/orcid.org\//, "") if author['ORCID']
+          orcid = Sanitize.fragment(orcid)
           aname = "#{author['given']} #{author['family']}"
+          aname = Sanitize.fragment(aname)
         end
 
         aut = CBGP::Publication::Author.new(name: aname, orcid: orcid,
@@ -56,6 +59,8 @@ module CBGP
 
       jpath = JsonPath.new('DOI')
       doi = jpath.on(dcite).first
+      doi = Sanitize.fragment(doi)
+
 
       ####  HERE!!
 

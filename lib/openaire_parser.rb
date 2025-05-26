@@ -13,6 +13,8 @@ module CBGP
 
       jpath = JsonPath.new('response.results.result[0].metadata["oaf:entity"]["oaf:result"].journal.$')
       journal = jpath.on(oaire)
+      journal = Sanitize.fragment(journal)
+
       return false if journal.empty?
 
       affiliations = []
@@ -24,17 +26,20 @@ module CBGP
       # Loop through the results and print each legalname
       results.each_with_index do |legalname, index|
         # puts "rel[#{index}].legalname: #{legalname}"
+        legalname = Sanitize.fragment(legalname)
         affiliations << legalname
       end
 
       jpath = JsonPath.new('response.results.result[0].metadata["oaf:entity"]["oaf:result"].title[0].$')
       title = jpath.on(oaire)
+      title = Sanitize.fragment(title)
 
       authors = []
       jpath = JsonPath.new('response.results.result[0].metadata["oaf:entity"]["oaf:result"].creator[*]')
       results = jpath.on(oaire)
       results.each_with_index do |author, _index|
         aut = CBGP::Publication::Author.new(name: author['$'], orcid: author['@orcid'], rank: "0")
+        aut = Sanitize.fragment(aut)
         # rank is totally useless from open aire
         authors << aut
       end

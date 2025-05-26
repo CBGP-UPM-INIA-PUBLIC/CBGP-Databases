@@ -5,11 +5,11 @@ require_relative "openaire_parser"
 
 module CBGP
   class Publication
-    attr_accessor :doi, :authors, :affiliations, :title, :journal, :volume, :full_ref, :date, :uniqid,
+    attr_accessor :doi, :authors, :affiliations, :title, :journal, :volume,  :date, :uniqid,
                   :cbgp_corresponding, :pubtype, :oa, :scopusq, :scopusd1, :sochoa
 
     def initialize(doi: "", authors: [[]], affiliations: [[]],
-                   title: "", journal: "", full_ref: "", date: "",
+                   title: "", journal: "",  date: "",
                    cbgp_corresponding: "", pubtype: "",
                    oa: "", scopusq: "", scopusd1: "", sochoa: "", uniqid: "")
       @doi = doi
@@ -17,7 +17,6 @@ module CBGP
       @affiliations = affiliations
       @title = title
       @journal = journal
-      @full_ref = full_ref
       # @volume = volume
       @date = date
       @cbgp_corresponding = cbgp_corresponding
@@ -27,6 +26,18 @@ module CBGP
       @scopusd1 = scopusd1
       @sochoa = sochoa
       @uniqid = Time.now.to_i unless uniqid.match(/S/)
+    end
+
+    def full_ref
+      return "" unless self.doi
+
+      begin
+        ref = HTTParty.get("https://citation.doi.org/format?doi=#{self.doi}&style=apa&lang=en-US")
+      rescue StandardError => e
+        warn e.inspect
+        return ""
+      end
+      ref
     end
 
     def self.load_from_params(params:)

@@ -4,6 +4,8 @@ require 'jsonpath'
 require 'sinatra/base'
 require 'require_all'
 require 'rest-client'
+require 'sanitize'
+require 'httparty'
 
 # App specific requires
 require_relative 'configuration'

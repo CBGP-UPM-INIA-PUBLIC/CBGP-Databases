@@ -78,16 +78,12 @@ module CBGP
       endpage = pages
       # jpath.on(dcite).split('-')
 
-      full_ref = "#{journal} #{volume} (#{date}) pp#{startpage}-#{endpage}"
-      warn "FULL REF", full_ref, "\n\n"
-
       pub = CBGP::Publication.new(
         doi: doi,
         authors: [authors], # make it a list of lists so that only one instance is sent to the widget
         affiliations: [affiliations],
         title: title,
         journal: journal,
-        full_ref: full_ref,
         date: date,
         cbgp_corresponding: '',
         pubtype: '',

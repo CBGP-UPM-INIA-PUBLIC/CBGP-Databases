@@ -76,17 +76,12 @@ module CBGP
 
       jpath = JsonPath.new('response.results.result[0].metadata["oaf:entity"]["oaf:result"].journal["@ep"]')
       endpage = jpath.on(oaire)
-
-      full_ref = "#{journal} #{volume} (#{date}) pp#{startpage}-#{endpage}"
-
-      warn "FULL REF", full_ref, "\n\n"
       pub = CBGP::Publication.new(
         doi: doi,
         authors: [authors], # make it a list of lists so that only one instance is sent to the widget
         affiliations: [affiliations],
         title: title,
         journal: journal,
-        full_ref: full_ref,
         date: date,
         cbgp_corresponding: '',
         pubtype: '',

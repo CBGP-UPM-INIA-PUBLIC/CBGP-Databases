@@ -46,19 +46,26 @@ th {
 font-family: Arial, Helvetica, sans-serif;
 border-collapse: collapse;
 width: 100%;
+display: flex;
+justify-content: center;
+align-items: center;
+flex-direction: column;
+
 }
 
-#databases table {
-  font-family: Arial, Helvetica, sans-serif;
-  border-collapse: collapse;
+.databases table {
   width: 40%;
-  margin-left: 100;
-  // margin-right: auto;
-  }
-  
-#databases td, #customers th {
-border: 1px solid #ddd;
-padding: 8px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.databases th, .databases td {
+  text-align: center;
+}
+
+.databases input, .databases textarea {
+  margin: 0 auto;
+  display: block;
 }
 
 #databases tr:nth-child(even){background-color: #bdedc8;}
@@ -208,3 +215,26 @@ background-clip: text;
           margin-top: 50px;
           margin-bottom: 20px;
       }
+
+
+.error-messages {
+  background-color: #ffe6e6;
+  border: 1px solid #cc0000;
+  border-radius: 4px;
+  padding: 15px;
+  margin: 20px auto;
+  max-width: 600px;
+  color: #cc0000;
+  font-family: Calibri, sans-serif;
+  font-size: 16px;
+}
+
+.error-messages ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.error-messages li {
+  margin-bottom: 10px;
+}

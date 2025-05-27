@@ -1,5 +1,4 @@
-/* Styling the Body element 
-i.e. Color, Font, Alignment */
+/* Styling the Body element */
 body {
   background-color: #144506;
   font-family: Calibri;
@@ -11,7 +10,7 @@ body {
   font-size: 2em;
 }
 
-/* Styling the Form (Color, Padding, Shadow) */
+/* Styling the Form */
 form {
   background-color: #fff;
   max-width: 900px;
@@ -19,13 +18,8 @@ form {
   padding: 30px 20px;
   box-shadow: 2px 5px 10px rgba(0, 0, 0, 0.5);
 }
-div.centerlist {
-  background-color: #fff;
-  max-width: 1200px;
-  margin: 50px auto;
-  padding: 30px 20px;
-  box-shadow: 2px 5px 10px rgba(0, 0, 0, 0.5);
-}
+
+div.centerlist,
 div.questionnairelist {
   background-color: #fff;
   max-width: 1200px;
@@ -33,24 +27,24 @@ div.questionnairelist {
   padding: 30px 20px;
   box-shadow: 2px 5px 10px rgba(0, 0, 0, 0.5);
 }
+
 th, td {
-padding: 15px;
+  padding: 15px;
 }
+
 th {
   font-size: 25px;
   font-weight: 100;
 }
 
-
 #databases {
-font-family: Arial, Helvetica, sans-serif;
-border-collapse: collapse;
-width: 100%;
-display: flex;
-justify-content: center;
-align-items: center;
-flex-direction: column;
-
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }
 
 .databases table {
@@ -59,31 +53,40 @@ flex-direction: column;
   text-align: center;
 }
 
-.databases th, .databases td {
+.databases th,
+.databases td {
   text-align: center;
 }
 
-.databases input, .databases textarea {
+.databases input,
+.databases textarea {
   margin: 0 auto;
   display: block;
 }
 
-#databases tr:nth-child(even){background-color: #bdedc8;}
+#databases tr:nth-child(even) {
+  background-color: #bdedc8;
+}
 
-#databases tr:hover {background-color: #f2f2f2;}
+#databases tr:hover {
+  background-color: #f2f2f2;
+}
 
 #databases th {
-padding-top: 12px;
-padding-bottom: 12px;
-text-align: left;
-background-color: #f2f2f2;
-color: #114203;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #f2f2f2;
+  color: #114203;
 }
 
-#cbgp_comments {
-  width: 700px;
-  border: solid #114203 2px;
+#publication_validate {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
 }
+
+#cbgp_comments,
 #center_responses {
   width: 700px;
   border: solid #114203 2px;
@@ -102,51 +105,137 @@ h1 {
   font-size: 30px;
   font-weight: 600;
   color: white;
-  font-family: "Calibri",sans-serif;
-
-  }
-  
+  font-family: "Calibri", sans-serif;
+}
 
 h3 {
-font-size: 40px;
-font-weight: 600;
-background-image: linear-gradient(to left, #0d5704, #114203);
-color: transparent;
-background-clip: text;
--webkit-background-clip: text;
+  font-size: 40px;
+  font-weight: 600;
+  background-image: linear-gradient(to left, #0d5704, #114203);
+  color: transparent;
+  background-clip: text;
+  -webkit-background-clip: text;
 }
-// div.inputtype { text-align: center; }
 
-.affiliation {
-  clear: both; 
-  text-align: center;
-  width: 400px;
+/* Center the citation box */
+.citation-box {
+  margin: 0 auto;
+  text-align: left;
+}
+
+/* Two-column layout for publication fields */
+#new-publication-questions {
+  display: block;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  text-align: left;
+}
+
+/* Style for each field row */
+.field-row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 5px;
+  clear: none;
+}
+
+/* Alternating background colors for field rows */
+.field-row:nth-child(odd) {
+  background-color: #fff;
+}
+
+.field-row:nth-child(even) {
+  background-color: #E8F5E9;
+}
+
+#new-publication-questions h4.question-label {
+  text-align: left;
+  margin: 0;
+  font-size: 18px;
+  grid-column: 1;
+}
+
+#new-publication-questions .inputtype,
+#new-publication-questions .authorlist,
+#new-publication-questions .affiliation {
+  grid-column: 2;
+  text-align: left;
+  width: 100%;
+}
+
+#new-publication-questions .inputtype input,
+#new-publication-questions .inputtype select,
+#new-publication-questions .inputtype textarea {
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.authorlist {
+  display: block;
+  text-align: left;
 }
 
 .author {
-  float: left;
-  width: 175px;
-}
-.authorlist {
-  clear: both
+  display: flex; /* Use flexbox to place name and ORCiD side-by-side */
+  align-items: center; /* Vertically center the fields */
+  width: 100%;
+  margin-bottom: 10px;
 }
 
-.popup{
+.author label {
+  display: inline-block;
+  width: 60px;
+  font-size: 0.75em;
+  margin-right: 5px;
+}
+
+.author input {
+  text-align: left;
+  box-sizing: border-box;
+  flex: 1; /* Allow inputs to take remaining space */
+  margin-right: 10px; /* Space between name and ORCiD */
+}
+
+/* Remove margin-right from the last input to avoid extra space */
+.author input:last-child {
+  margin-right: 0;
+}
+
+.affiliation {
+  display: block;
+  width: 100%;
+  text-align: left;
+}
+
+.affiliation input {
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.popup {
   background-color: #e0dbdb;
   width: 450px;
   padding: 30px 40px;
   position: absolute;
-  transform: translate(-50%,-50%);
+  transform: translate(-50%, -50%);
   left: 50%;
   top: 50%;
   border-radius: 8px;
-  font-family: "Calibri",sans-serif;
+  font-family: "Calibri", sans-serif;
   display: none;
   text-align: center;
 }
-.popup button{
+
+.popup button {
   display: block;
-  margin:  0 0 20px auto;
+  margin: 0 0 20px auto;
   background-color: transparent;
   font-size: 15px;
   color: #114203;
@@ -154,89 +243,13 @@ background-clip: text;
   outline: none;
   cursor: pointer;
 }
-.popup p{
+
+.popup p {
   font-size: 12px;
   text-align: center;
   margin: 20px 0;
   line-height: 25px;
 }
-
-.error-messages {
-  background-color: #f8d7da;
-  border: 1px solid #f5c6cb;
-  border-radius: 4px;
-  padding: 10px;
-  margin: 10px auto;
-  max-width: 600px;
-  color: #721c24;
-  font-size: 0.9em;
-}
-
-.error-messages ul {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-}
-
-.error-messages li {
-  margin-bottom: 5px;
-}
-
-
-/* Styling form-control Class */
-      .form-control {
-          text-align: left;
-          margin-bottom: 25px;
-          margin-left: 50px;
-          
-      }
-
-      /* Styling form-control Label */
-      .form-control label {
-          display: block;
-          margin-bottom: 10px;
-      }
-
-      /* Styling form-control input, 
-      select, textarea */
-      .form-control input,
-      .form-control select,
-      .form-control textarea {
-          border: 1px solid #777;
-          border-radius: 2px;
-          font-family: inherit;
-          padding: 10px;
-          display: block;
-          width: 95%;
-          text-align: center;
-          // align: center;
-
-      }
-
-      /* Styling form-control Radio 
-      button and Checkbox */
-      .form-control input[type="radio"],
-      .form-control input[type="checkbox"] {
-          display: inline-block;
-          width: auto;
-          text-align: center;
-          // align: left;
-          padding-left: 100px;
-      }
-
-      /* Styling Button */
-      button {
-          background-color: #9cbd6f;
-          border: 1px solid #777;
-          border-radius: 2px;
-          font-family: inherit;
-          font-size: 21px;
-          display: block;
-          width: 100%;
-          margin-top: 50px;
-          margin-bottom: 20px;
-      }
-
 
 .error-messages {
   background-color: #ffe6e6;
@@ -258,4 +271,47 @@ background-clip: text;
 
 .error-messages li {
   margin-bottom: 10px;
+}
+
+.form-control {
+  text-align: left;
+  margin-bottom: 25px;
+  margin-left: 50px;
+}
+
+.form-control label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.form-control input,
+.form-control select,
+.form-control textarea {
+  border: 1px solid #777;
+  border-radius: 2px;
+  font-family: inherit;
+  padding: 10px;
+  display: block;
+  width: 95%;
+  text-align: left;
+}
+
+.form-control input[type="radio"],
+.form-control input[type="checkbox"] {
+  display: inline-block;
+  width: auto;
+  text-align: center;
+  padding-left: 100px;
+}
+
+button {
+  background-color: #9cbd6f;
+  border: 1px solid #777;
+  border-radius: 2px;
+  font-family: inherit;
+  font-size: 21px;
+  display: block;
+  width: 100%;
+  margin-top: 50px;
+  margin-bottom: 20px;
 }

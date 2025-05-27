@@ -4,7 +4,7 @@
       :selected_answer, :widget, :cardinality -->
 
     <% label = @question.question  %>
-    <div id="<%= label %>" style="clear: both;">
+    <div id="<%= label %>" class="field-row" style="clear: both;">
 
         <h4 class="question-label"><%= label %></h4>
         <% widget = @question.widget.match(/.*\#(\S+)/)[1] %>

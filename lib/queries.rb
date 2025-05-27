@@ -343,11 +343,12 @@ def field_query(fieldid:)
       WHERE {
           cbgp:#{fieldid} rdfs:label ?label ;
             local:answer-block ?answerblock ;
-            OPTIONAL {local:object-class ?objectclass };
             local:method ?objectmethod ;
             local:question-order ?questionorder ;
             local:widget-cardinality ?cardinality ;
             local:widget-type ?widgettype .
+          OPTIONAL {cbgp:#{fieldid} local:object-class ?objectclass .}
+
       }
             ")
   field.execute(ONTOLOGY)

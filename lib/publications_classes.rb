@@ -49,6 +49,26 @@ module CBGP
       pub
     end
 
+    def self.load_from_doi(doi:)
+      res = retrieve_pub_graph_query(doi: doi)
+      # warn "found record from doi", res.inspect
+
+      # abort "graph query failed" unless res.first
+      if res.first
+        warn "\n \nretrieving from database\n\n"
+        pub = CBGP::Parsers.publication_database_parser(doi: doi, graph: res.first[:g])
+      else
+        pub = CBGP::Parsers.datacite_parser(doi: doi)
+        pub = if pub
+                CBGP::Parsers.openaire_affiliations(pub: pub, doi: doi) # fill-in affiliations only
+              else
+                CBGP::Parsers.openaire_parser(doi: doi)
+              end
+        CBGP::Publication.write_to_db(pub: pub)
+      end
+      pub
+    end
+
     def self.bulk_load_from_dois(dois:)
       messages = []
       alldois = dois.split(/[, \t\n]+/).map(&:strip).reject(&:empty?) # accept both comma-separated and newline separated

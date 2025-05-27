@@ -27,6 +27,15 @@
       <br/><br/>
       <h1>CBGP - Publications Upload</h1>
       <br/>
+      <% if @messages && @messages.any? %>
+      <div class="error-messages">
+        <ul>
+          <% @messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
     </div>
 
     <div class="databases">

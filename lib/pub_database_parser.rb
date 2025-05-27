@@ -42,8 +42,6 @@ module CBGP
       end
 # abort "got authors #{authors}"
 
-      full_ref = "#{journal} #{volume} (#{date}) pp#{startpage}-#{endpage}"
-      warn "FULL REF", full_ref, "\n\n"
       # abort "successful completion of parse from database"
       pub = CBGP::Publication.new(
         doi: doi,
@@ -51,7 +49,6 @@ module CBGP
         affiliations: [affiliations],
         title: title,
         journal: journal,
-        full_ref: full_ref,
         date: date,
         cbgp_corresponding: cbgp_corresponding,
         pubtype: pubtype,

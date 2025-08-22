@@ -399,9 +399,9 @@
     </owl:Class>
 
 
-    <!-- https://w3id.org/CBGP-App#antigua_barbuda -->
+    <!-- https://w3id.org/CBGP-App#antiguabarbuda -->
 
-    <owl:Class rdf:about="https://w3id.org/CBGP-App#antigua_barbuda">
+    <owl:Class rdf:about="https://w3id.org/CBGP-App#antiguabarbuda">
         <rdfs:subClassOf rdf:resource="https://w3id.org/CBGP-App#country"/>
         <rdfs:label xml:lang="en">Antigua and Barbuda</rdfs:label>
         <rdfs:label xml:lang="es">Antigua y Barbuda</rdfs:label>
@@ -449,7 +449,6 @@
     </owl:Class>
 
 
-
     <!-- https://w3id.org/CBGP-App#azerbaijan -->
 
     <owl:Class rdf:about="https://w3id.org/CBGP-App#azerbaijan">
@@ -468,7 +467,6 @@
         <rdfs:label xml:lang="es">Bahamas</rdfs:label>
         <local:answer-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">12</local:answer-order>
     </owl:Class>
-
 
 
     <!-- https://w3id.org/CBGP-App#bahrain -->
@@ -511,7 +509,6 @@
     </owl:Class>
 
 
-
     <!-- https://w3id.org/CBGP-App#belgium -->
 
     <owl:Class rdf:about="https://w3id.org/CBGP-App#belgium">
@@ -532,7 +529,6 @@
     </owl:Class>
 
 
-
     <!-- https://w3id.org/CBGP-App#benin -->
 
     <owl:Class rdf:about="https://w3id.org/CBGP-App#benin">
@@ -541,7 +537,6 @@
         <rdfs:label xml:lang="es">Benín</rdfs:label>
         <local:answer-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">19</local:answer-order>
     </owl:Class>
-
 
 
     <!-- https://w3id.org/CBGP-App#bhutan -->
@@ -564,7 +559,6 @@
     </owl:Class>
 
 
-
     <!-- https://w3id.org/CBGP-App#bosnia_herzegovina -->
 
     <owl:Class rdf:about="https://w3id.org/CBGP-App#bosnia_herzegovina">
@@ -573,7 +567,6 @@
         <rdfs:label xml:lang="es">Bosnia y Herzegovina</rdfs:label>
         <local:answer-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">22</local:answer-order>
     </owl:Class>
-
 
 
     <!-- https://w3id.org/CBGP-App#botswana -->
@@ -586,7 +579,6 @@
     </owl:Class>
 
 
-
     <!-- https://w3id.org/CBGP-App#brazil -->
 
     <owl:Class rdf:about="https://w3id.org/CBGP-App#brazil">
@@ -597,7 +589,6 @@
     </owl:Class>
 
 
-
     <!-- https://w3id.org/CBGP-App#brunei -->
 
     <owl:Class rdf:about="https://w3id.org/CBGP-App#brunei">
@@ -606,7 +597,6 @@
         <rdfs:label xml:lang="es">Brunéi</rdfs:label>
         <local:answer-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">25</local:answer-order>
     </owl:Class>
-
 
 
     <!-- https://w3id.org/CBGP-App#bulgaria -->

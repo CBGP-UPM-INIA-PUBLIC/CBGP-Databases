@@ -114,7 +114,7 @@ def set_routes
       #  redirect "/cbgp/pubs_dashboard"
       redirect '/cbgp/publications'
     when 'personnel'
-      # redirect "/cbgp/members_dashboard"
+      # redirect "/cbgp/mambers_dashboard"
       redirect '/cbgp/members'
     when 'projects'
       # redirect "/cbgp/projects_dashboard"
@@ -225,3 +225,4 @@ def set_routes
     halt erb :projects
   end
 end
+

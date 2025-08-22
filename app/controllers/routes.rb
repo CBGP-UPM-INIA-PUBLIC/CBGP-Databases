@@ -224,4 +224,53 @@ def set_routes
     @entry = CBGP::Project.load_from_params(params: params)
     halt erb :projects
   end
+
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # Personnel Dashboard
+
+  # get "/cbgp/personnel_dashboard" do
+  #   erb :personnel_dashboard
+  # end
+
+  get '/cbgp/personnel' do
+    cbgp_id = params['member_name']
+    @questionnaire = generate_questionnaire(questionnaire_type: 'add-member')
+    @entry = if member_name
+               CBGP::Member.load_from_member_name(member_name: member_name)
+             else
+               CBGP::Memeber.new
+             end
+    halt erb :personnel
+  end
+
+  # This comes from the top part of projects.erb, wehre there's a CBGP ID field that can be posted
+  post '/cbgp/personnel' do
+    #    begin
+    member_name = params['member_name']
+    @questionnaire = generate_questionnaire(questionnaire_type: 'add-member')
+    @entry = if cbgp_id
+               CBGP::Member.load_from_member_name(member_name: member_name)
+             else
+               CBGP::Member.new
+             end
+    halt erb :personnel
+    #    rescue StandardError => e
+    #      halt 422, e.to_s
+    #    end
+    #    halt 403
+  end
+
+  # This comes from the bottom part of projects.erb, the questionnaire section, posted as params
+  post '/cbgp/validate-personnel' do
+    @questionnaire = generate_questionnaire(questionnaire_type: 'add-member')
+    @entry = CBGP::Member.load_from_params(params: params)
+    halt erb :personnel
+  end
+
+
+
 end

@@ -485,7 +485,7 @@
         <rdfs:subClassOf rdf:resource="https://w3id.org/CBGP-App#country"/>
         <rdfs:label xml:lang="en">Bangladesh</rdfs:label>
         <rdfs:label xml:lang="es">Bangladés</rdfs:label>
-        <local:answer-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">14/local:answer-order>
+        <local:answer-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">14</local:answer-order>
     </owl:Class>
 
 
@@ -515,7 +515,7 @@
         <rdfs:subClassOf rdf:resource="https://w3id.org/CBGP-App#country"/>
         <rdfs:label xml:lang="en">Belgium</rdfs:label>
         <rdfs:label xml:lang="es">Bélgica</rdfs:label>
-        <local:answer-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">17/local:answer-order>
+        <local:answer-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">17</local:answer-order>
     </owl:Class>
 
 

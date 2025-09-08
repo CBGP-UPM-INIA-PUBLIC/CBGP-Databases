@@ -16,6 +16,9 @@ services:
     hostname: databases
     environment:
       - GRAPHDB_HOST=graphdb:7200
+      - GRAPHDB_USER=cbgp
+      - GRAPHDB_PASS=cbgp
+      - CBGP_KB=https://w3id.org/CBGP-App#"
     ports:
       - 127.0.0.1:8000:4567
     networks:

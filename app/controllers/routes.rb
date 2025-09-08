@@ -109,19 +109,68 @@ def set_routes
 
   post '/cbgp/databases' do
     database = params[:database]
-    case database
-    when 'publications'
-      #  redirect "/cbgp/pubs_dashboard"
-      redirect '/cbgp/publications'
-    when 'personnel'
-      # redirect "/cbgp/mambers_dashboard"
-      redirect '/cbgp/members'
-    when 'projects'
-      # redirect "/cbgp/projects_dashboard"
-      redirect '/cbgp/projects'
-    end
+    redirect "/cbgp/dataset/#{database}"
+    # when 'personnel'
+    #   # redirect "/cbgp/mambers_dashboard"
+    #   redirect '/cbgp/members'
+    # when 'projects'
+    #   # redirect "/cbgp/projects_dashboard"
+    #   redirect '/cbgp/projects'
+    # end
     halt 422
   end
+
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # Let's try to make it fully generic!
+
+  get '/cbgp/dataset/:database' do
+    database = params[:database]
+    @questionnaire = generate_questionnaire(questionnaire_type: database)
+    if database == "add-publication"
+      @entry = if idtype == "doi"
+                CBGP::Publication.load_from_doi(doi: doi)
+              else
+                CBGP::Publication.new
+              end
+      halt erb :publications
+            end
+  end
+
+  post '/cbgp/dataset/:database' do
+    database = params[:database]
+    identifier = params[:identifier]
+    idtype = identifier_type(id: identifier)  # idtype is doi for publications
+    @questionnaire = generate_questionnaire(questionnaire_type: database)
+    if database == "add-publication"
+      if idtype == "doi"
+        @entry = CBGP::Publication.load_from_doi(doi: identifier)
+      else
+        @entry = CBGP::Publication.new
+      end
+      halt erb :publications
+    end
+    if database == "add-member" || database == "add-project" 
+      if idtype
+        @entry = CBGP::Dataset.load_from_identifier(identifier: identifier)
+      else
+        @entry = CBGP::Dataset.new(type: database)
+      end
+      halt erb :dataset
+    end
+  end
+
+  post '/cbgp/validate-publication' do
+    @questionnaire = generate_questionnaire(questionnaire_type: 'add-publication')
+    @entry = CBGP::Publication.load_from_params(params: params)
+    halt erb :publications
+  end
+
+
+
 
   # ----------------------------------------------------------------------------
   # ----------------------------------------------------------------------------
@@ -134,32 +183,140 @@ def set_routes
   #   erb :pubs_dashboard
   # end
 
-  get '/cbgp/publications' do
-    doi = params[:doi]
-    @questionnaire = generate_questionnaire(questionnaire_type: 'add-publication')
-    @entry = if doi
-               CBGP::Publication.load_from_doi(doi: doi)
-             else
-               CBGP::Publication.new
-             end
-    halt erb :publications
-  end
+  # get '/cbgp/publications' do
+  #   doi = params[:doi]
+  #   @questionnaire = generate_questionnaire(questionnaire_type: 'add-publication')
+  #   @entry = if doi
+  #              CBGP::Publication.load_from_doi(doi: doi)
+  #            else
+  #              CBGP::Publication.new
+  #            end
+  #   halt erb :publications
+  # end
 
-  post '/cbgp/publications' do
-    doi = params[:doi]
-    @questionnaire = generate_questionnaire(questionnaire_type: 'add-publication')
-    #    begin
-    @entry = if doi
-               CBGP::Publication.load_from_doi(doi: doi)
-             else
-               CBGP::Publication.new
-             end
-    halt erb :publications
-    #    rescue StandardError => e
-    #      halt 422, e.to_s
-    #    end
-    #    halt 403
-  end
+  # post '/cbgp/publications' do
+  #   doi = params[:doi]
+  #   @questionnaire = generate_questionnaire(questionnaire_type: 'add-publication')
+  #   #    begin
+  #   @entry = if doi
+  #              CBGP::Publication.load_from_doi(doi: doi)
+  #            else
+  #              CBGP::Publication.new
+  #            end
+  #   halt erb :publications
+  #   #    rescue StandardError => e
+  #   #      halt 422, e.to_s
+  #   #    end
+  #   #    halt 403
+  # end
+
+  # post '/cbgp/publications/bulk' do
+  #   dois = params[:dois]
+  #   #    begin
+  #   @messages = (CBGP::Publication.bulk_load_from_dois(dois: dois) if dois)
+
+  #   halt erb :bulkpubs
+  # end
+
+  # get '/cbgp/publications/bulk' do
+  #   halt erb :bulkpubs
+  # end
+
+  # post '/cbgp/validate-publication' do
+  #   @questionnaire = generate_questionnaire(questionnaire_type: 'add-publication')
+  #   @entry = CBGP::Publication.load_from_params(params: params)
+  #   halt erb :publications
+  # end
+
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # Projects Dashboard
+
+  # get "/cbgp/projects_dashboard" do
+  #   erb :projects_dashboard
+  # end
+
+  # get '/cbgp/projects' do
+  #   cbgp_id = params['cbgp_id']
+  #   @questionnaire = generate_questionnaire(questionnaire_type: 'add-project')
+  #   @entry = if cbgp_id
+  #              CBGP::Project.load_from_cbgp_id(cbgp_id: cbgp_id)
+  #            else
+  #              CBGP::Project.new
+  #            end
+  #   halt erb :projects
+  # end
+
+  # # This comes from the top part of projects.erb, wehre there's a CBGP ID field that can be posted
+  # post '/cbgp/projects' do
+  #   #    begin
+  #   cbgp_id = params['cbgp_id']
+  #   @questionnaire = generate_questionnaire(questionnaire_type: 'add-project')
+  #   @entry = if cbgp_id
+  #              CBGP::Project.load_from_cbgp_id(cbgp_id: cbgp_id)
+  #            else
+  #              CBGP::Project.new
+  #            end
+  #   halt erb :projects
+  #   #    rescue StandardError => e
+  #   #      halt 422, e.to_s
+  #   #    end
+  #   #    halt 403
+  # end
+
+  # # This comes from the bottom part of projects.erb, the questionnaire section, posted as params
+  # post '/cbgp/validate-project' do
+  #   @questionnaire = generate_questionnaire(questionnaire_type: 'add-project')
+  #   @entry = CBGP::Project.load_from_params(params: params)
+  #   halt erb :projects
+  # end
+
+
+    # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # Members Dashboard
+
+  # get '/cbgp/members' do
+  #   cbgp_id = params['cbgp_id']
+  #   @questionnaire = generate_questionnaire(questionnaire_type: 'add-member')
+  #   @entry = if cbgp_id
+  #              CBGP::Member.load_from_cbgp_id(cbgp_id: cbgp_id)
+  #            else
+  #              CBGP::Member.new
+  #            end
+  #   halt erb :members
+  # end
+
+  # # This comes from the top part of projects.erb, wehre there's a CBGP ID field that can be posted
+  # post '/cbgp/members' do
+  #   #    begin
+  #   cbgp_id = params['cbgp_id']
+  #   @questionnaire = generate_questionnaire(questionnaire_type: 'add-member')
+  #   @entry = if cbgp_id
+  #              CBGP::Member.load_from_cbgp_id(cbgp_id: cbgp_id)
+  #            else
+  #              CBGP::Member.new
+  #            end
+  #   halt erb :members
+  #   #    rescue StandardError => e
+  #   #      halt 422, e.to_s
+  #   #    end
+  #   #    halt 403
+  # end
+
+  # # This comes from the bottom part of projects.erb, the questionnaire section, posted as params
+  # post '/cbgp/validate-member' do
+  #   @questionnaire = generate_questionnaire(questionnaire_type: 'add-member')
+  #   @entry = CBGP::Member.load_from_params(params: params)
+  #   halt erb :members
+  # end
+
 
   post '/cbgp/publications/bulk' do
     dois = params[:dois]
@@ -173,56 +330,7 @@ def set_routes
     halt erb :bulkpubs
   end
 
-  post '/cbgp/validate-publication' do
-    @questionnaire = generate_questionnaire(questionnaire_type: 'add-publication')
-    @entry = CBGP::Publication.load_from_params(params: params)
-    halt erb :publications
-  end
 
-  # ----------------------------------------------------------------------------
-  # ----------------------------------------------------------------------------
-  # ----------------------------------------------------------------------------
-  # ----------------------------------------------------------------------------
-  # ----------------------------------------------------------------------------
-  # Projects Dashboard
 
-  # get "/cbgp/projects_dashboard" do
-  #   erb :projects_dashboard
-  # end
-
-  get '/cbgp/projects' do
-    cbgp_id = params['cbgp_id']
-    @questionnaire = generate_questionnaire(questionnaire_type: 'add-project')
-    @entry = if cbgp_id
-               CBGP::Project.load_from_cbgp_id(cbgp_id: cbgp_id)
-             else
-               CBGP::Project.new
-             end
-    halt erb :projects
-  end
-
-  # This comes from the top part of projects.erb, wehre there's a CBGP ID field that can be posted
-  post '/cbgp/projects' do
-    #    begin
-    cbgp_id = params['cbgp_id']
-    @questionnaire = generate_questionnaire(questionnaire_type: 'add-project')
-    @entry = if cbgp_id
-               CBGP::Project.load_from_cbgp_id(cbgp_id: cbgp_id)
-             else
-               CBGP::Project.new
-             end
-    halt erb :projects
-    #    rescue StandardError => e
-    #      halt 422, e.to_s
-    #    end
-    #    halt 403
-  end
-
-  # This comes from the bottom part of projects.erb, the questionnaire section, posted as params
-  post '/cbgp/validate-project' do
-    @questionnaire = generate_questionnaire(questionnaire_type: 'add-project')
-    @entry = CBGP::Project.load_from_params(params: params)
-    halt erb :projects
-  end
 end
 

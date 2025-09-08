@@ -35,8 +35,18 @@ module CBGP
       @id = Time.now.to_i unless id
     end
 
+    def self.load_from_params(params:)
+      #  select ?g where {graph ?g {?pub sio:SIO_000671 ?id . ?id  sio:SIO_000300 "#{doi}" ;
+      pub = CBGP::Parsers.params_parser_project(params: params)
+      res = retrieve_project_graph_query(doi: pub.doi)
+      oldgraphid = res.first[:g].to_s if res.first
+      CBGP::Publication.write_to_db(pub: pub, oldid: oldgraphid)
+      pub
+    end
+
+
     def write_to_db
-      write_center_to_db(center: self)
+      write_project_to_db(project: self)
     end
   end
 end

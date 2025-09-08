@@ -4,48 +4,26 @@ require_relative 'datacite_parser'
 require_relative 'openaire_parser'
 
 module CBGP
-  class Publication
-    attr_accessor :doi, :authors, :affiliations, :title, :journal, :volume, :date, :uniqid,
-                  :cbgp_corresponding, :pubtype, :oa, :scopusq, :scopusd1, :sochoa
+  class Member
+    attr_accessor :uniqid, :surnames, :names, :honorific, :upmid, :nationality, :position, :grupo
 
-    def initialize(doi: '', authors: [[]], affiliations: [[]],
-                   title: '', journal: '', date: '',
-                   cbgp_corresponding: '', pubtype: '',
-                   oa: '', scopusq: '', scopusd1: '', sochoa: '', uniqid: '')
-      @doi = doi
-      @authors = authors
-      @affiliations = affiliations
-      @title = title
-      @journal = journal
-      # @volume = volume
-      @date = date
-      @cbgp_corresponding = cbgp_corresponding
-      @pubtype = pubtype
-      @oa = oa
-      @scopusq = scopusq
-      @scopusd1 = scopusd1
-      @sochoa = sochoa
+    def initialize(surnames:, names:, honorific:, upmid:, grupo:)
       @uniqid = Time.now.to_i unless uniqid.match(/S/)
-    end
-
-    def full_ref
-      return '' unless doi
-
-      begin
-        ref = HTTParty.get("https://citation.doi.org/format?doi=#{doi}&style=apa&lang=en-US")
-      rescue StandardError => e
-        warn e.inspect
-        return ''
-      end
-      ref
+      @surnames = surnames
+      @names = names
+      @honorific = honorific
+      @nationality = nationality
+      @position = position
+      @upmid = upmid
+      @grupo = grupo
     end
 
     def self.load_from_params(params:)
       #  select ?g where {graph ?g {?pub sio:SIO_000671 ?id . ?id  sio:SIO_000300 "#{doi}" ;
-      pub = CBGP::Parsers.params_parser_publication(params: params)
+      pub = CBGP::Parsers.params_parser(params: params)
       res = retrieve_pub_graph_query(doi: pub.doi)
       oldgraphid = res.first[:g].to_s if res.first
-      CBGP::Publication.write_to_db(pub: pub, oldid: oldgraphid)
+      CBGP::Member.write_to_db()
       pub
     end
 

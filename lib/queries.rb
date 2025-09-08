@@ -4,10 +4,17 @@ require "linkeddata"
 require "sparql"
 require "sparql/client"
 
-host = ENV["GRAPHDB_HOST"] || "localhost:7200"
-ONTOLOGY = RDF::Repository.load("https://w3id.org/CBGP-App#")
-PUBLICATIONS = SPARQL::Client.new("http://cbgp:cbgp@#{host}/repositories/publications")
-PUBLICATIONS_UPDATE = SPARQL::Client.new("http://cbgp:cbgp@#{host}/repositories/publications/statements")
+host = GRAPHDB_HOST || "localhost:7200"
+user = GRAPHDB_USER || "cbgp"
+pass = GRAPHDB_PASS || "cbgp"
+
+ONTOLOGY = RDF::Repository.load(CBGP_KB)  # set in configuration.rb and/or in docker-compose
+PUBLICATIONS = SPARQL::Client.new("http://#{GRAPHDB_USER}:#{GRAPHDB_PASS}@#{host}/repositories/publications")
+PUBLICATIONS_UPDATE = SPARQL::Client.new("http://#{GRAPHDB_USER}:#{GRAPHDB_PASS}@#{host}/repositories/publications/statements")
+PROJECTS = SPARQL::Client.new("http://#{GRAPHDB_USER}:#{GRAPHDB_PASS}@#{host}/repositories/projects")
+PROJECTS_UPDATE = SPARQL::Client.new("http://#{GRAPHDB_USER}:#{GRAPHDB_PASS}@#{host}/repositories/projects/statements")
+PERSONNEL = SPARQL::Client.new("http://#{GRAPHDB_USER}:#{GRAPHDB_PASS}@#{host}/repositories/personnel")
+PERSONNEL_UPDATE = SPARQL::Client.new("http://#{GRAPHDB_USER}:#{GRAPHDB_PASS}@#{host}/repositories/personnel/statements")
 
 PREFIXES = "PREFIX cbgp: <https://w3id.org/CBGP-App#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
@@ -23,6 +30,23 @@ PREFIX obo: <http://purl.obolibrary.org/obo/>
 PREFIX ncit: <http://purl.obolibrary.org/obo/>
 PREFIX local: <urn:local:>
 "
+
+def get_questionnaire_types_query()
+  # questionnaire_type = Add/Edit publications (#add-publication) has-fields Publication Questions (#new-publication-questions)
+
+  qs = <<GET_QUESTIONNAIRE_TYPES
+    #{PREFIXES}
+
+    SELECT ?questionnaire_type ?questionnaire_label  WHERE {
+      ?questionnaire_type rdfs:subClassOf cbgp:forms .
+      ?questionnaire_type rdfs:label ?questionnaire_label .
+    }
+GET_QUESTIONNAIRE_TYPES
+  qs = SPARQL.parse(qs)
+  results = qs.execute(ONTOLOGY)
+  results.map { |r| r.to_h.transform_values(&:to_s) } # https://w3id.org/CBGP-App#add-member => "Add/Edit Member"
+end
+
 
 def get_questionnaire_sections_query(questionnaire_type:)
   # questionnaire_type = Add/Edit publications (#add-publication) has-fields Publication Questions (#new-publication-questions)
@@ -100,6 +124,24 @@ def get_label_for_id(id:)
 
   res = lab.execute(ONTOLOGY)
   res.first[:label].to_s
+end
+
+def field_query(fieldid:)
+  field = SPARQL.parse("
+      #{PREFIXES}
+      SELECT ?label ?answerblock ?objectclass ?objectmethod ?questionorder ?cardinality ?widgettype
+      WHERE {
+          cbgp:#{fieldid} rdfs:label ?label ;
+            local:answer-block ?answerblock ;
+            local:method ?objectmethod ;
+            local:question-order ?questionorder ;
+            local:widget-cardinality ?cardinality ;
+            local:widget-type ?widgettype .
+          OPTIONAL {cbgp:#{fieldid} local:object-class ?objectclass .}
+
+      }
+            ")
+  field.execute(ONTOLOGY)
 end
 
 ###################### Publications ##################
@@ -334,22 +376,73 @@ WRITE_AFFILS
 WRITE_AUTHORS
     PUBLICATIONS_UPDATE.update(publication)
   end
+
+
+
+###################### Projects ##################
+###################### Projects ##################
+###################### Projects ##################
+###################### Projects ##################
+###################### Projects ##################
+###################### Projects ##################
+
+def retrieve_project_core_query(doi:, graph:)
+  project = <<~READ
+          #{PREFIXES}
+
+    SELECT   ?doi ?scopusq ?scopusd1 ?oa ?sochoa ?pubtype ?title ?date ?journal ?volume
+    WHERE{ GRAPH <#{graph}> {
+                ?publicationn rdf:type sio:SIO_000087 ;  # n equates to "node", without n is "value"
+                    sio:SIO_000671 ?idn ;
+                    cbgp:has_scopus_q ?scopusqn ;
+                    cbgp:has_scopus_d ?scopusd1n ;
+                    cbgp:is_open_access ?oan ;
+                    cbgp:has_so_acknowledgement ?sochoan ;
+                    cbgp:cbgp_corresponding ?cbgp_correspondingn ;
+                    cbgp:is_publication_type ?pubtypen ;
+                    cbgp:has_title ?titlen ;
+                    cbgp:has_volume ?volumen ;
+                    cbgp:has_publication_year ?yearn ;
+                    cbgp:is_published_in ?journaln .
+
+                ?idn  sio:SIO_000300 ?doi ;
+                              rdf:type sio:SIO_000115 ;
+                              rdf:type edam:data_1188 .
+
+                ?scopusqn  sio:SIO_000300 ?scopusq ;
+                              rdf:type cbgp:scopusq .
+
+                ?scopusd1n  sio:SIO_000300 ?scopusd1 ;
+                              rdf:type cbgp:scopusd1 .
+
+                ?oan  sio:SIO_000300 ?oa ;
+                              rdf:type cbgp:oa .
+
+                ?sochoan  sio:SIO_000300 ?sochoa ;
+                              rdf:type cbgp:sochoa .
+
+                ?cbgp_correspondingn  sio:SIO_000300 ?cbgp_corresponding ;
+                              rdf:type cbgp:cbgp_corresponding .
+
+                ?pubtypen  sio:SIO_000300 ?pubtype ;
+                              rdf:type cbgp:pubtype .
+
+                ?titlen  sio:SIO_000300 ?title ;
+                              rdf:type cbgp:title .
+
+                ?daten  sio:SIO_000300 ?date ;
+                              rdf:type sio:SIO_001314 .
+
+                ?journaln  sio:SIO_000300 ?journal ;
+                              rdf:type cbgp:journal ;
+                              rdf:type obo:GSSO_004587 .
+
+                ?volumen  sio:SIO_000300 ?volume ;
+                              rdf:type cbgp:volume .
+
+                    }}
+
+  READ
+  PUBLICATIONS.query(publication)
 end
-
-def field_query(fieldid:)
-  field = SPARQL.parse("
-      #{PREFIXES}
-      SELECT ?label ?answerblock ?objectclass ?objectmethod ?questionorder ?cardinality ?widgettype
-      WHERE {
-          cbgp:#{fieldid} rdfs:label ?label ;
-            local:answer-block ?answerblock ;
-            local:method ?objectmethod ;
-            local:question-order ?questionorder ;
-            local:widget-cardinality ?cardinality ;
-            local:widget-type ?widgettype .
-          OPTIONAL {cbgp:#{fieldid} local:object-class ?objectclass .}
-
-      }
-            ")
-  field.execute(ONTOLOGY)
 end

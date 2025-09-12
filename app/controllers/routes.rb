@@ -22,23 +22,6 @@ def set_routes
     use Rack::Session::Cookie, key: 'rack.session', secret: CBGP_SECRET
   end
 
-  helpers do
-    def logged_in?
-      session[:username]
-    end
-
-    def current_user
-      session[:username]
-    end
-
-    def scss(template, options = {})
-      # Render SCSS using Compass
-      Compass.sass_engine_options[:load_paths] ||= []
-      Compass.sass_engine_options[:load_paths] << File.join(settings.root, 'stylesheets')
-      render :scss, template, options
-    end
-  end
-
   get '/cbgp/stylesheets/:name.css' do
     content_type 'text/css', charset: 'utf-8'
     scss(:"stylesheets/#{params[:name]}")
@@ -338,7 +321,4 @@ def set_routes
     halt erb :bulkpubs
   end
 
-
-
 end
-

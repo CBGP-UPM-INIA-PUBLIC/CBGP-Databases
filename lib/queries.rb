@@ -31,15 +31,16 @@ PREFIX ncit: <http://purl.obolibrary.org/obo/>
 PREFIX local: <urn:local:>
 "
 
-def get_questionnaire_types_query()
+def get_questionnaire_types(language: 'en')
   # questionnaire_type = Add/Edit publications (#add-publication) has-fields Publication Questions (#new-publication-questions)
 
   qs = <<GET_QUESTIONNAIRE_TYPES
     #{PREFIXES}
 
-    SELECT ?questionnaire_type ?questionnaire_label  WHERE {
+    SELECT ?questionnaire_type ?questionnaire_label WHERE {
       ?questionnaire_type rdfs:subClassOf cbgp:forms .
       ?questionnaire_type rdfs:label ?questionnaire_label .
+      FILTER (lang(?questionnaire_label) = "#{language}")
     }
 GET_QUESTIONNAIRE_TYPES
   qs = SPARQL.parse(qs)
@@ -48,64 +49,72 @@ GET_QUESTIONNAIRE_TYPES
 end
 
 
-def get_questionnaire_sections_query(questionnaire_type:)
+def get_questionnaire_sections_query(questionnaire_type:, language: 'en')
+  return [] unless questionnaire_type
   # questionnaire_type = Add/Edit publications (#add-publication) has-fields Publication Questions (#new-publication-questions)
 
   qs = <<GET_QUESTIONNAIRE_SECTIONS
     #{PREFIXES}
 
-    SELECT ?sec (str(?seclab) as ?label)  WHERE {
-      cbgp:#{questionnaire_type} local:has-fields ?sec . #  "add-publications", "add-project" "add-member"
+    SELECT ?sec (str(?seclab) as ?label) WHERE {
+      cbgp:#{questionnaire_type} local:has-fields ?sec . # "add-publications", "add-project", "add-member"
       ?sec rdfs:label ?seclab .
+      FILTER (lang(?seclab) = "#{language}")
     }
 GET_QUESTIONNAIRE_SECTIONS
+warn "QUERY IS #{qs}"
   qs = SPARQL.parse(qs)
   qs.execute(ONTOLOGY)
 end
 
-def get_section_questions_query(sectionid:) # sectionid  must be just teh ID
+def get_section_questions_query(sectionid:, language: 'en')
   qs = <<GET_SECTION_QUESTIONS
     #{PREFIXES}
 
-    SELECT ?q (str(?qlab) as ?label) ?widget ?class ?method ?cardinality ?answers ?sequence  WHERE {
+    SELECT ?q (str(?qlab) as ?label) ?widget ?class ?method ?cardinality ?answers ?sequence WHERE {
     ?q rdfs:subClassOf cbgp:#{sectionid} .
     ?q rdfs:label ?qlab .
+    FILTER (lang(?qlab) = "#{language}")
     ?q local:widget-type ?widget .
     ?q local:widget-cardinality ?cardinality .
     ?q local:answer-block ?answers .
     OPTIONAL {?q local:object-class ?class }.
     ?q local:method ?method .
     ?q local:question-order ?sequence .
-  } order by ?sequence
+  } ORDER BY ?sequence
 
 GET_SECTION_QUESTIONS
   qs = SPARQL.parse(qs)
   qs.execute(ONTOLOGY)
 end
 
-def get_answer_block_query(ablockid:)
+def get_answer_block_query(ablockid:, language: 'en')
   a = <<GET_ANSWER_BLOCK
     #{PREFIXES}
 
-  SELECT DISTINCT ?aid ?label ?sequence WHERE {
+    SELECT DISTINCT ?aid ?label ?sequence WHERE {
       ?aid rdfs:subClassOf cbgp:#{ablockid} .
       ?aid rdfs:label ?label .
+      FILTER (lang(?label) = "#{language}")
       ?aid local:answer-order ?sequence .
-  } ORDER BY ?sequence
+    } ORDER BY ?sequence
 GET_ANSWER_BLOCK
+warn "ANSWERBLOCK QUERY IS #{a}"
+
   a = SPARQL.parse(a)
   a.execute(ONTOLOGY)
 end
 
-def get_label_for_questionnaire_type(id:)
+def get_label_for_questionnaire_type(id:, language: 'en')
   lab = SPARQL.parse("
     #{PREFIXES}
 
-    select ?plabel ?label where {
-    cbgp:#{id} rdfs:label ?label ;
+    SELECT ?plabel ?label WHERE {
+      cbgp:#{id} rdfs:label ?label ;
                  rdfs:subClassOf ?parent .
-          ?parent rdfs:label ?plabel
-
+      ?parent rdfs:label ?plabel
+      FILTER (lang(?label) = '#{language}')
+      FILTER (lang(?plabel) = '#{language}')
     }
           ")
 
@@ -113,12 +122,13 @@ def get_label_for_questionnaire_type(id:)
   [res.first[:plabel].to_s, res.first[:label].to_s]
 end
 
-def get_label_for_id(id:)
+def get_label_for_id(id:, language: 'en')
   lab = SPARQL.parse("
     #{PREFIXES}
 
-    select ?label where {
-      		cbgp:#{id} rdfs:label ?label .
+    SELECT ?label WHERE {
+      cbgp:#{id} rdfs:label ?label .
+      FILTER (lang(?label) = '#{language}')
     }
           ")
 
@@ -126,21 +136,21 @@ def get_label_for_id(id:)
   res.first[:label].to_s
 end
 
-def field_query(fieldid:)
+def field_query(fieldid:, language: 'en')
   field = SPARQL.parse("
-      #{PREFIXES}
-      SELECT ?label ?answerblock ?objectclass ?objectmethod ?questionorder ?cardinality ?widgettype
-      WHERE {
-          cbgp:#{fieldid} rdfs:label ?label ;
-            local:answer-block ?answerblock ;
-            local:method ?objectmethod ;
-            local:question-order ?questionorder ;
-            local:widget-cardinality ?cardinality ;
-            local:widget-type ?widgettype .
-          OPTIONAL {cbgp:#{fieldid} local:object-class ?objectclass .}
-
-      }
-            ")
+    #{PREFIXES}
+    SELECT ?label ?answerblock ?objectclass ?objectmethod ?questionorder ?cardinality ?widgettype
+    WHERE {
+        cbgp:#{fieldid} rdfs:label ?label ;
+          local:answer-block ?answerblock ;
+          local:method ?objectmethod ;
+          local:question-order ?questionorder ;
+          local:widget-cardinality ?cardinality ;
+          local:widget-type ?widgettype .
+        FILTER (lang(?label) = '#{language}')
+        OPTIONAL {cbgp:#{fieldid} local:object-class ?objectclass .}
+    }
+          ")
   field.execute(ONTOLOGY)
 end
 
@@ -386,63 +396,63 @@ WRITE_AUTHORS
 ###################### Projects ##################
 ###################### Projects ##################
 
-def retrieve_project_core_query(doi:, graph:)
-  project = <<~READ
-          #{PREFIXES}
+  def retrieve_project_core_query(doi:, graph:)
+    # project = <<~READ
+    #         #{PREFIXES}
 
-    SELECT   ?doi ?scopusq ?scopusd1 ?oa ?sochoa ?pubtype ?title ?date ?journal ?volume
-    WHERE{ GRAPH <#{graph}> {
-                ?publicationn rdf:type sio:SIO_000087 ;  # n equates to "node", without n is "value"
-                    sio:SIO_000671 ?idn ;
-                    cbgp:has_scopus_q ?scopusqn ;
-                    cbgp:has_scopus_d ?scopusd1n ;
-                    cbgp:is_open_access ?oan ;
-                    cbgp:has_so_acknowledgement ?sochoan ;
-                    cbgp:cbgp_corresponding ?cbgp_correspondingn ;
-                    cbgp:is_publication_type ?pubtypen ;
-                    cbgp:has_title ?titlen ;
-                    cbgp:has_volume ?volumen ;
-                    cbgp:has_publication_year ?yearn ;
-                    cbgp:is_published_in ?journaln .
+    #   SELECT   ?doi ?scopusq ?scopusd1 ?oa ?sochoa ?pubtype ?title ?date ?journal ?volume
+    #   WHERE{ GRAPH <#{graph}> {
+    #               ?publicationn rdf:type sio:SIO_000087 ;  # n equates to "node", without n is "value"
+    #                   sio:SIO_000671 ?idn ;
+    #                   cbgp:has_scopus_q ?scopusqn ;
+    #                   cbgp:has_scopus_d ?scopusd1n ;
+    #                   cbgp:is_open_access ?oan ;
+    #                   cbgp:has_so_acknowledgement ?sochoan ;
+    #                   cbgp:cbgp_corresponding ?cbgp_correspondingn ;
+    #                   cbgp:is_publication_type ?pubtypen ;
+    #                   cbgp:has_title ?titlen ;
+    #                   cbgp:has_volume ?volumen ;
+    #                   cbgp:has_publication_year ?yearn ;
+    #                   cbgp:is_published_in ?journaln .
 
-                ?idn  sio:SIO_000300 ?doi ;
-                              rdf:type sio:SIO_000115 ;
-                              rdf:type edam:data_1188 .
+    #               ?idn  sio:SIO_000300 ?doi ;
+    #                             rdf:type sio:SIO_000115 ;
+    #                             rdf:type edam:data_1188 .
 
-                ?scopusqn  sio:SIO_000300 ?scopusq ;
-                              rdf:type cbgp:scopusq .
+    #               ?scopusqn  sio:SIO_000300 ?scopusq ;
+    #                             rdf:type cbgp:scopusq .
 
-                ?scopusd1n  sio:SIO_000300 ?scopusd1 ;
-                              rdf:type cbgp:scopusd1 .
+    #               ?scopusd1n  sio:SIO_000300 ?scopusd1 ;
+    #                             rdf:type cbgp:scopusd1 .
 
-                ?oan  sio:SIO_000300 ?oa ;
-                              rdf:type cbgp:oa .
+    #               ?oan  sio:SIO_000300 ?oa ;
+    #                             rdf:type cbgp:oa .
 
-                ?sochoan  sio:SIO_000300 ?sochoa ;
-                              rdf:type cbgp:sochoa .
+    #               ?sochoan  sio:SIO_000300 ?sochoa ;
+    #                             rdf:type cbgp:sochoa .
 
-                ?cbgp_correspondingn  sio:SIO_000300 ?cbgp_corresponding ;
-                              rdf:type cbgp:cbgp_corresponding .
+    #               ?cbgp_correspondingn  sio:SIO_000300 ?cbgp_corresponding ;
+    #                             rdf:type cbgp:cbgp_corresponding .
 
-                ?pubtypen  sio:SIO_000300 ?pubtype ;
-                              rdf:type cbgp:pubtype .
+    #               ?pubtypen  sio:SIO_000300 ?pubtype ;
+    #                             rdf:type cbgp:pubtype .
 
-                ?titlen  sio:SIO_000300 ?title ;
-                              rdf:type cbgp:title .
+    #               ?titlen  sio:SIO_000300 ?title ;
+    #                             rdf:type cbgp:title .
 
-                ?daten  sio:SIO_000300 ?date ;
-                              rdf:type sio:SIO_001314 .
+    #               ?daten  sio:SIO_000300 ?date ;
+    #                             rdf:type sio:SIO_001314 .
 
-                ?journaln  sio:SIO_000300 ?journal ;
-                              rdf:type cbgp:journal ;
-                              rdf:type obo:GSSO_004587 .
+    #               ?journaln  sio:SIO_000300 ?journal ;
+    #                             rdf:type cbgp:journal ;
+    #                             rdf:type obo:GSSO_004587 .
 
-                ?volumen  sio:SIO_000300 ?volume ;
-                              rdf:type cbgp:volume .
+    #               ?volumen  sio:SIO_000300 ?volume ;
+    #                             rdf:type cbgp:volume .
 
-                    }}
+    #                   }}
 
-  READ
-  PUBLICATIONS.query(publication)
-end
+    # READ
+    # PUBLICATIONS.query(publication)
+  end
 end

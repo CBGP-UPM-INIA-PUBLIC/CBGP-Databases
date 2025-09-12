@@ -1,11 +1,14 @@
 
     <div class="databases">
-    
-      <form action="/cbgp/member" method="POST">
+
+    <% label1, label2 = ["Staff Member", "Name"] if @database =~ /member/ %>
+    <% label1, label2 = ["Project", "Project CBGP ID"] if @database =~ /project/ %>
+
+      <form action="/cbgp/dataset/<%= @database %>" method="POST">
       <table id="member_lookup" width="30%">
-        <tr> <th>Add/Find Staff Member</th> </tr>
+        <tr> <th>Add/Find <%= label1 %></th> </tr>
         <tr> <td>
-          <label for='staff_name'>Name Lookup</label>
+          <label for='staff_name'><%= label2 %> Lookup</label>
           <input type='text' name='name' id="name">
         </td></tr>
         <tr> <td>
@@ -16,15 +19,15 @@
 
       <form action="/cbgp/validate-member" method="post">
         <table id="member_validate" width="30%">
-          <tr> <th>Validate/Edit Member</th> </tr>
+          <tr> <th>Validate/Edit <%= label1 %></th> </tr>
           <tr><td>
-            <input type="submit" value="Submit Edited Member"/>
+            <input type="submit" value="Submit Edited <%= label1 %>"/>
           </td></tr>
           <tr> <td>
           <%= erb :_questionnaire %> 
           </td></tr>
           <tr><td>
-            <input type="submit" value="Submit Edited Member"/>
+            <input type="submit" value="Submit Edited <%= label1 %>"/>
           </td></tr>
         </table>
       </form>

@@ -17,7 +17,7 @@ end
 
 def identifier_type(id: nil)
   type = false
-  if id ~= /doi/
+  if id =~ /doi/
     type = 'doi'
   elsif id
     type = 'db_entry'

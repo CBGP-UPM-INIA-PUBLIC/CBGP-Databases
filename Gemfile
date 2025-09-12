@@ -55,3 +55,5 @@ gem "compass", "~> 1.0"
 gem "sanitize", "~> 7.0"
 
 gem "httparty", "~> 0.23.1"
+
+gem "dotenv", "~> 3.1"

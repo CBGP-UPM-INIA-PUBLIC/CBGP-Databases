@@ -67,6 +67,7 @@ GEM
     date (3.4.1)
     diff-lcs (1.5.1)
     domain_name (0.6.20240107)
+    dotenv (3.1.8)
     drb (2.2.1)
     ebnf (2.4.0)
       htmlentities (~> 4.3)
@@ -418,6 +419,7 @@ DEPENDENCIES
   cgi (~> 0.4.1)
   compass (~> 1.0)
   csv
+  dotenv (~> 3.1)
   erb (~> 4.0)
   fileutils (~> 1.5.0)
   httparty (~> 0.23.1)

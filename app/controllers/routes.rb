@@ -131,13 +131,12 @@ def set_routes
     database = params[:database]
     @questionnaire = generate_questionnaire(questionnaire_type: database)
     if database == "add-publication"
-      @entry = if idtype == "doi"
-                CBGP::Publication.load_from_doi(doi: doi)
-              else
-                CBGP::Publication.new
-              end
-      halt erb :publications
-            end
+      @entry = CBGP::Publication.new
+      halt erb :publications, layout: :database_layout
+    else
+      @entry = CBGP::Dataset.new(type: database)
+      halt erb :dataset, layout: :database_layout
+    end
   end
 
   post '/cbgp/dataset/:database' do
@@ -151,7 +150,7 @@ def set_routes
       else
         @entry = CBGP::Publication.new
       end
-      halt erb :publications
+      halt erb :publications, layout: :database_layout
     end
     if database == "add-member" || database == "add-project" 
       if idtype
@@ -159,14 +158,23 @@ def set_routes
       else
         @entry = CBGP::Dataset.new(type: database)
       end
-      halt erb :dataset
+      halt erb :dataset, layout: :database_layout
     end
   end
 
-  post '/cbgp/validate-publication' do
-    @questionnaire = generate_questionnaire(questionnaire_type: 'add-publication')
-    @entry = CBGP::Publication.load_from_params(params: params)
-    halt erb :publications
+  post '/cbgp/validate-dataset/:database' do
+    @database = params[:database]
+    @questionnaire = generate_questionnaire(questionnaire_type: database)
+
+    if database == "add-publication"
+      @entry = CBGP::Publication.load_from_params(params: params)
+      halt erb :publications, layout: database_layout
+    elsif database == "add-member" || database == "add-project" 
+      @entry = CBGP::Dataset.load_from_params(params: params)
+      halt erb :dataset, layout: :database_layout
+    end
+    halt 406
+    
   end
 
 

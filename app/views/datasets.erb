@@ -1,0 +1,33 @@
+
+    <div class="databases">
+    
+      <form action="/cbgp/member" method="POST">
+      <table id="member_lookup" width="30%">
+        <tr> <th>Add/Find Staff Member</th> </tr>
+        <tr> <td>
+          <label for='staff_name'>Name Lookup</label>
+          <input type='text' name='name' id="name">
+        </td></tr>
+        <tr> <td>
+          <input type="submit" value="Submit"/>
+        </td></tr>
+      </table>
+      </form>
+
+      <form action="/cbgp/validate-member" method="post">
+        <table id="member_validate" width="30%">
+          <tr> <th>Validate/Edit Member</th> </tr>
+          <tr><td>
+            <input type="submit" value="Submit Edited Member"/>
+          </td></tr>
+          <tr> <td>
+          <%= erb :_questionnaire %> 
+          </td></tr>
+          <tr><td>
+            <input type="submit" value="Submit Edited Member"/>
+          </td></tr>
+        </table>
+      </form>
+ 
+    </div>
+

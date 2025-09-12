@@ -1,43 +1,4 @@
-<!DOCTYPE html>
-<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
-<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
-<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
-  
-  <%= erb :_head %>
 
-  <body>
-  <script>
-    function openActionPanel(cid) {
-      var x = document.getElementById(cid);
-      if (x.style.display === "none") {
-        x.style.display = "block";
-      } else {
-        x.style.display = "none";
-      }
-    }
-  </script>
-
-  
-      <%= erb :_logo_head %>
-
-
-
-    <div style="clear: both;">
-      <br/><br/>
-
-      <h1>CBGP - Publications Dashboard</h1>
-      <br/>
-    </div>
-    <% if defined?(messages) && messages.any? %>
-    <div class="error-messages">
-      <ul>
-        <% messages.each do |mes| %>
-          <li><%= mes %></li>
-        <% end %>
-      </ul>
-    </div>
-    <% end %>
 
     <div class="databases">
     
@@ -57,11 +18,11 @@
       </table>
       </form>
 
-      <form action="/cbgp/validate-publication" method="post">
-        <table id="publication_validate" width="30%">
-          <tr> <th>Validate/Edit Publication</th> </tr>
+      <form action="/cbgp/validate-dataset/<%= @database %>" method="post">
+        <table id="dataset_validate" width="30%">
+          <tr> <th>Validate Entry</th> </tr>
           <tr><td>
-            <input type="submit" value="Submit Edited Publication"/>
+            <input type="submit" value="Submit Edited Record"/>
           </td></tr>
           <tr> <td>
             <div class="citation-box" style="border: 1px solid black; width: 700px; overflow: auto;">
@@ -72,25 +33,9 @@
           <%= erb :_questionnaire %> 
           </td></tr>
           <tr><td>
-            <input type="submit" value="Submit Edited Publication"/>
+            <input type="submit" value="Submit Edited Record"/>
           </td></tr>
         </table>
       </form>
  
     </div>
-
-
-    <div style="clear: both;">
-      <%= erb :_footer %>
-    </div>
-
-
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-    <!--[if lt IE 7]>
-      <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.2/CFInstall.min.js"></script>
-      <script>window.attachEvent("onload",function(){CFInstall.check({mode:"overlay"})})</script>
-    <![endif]-->
-  </body>
-</html>
-
-

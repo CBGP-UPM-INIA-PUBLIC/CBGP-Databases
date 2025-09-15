@@ -1,5 +1,4 @@
 <?xml version="1.0"?>
-
 <rdf:RDF xmlns="https://w3id.org/CBGP-App#"
      xml:base="https://w3id.org/CBGP-App"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
@@ -2082,7 +2081,7 @@
         <local:object-class>String</local:object-class>
         <local:question-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</local:question-order>
         <local:widget-cardinality>Single</local:widget-cardinality>
-        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#text"/>
+        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#textfield"/>
     </owl:Class>
     
 
@@ -2143,7 +2142,7 @@
         <local:object-class>String</local:object-class>
         <local:question-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">13</local:question-order>
         <local:widget-cardinality>Single</local:widget-cardinality>
-        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#text"/>
+        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#textfield"/>
     </owl:Class>
     
 
@@ -2206,7 +2205,7 @@
         <local:object-class>String</local:object-class>
         <local:question-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">2</local:question-order>
         <local:widget-cardinality>single</local:widget-cardinality>
-        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#text"/>
+        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#textfield"/>
     </owl:Class>
     
 
@@ -2253,7 +2252,7 @@
         <local:method>date_of_birth</local:method>
         <local:question-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">5</local:question-order>
         <local:widget-cardinality>Single</local:widget-cardinality>
-        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#text"/>
+        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#textfield"/>
     </owl:Class>
     
 
@@ -2298,7 +2297,7 @@
         <local:object-class>office</local:object-class>
         <local:question-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">8</local:question-order>
         <local:widget-cardinality>Single</local:widget-cardinality>
-        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#text"/>
+        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#textfield"/>
     </owl:Class>
     
 
@@ -2704,7 +2703,7 @@
         <local:object-class>String</local:object-class>
         <local:question-order rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">7</local:question-order>
         <local:widget-cardinality>single</local:widget-cardinality>
-        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#text"/>
+        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#textfield"/>
     </owl:Class>
     
 
@@ -2720,7 +2719,7 @@
         <local:object-class>String</local:object-class>
         <local:question-order rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">4</local:question-order>
         <local:widget-cardinality>single</local:widget-cardinality>
-        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#text"/>
+        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#textfield"/>
     </owl:Class>
     
 
@@ -2736,7 +2735,7 @@
         <local:object-class>String</local:object-class>
         <local:question-order rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">1</local:question-order>
         <local:widget-cardinality>single</local:widget-cardinality>
-        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#text"/>
+        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#textfield"/>
     </owl:Class>
     
 
@@ -2752,7 +2751,7 @@
         <local:object-class>String</local:object-class>
         <local:question-order rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">5</local:question-order>
         <local:widget-cardinality>single</local:widget-cardinality>
-        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#text"/>
+        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#textfield"/>
     </owl:Class>
     
 
@@ -3569,7 +3568,7 @@
         <local:object-class>String</local:object-class>
         <local:question-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">11</local:question-order>
         <local:widget-cardinality>single</local:widget-cardinality>
-        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#text"/>
+        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#textfield"/>
     </owl:Class>
     
 
@@ -3585,7 +3584,7 @@
         <local:object-class>String</local:object-class>
         <local:question-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">7</local:question-order>
         <local:widget-cardinality>single</local:widget-cardinality>
-        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#text"/>
+        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#textfield"/>
     </owl:Class>
     
 
@@ -3618,7 +3617,7 @@
         <local:object-class>String</local:object-class>
         <local:question-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">6</local:question-order>
         <local:widget-cardinality>single</local:widget-cardinality>
-        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#text"/>
+        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#textfield"/>
     </owl:Class>
     
 
@@ -3634,7 +3633,7 @@
         <local:object-class>String</local:object-class>
         <local:question-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">12</local:question-order>
         <local:widget-cardinality>single</local:widget-cardinality>
-        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#text"/>
+        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#textfield"/>
     </owl:Class>
     
 
@@ -3650,7 +3649,7 @@
         <local:object-class>String</local:object-class>
         <local:question-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">13</local:question-order>
         <local:widget-cardinality>single</local:widget-cardinality>
-        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#text"/>
+        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#textfield"/>
     </owl:Class>
     
 
@@ -3666,7 +3665,7 @@
         <local:object-class>String</local:object-class>
         <local:question-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">16</local:question-order>
         <local:widget-cardinality>single</local:widget-cardinality>
-        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#text"/>
+        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#textfield"/>
     </owl:Class>
     
 
@@ -3682,7 +3681,7 @@
         <local:object-class>String</local:object-class>
         <local:question-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">14</local:question-order>
         <local:widget-cardinality>single</local:widget-cardinality>
-        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#text"/>
+        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#textfield"/>
     </owl:Class>
     
 
@@ -3698,7 +3697,7 @@
         <local:object-class>String</local:object-class>
         <local:question-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">15</local:question-order>
         <local:widget-cardinality>single</local:widget-cardinality>
-        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#text"/>
+        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#textfield"/>
     </owl:Class>
     
 
@@ -3714,7 +3713,7 @@
         <local:object-class>String</local:object-class>
         <local:question-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">10</local:question-order>
         <local:widget-cardinality>single</local:widget-cardinality>
-        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#text"/>
+        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#textfield"/>
     </owl:Class>
     
 
@@ -3730,7 +3729,7 @@
         <local:object-class>String</local:object-class>
         <local:question-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">2</local:question-order>
         <local:widget-cardinality>single</local:widget-cardinality>
-        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#text"/>
+        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#textfield"/>
     </owl:Class>
     
 
@@ -3746,7 +3745,7 @@
         <local:object-class>String</local:object-class>
         <local:question-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</local:question-order>
         <local:widget-cardinality>single</local:widget-cardinality>
-        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#text"/>
+        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#textfield"/>
     </owl:Class>
     
 
@@ -3762,7 +3761,7 @@
         <local:object-class>String</local:object-class>
         <local:question-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">3</local:question-order>
         <local:widget-cardinality>single</local:widget-cardinality>
-        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#text"/>
+        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#textfield"/>
     </owl:Class>
     
 
@@ -3778,7 +3777,7 @@
         <local:object-class>String</local:object-class>
         <local:question-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4</local:question-order>
         <local:widget-cardinality>single</local:widget-cardinality>
-        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#text"/>
+        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#textfield"/>
     </owl:Class>
     
 
@@ -3794,7 +3793,7 @@
         <local:object-class>String</local:object-class>
         <local:question-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">5</local:question-order>
         <local:widget-cardinality>single</local:widget-cardinality>
-        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#text"/>
+        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#textfield"/>
     </owl:Class>
     
 
@@ -3810,7 +3809,7 @@
         <local:object-class>String</local:object-class>
         <local:question-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">19</local:question-order>
         <local:widget-cardinality>single</local:widget-cardinality>
-        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#text"/>
+        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#textfield"/>
     </owl:Class>
     
 
@@ -4657,16 +4656,6 @@
     
 
 
-    <!-- https://w3id.org/CBGP-App#text -->
-
-    <owl:Class rdf:about="https://w3id.org/CBGP-App#text">
-        <rdfs:subClassOf rdf:resource="https://w3id.org/CBGP-App#widget-types"/>
-        <rdfs:label xml:lang="en">Text</rdfs:label>
-        <rdfs:label xml:lang="es">Texto</rdfs:label>
-    </owl:Class>
-    
-
-
     <!-- https://w3id.org/CBGP-App#textfield -->
 
     <owl:Class rdf:about="https://w3id.org/CBGP-App#textfield">
@@ -5012,20 +5001,6 @@
         <rdfs:label xml:lang="en">Zimbabwe</rdfs:label>
         <local:answer-order rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">29</local:answer-order>
     </owl:Class>
-    
-
-
-    <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Annotations
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
-
-    <rdf:Description rdf:about="http://www.w3.org/2002/07/owl#Thing">
-        <local:widget-type rdf:resource="https://w3id.org/CBGP-App#text"/>
-    </rdf:Description>
 </rdf:RDF>
 
 

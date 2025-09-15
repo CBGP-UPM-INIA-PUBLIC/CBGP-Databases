@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
-require "linkeddata"
-require "sparql"
-require "sparql/client"
+require 'linkeddata'
+require 'sparql'
+require 'sparql/client'
 
-host = GRAPHDB_HOST || "localhost:7200"
-user = GRAPHDB_USER || "cbgp"
-pass = GRAPHDB_PASS || "cbgp"
+host = GRAPHDB_HOST || 'localhost:7200'
+user = GRAPHDB_USER || 'cbgp'
+pass = GRAPHDB_PASS || 'cbgp'
 
-ONTOLOGY = RDF::Repository.load(CBGP_KB)  # set in configuration.rb and/or in docker-compose
+ONTOLOGY = RDF::Repository.load(CBGP_KB) # set in configuration.rb and/or in docker-compose
 PUBLICATIONS = SPARQL::Client.new("http://#{GRAPHDB_USER}:#{GRAPHDB_PASS}@#{host}/repositories/publications")
 PUBLICATIONS_UPDATE = SPARQL::Client.new("http://#{GRAPHDB_USER}:#{GRAPHDB_PASS}@#{host}/repositories/publications/statements")
 PROJECTS = SPARQL::Client.new("http://#{GRAPHDB_USER}:#{GRAPHDB_PASS}@#{host}/repositories/projects")
@@ -31,7 +31,7 @@ PREFIX ncit: <http://purl.obolibrary.org/obo/>
 PREFIX local: <urn:local:>
 "
 
-def get_questionnaire_types(language: 'en')
+def get_questionnaire_types_query(language: 'en')
   # questionnaire_type = Add/Edit publications (#add-publication) has-fields Publication Questions (#new-publication-questions)
 
   qs = <<GET_QUESTIONNAIRE_TYPES
@@ -48,9 +48,9 @@ GET_QUESTIONNAIRE_TYPES
   results.map { |r| r.to_h.transform_values(&:to_s) } # https://w3id.org/CBGP-App#add-member => "Add/Edit Member"
 end
 
-
 def get_questionnaire_sections_query(questionnaire_type:, language: 'en')
   return [] unless questionnaire_type
+
   # questionnaire_type = Add/Edit publications (#add-publication) has-fields Publication Questions (#new-publication-questions)
 
   qs = <<GET_QUESTIONNAIRE_SECTIONS
@@ -62,7 +62,7 @@ def get_questionnaire_sections_query(questionnaire_type:, language: 'en')
       FILTER (lang(?seclab) = "#{language}")
     }
 GET_QUESTIONNAIRE_SECTIONS
-warn "QUERY IS #{qs}"
+  warn "QUERY IS #{qs}"
   qs = SPARQL.parse(qs)
   qs.execute(ONTOLOGY)
 end
@@ -99,7 +99,7 @@ def get_answer_block_query(ablockid:, language: 'en')
       ?aid local:answer-order ?sequence .
     } ORDER BY ?sequence
 GET_ANSWER_BLOCK
-warn "ANSWERBLOCK QUERY IS #{a}"
+  warn "ANSWERBLOCK QUERY IS #{a}"
 
   a = SPARQL.parse(a)
   a.execute(ONTOLOGY)
@@ -387,14 +387,12 @@ WRITE_AUTHORS
     PUBLICATIONS_UPDATE.update(publication)
   end
 
-
-
-###################### Projects ##################
-###################### Projects ##################
-###################### Projects ##################
-###################### Projects ##################
-###################### Projects ##################
-###################### Projects ##################
+  ###################### Projects ##################
+  ###################### Projects ##################
+  ###################### Projects ##################
+  ###################### Projects ##################
+  ###################### Projects ##################
+  ###################### Projects ##################
 
   def retrieve_project_core_query(doi:, graph:)
     # project = <<~READ

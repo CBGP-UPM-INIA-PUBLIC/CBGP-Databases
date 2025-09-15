@@ -1,0 +1,11 @@
+<% 
+  # Get the date value (replace @answerblock[:answers] with your actual variable)
+  date_value = extract_date(@thisval)
+  # Ensure date is in YYYY-MM-DD format for input type="date"
+  formatted_date = date_value.match(/\d{4}-\d{2}-\d{2}/) ? date_value : ''
+%>
+<div class="inputtype">
+    <label for="mem5_ANSWER" style="font-size: .75em;">
+    </label><br/>
+    <input type="date" name="mem5" id="mem5_ANSWER" value="<%= formatted_date %>">
+  </div>

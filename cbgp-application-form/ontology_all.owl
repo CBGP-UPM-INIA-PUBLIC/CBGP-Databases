@@ -4965,7 +4965,7 @@
     <!-- https://w3id.org/CBGP-App#widget-types -->
 
     <owl:Class rdf:about="https://w3id.org/CBGP-App#widget-types">
-        <rdfs:label xml:lang="es">TIpos de widget</rdfs:label>
+        <rdfs:label xml:lang="es">Tipos de widget</rdfs:label>
         <rdfs:label xml:lang="en">Widget types</rdfs:label>
     </owl:Class>
     

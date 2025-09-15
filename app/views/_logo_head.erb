@@ -3,13 +3,30 @@
   <center>
     <div><a href="/cbgp/dashboard"><img src="/images/logo_CBGP.jpg" width="200px"/></a>
     </div>
-    <a href="/cbgp/logout"><input type="submit" value="LOGOUT"/></a>
+    <a href="/cbgp/logout"><input type="submit" value="LOGOUT"/></a><br/>
 
-<label for="cars">Language/Lengua</label>
+<label for="cars" style="color: white;">Language/Lengua</label>
 
-<select name="questionnaire_language" id="lang">
-  <option value="en">en</option>
-  <option value="es">es</option>
-</select> 
+<select name="language" id="language-select" onchange="setLanguage()">
+  <option value="en" <%= 'selected' if $language == 'en' %>>EN</option>
+  <option value="es" <%= 'selected' if $language == 'es' %>>ES</option>
+</select>
+
+<script>
+  function setLanguage() {
+    const select = document.getElementById('language-select');
+    const language = select.value;
+    fetch('/set_language', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `language=${language}`
+    }).then(() => {
+      // Optionally reload the page to reflect changes
+      window.location.reload();
+    });
+  }
+</script>
+
+
   </center>
 </div>

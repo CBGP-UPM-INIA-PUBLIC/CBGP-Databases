@@ -31,7 +31,7 @@ PREFIX ncit: <http://purl.obolibrary.org/obo/>
 PREFIX local: <urn:local:>
 "
 
-def get_questionnaire_types_query(language: 'en')
+def get_questionnaire_types_query(language: $language)
   # questionnaire_type = Add/Edit publications (#add-publication) has-fields Publication Questions (#new-publication-questions)
 
   qs = <<GET_QUESTIONNAIRE_TYPES
@@ -48,7 +48,7 @@ GET_QUESTIONNAIRE_TYPES
   results.map { |r| r.to_h.transform_values(&:to_s) } # https://w3id.org/CBGP-App#add-member => "Add/Edit Member"
 end
 
-def get_questionnaire_sections_query(questionnaire_type:, language: 'en')
+def get_questionnaire_sections_query(questionnaire_type:, language: $language)
   return [] unless questionnaire_type
 
   # questionnaire_type = Add/Edit publications (#add-publication) has-fields Publication Questions (#new-publication-questions)
@@ -67,7 +67,7 @@ GET_QUESTIONNAIRE_SECTIONS
   qs.execute(ONTOLOGY)
 end
 
-def get_section_questions_query(sectionid:, language: 'en')
+def get_section_questions_query(sectionid:, language: $language)
   qs = <<GET_SECTION_QUESTIONS
     #{PREFIXES}
 
@@ -88,7 +88,7 @@ GET_SECTION_QUESTIONS
   qs.execute(ONTOLOGY)
 end
 
-def get_answer_block_query(ablockid:, language: 'en')
+def get_answer_block_query(ablockid:, language: $language)
   a = <<GET_ANSWER_BLOCK
     #{PREFIXES}
 
@@ -105,7 +105,7 @@ GET_ANSWER_BLOCK
   a.execute(ONTOLOGY)
 end
 
-def get_label_for_questionnaire_type(id:, language: 'en')
+def get_label_for_questionnaire_type(id:, language: $language)
   lab = SPARQL.parse("
     #{PREFIXES}
 
@@ -122,7 +122,7 @@ def get_label_for_questionnaire_type(id:, language: 'en')
   [res.first[:plabel].to_s, res.first[:label].to_s]
 end
 
-def get_label_for_id(id:, language: 'en')
+def get_label_for_id(id:, language: $language)
   lab = SPARQL.parse("
     #{PREFIXES}
 
@@ -136,7 +136,7 @@ def get_label_for_id(id:, language: 'en')
   res.first[:label].to_s
 end
 
-def field_query(fieldid:, language: 'en')
+def field_query(fieldid:, language: $language)
   field = SPARQL.parse("
     #{PREFIXES}
     SELECT ?label ?answerblock ?objectclass ?objectmethod ?questionorder ?cardinality ?widgettype

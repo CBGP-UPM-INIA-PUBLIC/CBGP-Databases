@@ -61,16 +61,21 @@ def set_routes
       '/', # Usually the login page
       '/cbgp/login', # Login page
       '/cbgp/stylesheets/cbgp.css', # Login page
-      '/logout' # Optional: logout route
+      '/logout', # Optional: logout route
+      '/set_language' # Add the new route to public paths
     ]
-
     # Skip authentication check for public paths
     return if public_paths.include?(request.path_info)
 
     halt(401, erb(:unauthorized)) unless logged_in?
     cache_control :public, :must_revalidate, max_age: 0
+    $language = session[:language] || params[:language] || 'en'
   end
 
+  post '/set_language' do
+    session[:language] = params[:language] if %w[en es].include?(params[:language])
+    status 200
+  end
   # ----------------------------------------------------------------------------
   # ----------------------------------------------------------------------------
   # ----------------------------------------------------------------------------
@@ -113,7 +118,7 @@ def set_routes
   get '/cbgp/dataset/:database' do
     database = params[:database]
     @questionnaire = generate_questionnaire(questionnaire_type: database)
-    if database == "add-publication"
+    if database == 'add-publication'
       @entry = CBGP::Publication.new
       halt erb :publications, layout: :database_layout
     else
@@ -125,22 +130,22 @@ def set_routes
   post '/cbgp/dataset/:database' do
     database = params[:database]
     identifier = params[:identifier]
-    idtype = identifier_type(id: identifier)  # idtype is doi for publications
+    idtype = identifier_type(id: identifier) # idtype is doi for publications
     @questionnaire = generate_questionnaire(questionnaire_type: database)
-    if database == "add-publication"
-      if idtype == "doi"
-        @entry = CBGP::Publication.load_from_doi(doi: identifier)
-      else
-        @entry = CBGP::Publication.new
-      end
+    if database == 'add-publication'
+      @entry = if idtype == 'doi'
+                 CBGP::Publication.load_from_doi(doi: identifier)
+               else
+                 CBGP::Publication.new
+               end
       halt erb :publications, layout: :database_layout
     end
-    if database == "add-member" || database == "add-project" 
-      if idtype
-        @entry = CBGP::Dataset.load_from_identifier(identifier: identifier)
-      else
-        @entry = CBGP::Dataset.new(type: database)
-      end
+    if %w[add-member add-project].include?(database)
+      @entry = if idtype
+                 CBGP::Dataset.load_from_identifier(identifier: identifier)
+               else
+                 CBGP::Dataset.new(type: database)
+               end
       halt erb :dataset, layout: :database_layout
     end
   end
@@ -149,19 +154,15 @@ def set_routes
     @database = params[:database]
     @questionnaire = generate_questionnaire(questionnaire_type: database)
 
-    if database == "add-publication"
+    if database == 'add-publication'
       @entry = CBGP::Publication.load_from_params(params: params)
       halt erb :publications, layout: database_layout
-    elsif database == "add-member" || database == "add-project" 
+    elsif %w[add-member add-project].include?(database)
       @entry = CBGP::Dataset.load_from_params(params: params)
       halt erb :dataset, layout: :database_layout
     end
     halt 406
-    
   end
-
-
-
 
   # ----------------------------------------------------------------------------
   # ----------------------------------------------------------------------------
@@ -265,8 +266,7 @@ def set_routes
   #   halt erb :projects
   # end
 
-
-    # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
   # ----------------------------------------------------------------------------
   # ----------------------------------------------------------------------------
   # ----------------------------------------------------------------------------
@@ -308,7 +308,6 @@ def set_routes
   #   halt erb :members
   # end
 
-
   post '/cbgp/publications/bulk' do
     dois = params[:dois]
     #    begin
@@ -320,5 +319,4 @@ def set_routes
   get '/cbgp/publications/bulk' do
     halt erb :bulkpubs
   end
-
 end

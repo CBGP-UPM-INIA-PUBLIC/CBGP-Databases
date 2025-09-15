@@ -15,8 +15,9 @@ require_rel '../../lib'
 require_rel '../views'
 
 module CBGP
-  class DatabasesApp < Sinatra::Base
+  $language = 'en'
 
+  class DatabasesApp < Sinatra::Base
     helpers MyHelpers
     set_routes
   end

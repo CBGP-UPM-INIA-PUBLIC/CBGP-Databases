@@ -116,23 +116,23 @@ def set_routes
   # Let's try to make it fully generic!
 
   get '/cbgp/dataset/:database' do
-    database = params[:database]
-    @questionnaire = generate_questionnaire(questionnaire_type: database)
-    if database == 'add-publication'
+    @database = params[:database]
+    @questionnaire = generate_questionnaire(questionnaire_type: @database)
+    if @database == 'add-publication'
       @entry = CBGP::Publication.new
       halt erb :publications, layout: :database_layout
     else
-      @entry = CBGP::Dataset.new(type: database)
+      @entry = CBGP::Dataset.new(type: @database)
       halt erb :dataset, layout: :database_layout
     end
   end
 
   post '/cbgp/dataset/:database' do
-    database = params[:database]
+    @database = params[:database]
     identifier = params[:identifier]
     idtype = identifier_type(id: identifier) # idtype is doi for publications
-    @questionnaire = generate_questionnaire(questionnaire_type: database)
-    if database == 'add-publication'
+    @questionnaire = generate_questionnaire(questionnaire_type: @database)
+    if @database == 'add-publication'
       @entry = if idtype == 'doi'
                  CBGP::Publication.load_from_doi(doi: identifier)
                else
@@ -144,7 +144,7 @@ def set_routes
       @entry = if idtype
                  CBGP::Dataset.load_from_identifier(identifier: identifier)
                else
-                 CBGP::Dataset.new(type: database)
+                 CBGP::Dataset.new(type: @database)
                end
       halt erb :dataset, layout: :database_layout
     end
@@ -152,12 +152,12 @@ def set_routes
 
   post '/cbgp/validate-dataset/:database' do
     @database = params[:database]
-    @questionnaire = generate_questionnaire(questionnaire_type: database)
+    @questionnaire = generate_questionnaire(questionnaire_type: @database)
 
-    if database == 'add-publication'
+    if @database == 'add-publication'
       @entry = CBGP::Publication.load_from_params(params: params)
       halt erb :publications, layout: database_layout
-    elsif %w[add-member add-project].include?(database)
+    elsif %w[add-member add-project].include?(@database)
       @entry = CBGP::Dataset.load_from_params(params: params)
       halt erb :dataset, layout: :database_layout
     end

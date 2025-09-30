@@ -5,16 +5,12 @@ require 'sparql'
 require 'sparql/client'
 
 host = GRAPHDB_HOST || 'localhost:7200'
-user = GRAPHDB_USER || 'cbgp'
-pass = GRAPHDB_PASS || 'cbgp'
+GRAPHDB_USER || 'cbgp'
+GRAPHDB_PASS || 'cbgp'
 
 ONTOLOGY = RDF::Repository.load(CBGP_KB) # set in configuration.rb and/or in docker-compose
-PUBLICATIONS = SPARQL::Client.new("http://#{GRAPHDB_USER}:#{GRAPHDB_PASS}@#{host}/repositories/publications")
-PUBLICATIONS_UPDATE = SPARQL::Client.new("http://#{GRAPHDB_USER}:#{GRAPHDB_PASS}@#{host}/repositories/publications/statements")
-PROJECTS = SPARQL::Client.new("http://#{GRAPHDB_USER}:#{GRAPHDB_PASS}@#{host}/repositories/projects")
-PROJECTS_UPDATE = SPARQL::Client.new("http://#{GRAPHDB_USER}:#{GRAPHDB_PASS}@#{host}/repositories/projects/statements")
-PERSONNEL = SPARQL::Client.new("http://#{GRAPHDB_USER}:#{GRAPHDB_PASS}@#{host}/repositories/personnel")
-PERSONNEL_UPDATE = SPARQL::Client.new("http://#{GRAPHDB_USER}:#{GRAPHDB_PASS}@#{host}/repositories/personnel/statements")
+DATABASE = SPARQL::Client.new("http://#{GRAPHDB_USER}:#{GRAPHDB_PASS}@#{host}/repositories/kbdatabase")
+DATABASE_UPDATE = SPARQL::Client.new("http://#{GRAPHDB_USER}:#{GRAPHDB_PASS}@#{host}/repositories/kbdatabase/statements")
 
 PREFIXES = "PREFIX cbgp: <https://w3id.org/CBGP-App#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
@@ -71,7 +67,7 @@ def get_section_questions_query(sectionid:, language: $language)
   qs = <<GET_SECTION_QUESTIONS
     #{PREFIXES}
 
-    SELECT ?q (str(?qlab) as ?label) ?widget ?class ?method ?cardinality ?answers ?sequence WHERE {
+    SELECT ?q (str(?qlab) as ?label) ?widget ?class ?method ?cardinality ?answers ?primary ?sequence WHERE {
     ?q rdfs:subClassOf cbgp:#{sectionid} .
     ?q rdfs:label ?qlab .
     FILTER (lang(?qlab) = "#{language}")
@@ -80,6 +76,7 @@ def get_section_questions_query(sectionid:, language: $language)
     ?q local:answer-block ?answers .
     OPTIONAL {?q local:object-class ?class }.
     ?q local:method ?method .
+    OPTIONAL {?q local:is-primary-id ?primary }.
     ?q local:question-order ?sequence .
   } ORDER BY ?sequence
 
@@ -137,7 +134,7 @@ def get_label_for_id(id:, language: $language)
 end
 
 def field_query(fieldid:, language: $language)
-  field = SPARQL.parse("
+  query = <<~FIELDQ
     #{PREFIXES}
     SELECT ?label ?answerblock ?objectclass ?objectmethod ?questionorder ?cardinality ?widgettype
     WHERE {
@@ -150,7 +147,9 @@ def field_query(fieldid:, language: $language)
         FILTER (lang(?label) = '#{language}')
         OPTIONAL {cbgp:#{fieldid} local:object-class ?objectclass .}
     }
-          ")
+FIELDQ
+  warn "query is #{query}"
+  field = SPARQL.parse(query)
   field.execute(ONTOLOGY)
 end
 
@@ -236,7 +235,7 @@ def retrieve_publication_affils_query(doi:, graph:)
                         rdf:type sio:SIO_000012 .  # organization
     }}
 READ_AFFILS
-  PUBLICATIONS.query(publication)
+  DATABASE.query(publication)
 end
 
 def retrieve_publication_auths_query(doi:, graph:)
@@ -256,7 +255,7 @@ def retrieve_publication_auths_query(doi:, graph:)
   }}
 READ_AUTHORS
   warn "publication is: \n\n #{publication}\n\n"
-  PUBLICATIONS.query(publication)
+  DATABASE.query(publication)
 end
 
 def retrieve_pub_graph_query(doi:)
@@ -273,7 +272,7 @@ def retrieve_pub_graph_query(doi:)
 
 SELECT_PUB
   # pubexists = SPARQL.parse(retpub)  # validate query or die
-  PUBLICATIONS.query(retpub)
+  DATABASE.query(retpub)
 end
 
 def delete_pub_query(pubid:)
@@ -281,7 +280,7 @@ def delete_pub_query(pubid:)
   DROP GRAPH <#{pubid}>
 
 DELETE_PUB
-  PUBLICATIONS_UPDATE.update(delete)
+  DATABASE_UPDATE.update(delete)
 end
 
 def write_pub_to_db_query(pub:, oldid: nil)
@@ -344,7 +343,7 @@ def write_pub_to_db_query(pub:, oldid: nil)
                     }}
 
   WRITE_PUB
-  PUBLICATIONS_UPDATE.update(publication)
+  DATABASE_UPDATE.update(publication)
 
   affid = 0
   pub.affiliations[0].each do |affiliation| # afils is a list of lists
@@ -361,7 +360,7 @@ def write_pub_to_db_query(pub:, oldid: nil)
                           rdf:type sio:SIO_000012 .  # organization
       }}
 WRITE_AFFILS
-    PUBLICATIONS_UPDATE.update(publication)
+    DATABASE_UPDATE.update(publication)
   end
 
   authid = 0
@@ -384,73 +383,123 @@ WRITE_AFFILS
 
     }}
 WRITE_AUTHORS
-    PUBLICATIONS_UPDATE.update(publication)
+    DATABASE_UPDATE.update(publication)
+  end
+end
+
+###################### DATASET ##################
+###################### DATASET ##################
+###################### DATASET ##################
+###################### DATASET ##################
+###################### DATASET ##################
+###################### DATASET ##################
+###################### DATASET ##################
+###################### DATASET ##################
+
+def retrieve_dataset_graph_query(primary_id:)
+  retds = <<SELECT_DS
+        #{PREFIXES}
+  select ?g where {
+  graph ?g {
+      ?dataset sio:SIO_000671 ?id .
+
+      ?id  sio:SIO_000300 "#{primary_id}" ;
+        rdf:type sio:SIO_000115 ; # identifier
+  }}
+
+SELECT_DS
+
+  warn "retrieve dataset graph query is: #{retds}"
+  # pubexists = SPARQL.parse(retpub)  # validate query or die
+  DATABASE.query(retds)
+end
+
+def delete_dataset_query(oldid:)
+  delete = <<DELETE_DATASET
+  DROP GRAPH <#{oldid}>
+
+DELETE_DATASET
+  DATABASE_UPDATE.update(delete)
+end
+
+def write_dataset_to_db(dataset:, oldid: nil)
+  writequery = write_dataset_to_db_query(dataset: dataset, oldid: oldid)
+  warn "\n\n\n\n#{writequery}\n\n\n"
+  # DATABASE_UPDATE.update(writequery)
+end
+
+def write_dataset_to_db_query(dataset:, oldid: nil)
+  delete_dataset_query(oldid: oldid) if oldid
+
+  datasettype = dataset.form_type
+  primary_id = dataset.primary_id
+
+  # Build the triples
+  main_subject = 'dataset:dataset'
+  main_triples = ["#{main_subject} rdf:type sio:SIO_000089 ;"]
+
+  attribute_triples = []
+
+  # Handle primary identifier specially
+  primary_field = dataset.fields.find { |f| f[:is_primary] }
+  primary_value = primary_id # Default to dataset.primary_id
+  primary_questionclass = 'primary_id'
+  primary_type = 'sio:SIO_000115' # Default type for identifier
+
+  if primary_field
+    primary_questionclass = primary_field[:questionclass]
+    primary_method = primary_field[:method]
+    primary_value = dataset.send(primary_method) if primary_method && dataset.respond_to?(primary_method)
+    primary_type = primary_field[:answers] || primary_field[:class] || primary_type
   end
 
-  ###################### Projects ##################
-  ###################### Projects ##################
-  ###################### Projects ##################
-  ###################### Projects ##################
-  ###################### Projects ##################
-  ###################### Projects ##################
+  primary_node = "datasetgraph:#{primary_questionclass}"
+  primary_predicate = 'sio:SIO_000671'
 
-  def retrieve_project_core_query(doi:, graph:)
-    # project = <<~READ
-    #         #{PREFIXES}
+  main_triples << "  #{primary_predicate} #{primary_node} ;"
 
-    #   SELECT   ?doi ?scopusq ?scopusd1 ?oa ?sochoa ?pubtype ?title ?date ?journal ?volume
-    #   WHERE{ GRAPH <#{graph}> {
-    #               ?publicationn rdf:type sio:SIO_000087 ;  # n equates to "node", without n is "value"
-    #                   sio:SIO_000671 ?idn ;
-    #                   cbgp:has_scopus_q ?scopusqn ;
-    #                   cbgp:has_scopus_d ?scopusd1n ;
-    #                   cbgp:is_open_access ?oan ;
-    #                   cbgp:has_so_acknowledgement ?sochoan ;
-    #                   cbgp:cbgp_corresponding ?cbgp_correspondingn ;
-    #                   cbgp:is_publication_type ?pubtypen ;
-    #                   cbgp:has_title ?titlen ;
-    #                   cbgp:has_volume ?volumen ;
-    #                   cbgp:has_publication_year ?yearn ;
-    #                   cbgp:is_published_in ?journaln .
+  attribute_triples << "  #{primary_node} sio:SIO_000300 \"#{primary_value}\" ;"
+  attribute_triples << "    rdf:type #{primary_type} ."
 
-    #               ?idn  sio:SIO_000300 ?doi ;
-    #                             rdf:type sio:SIO_000115 ;
-    #                             rdf:type edam:data_1188 .
+  # Handle other fields
+  dataset.fields.each do |field|
+    next if field[:is_primary]
 
-    #               ?scopusqn  sio:SIO_000300 ?scopusq ;
-    #                             rdf:type cbgp:scopusq .
+    questionclass = field[:questionclass]
+    method_name = field[:method]
+    next unless dataset.respond_to?(method_name)
 
-    #               ?scopusd1n  sio:SIO_000300 ?scopusd1 ;
-    #                             rdf:type cbgp:scopusd1 .
+    value = dataset.send(method_name)
+    next if value.nil? || value.to_s.empty?
 
-    #               ?oan  sio:SIO_000300 ?oa ;
-    #                             rdf:type cbgp:oa .
+    # Assume cardinality is 1 for simplicity; handle arrays if needed in future
+    predicate = "<#{field[:q]}>" # Use full URI for predicate
 
-    #               ?sochoan  sio:SIO_000300 ?sochoa ;
-    #                             rdf:type cbgp:sochoa .
+    node = "datasetgraph:#{questionclass}"
 
-    #               ?cbgp_correspondingn  sio:SIO_000300 ?cbgp_corresponding ;
-    #                             rdf:type cbgp:cbgp_corresponding .
+    type = field[:answers] || field[:class] || "cbgp:#{questionclass}"
 
-    #               ?pubtypen  sio:SIO_000300 ?pubtype ;
-    #                             rdf:type cbgp:pubtype .
+    main_triples << "  #{predicate} #{node} ;"
 
-    #               ?titlen  sio:SIO_000300 ?title ;
-    #                             rdf:type cbgp:title .
-
-    #               ?daten  sio:SIO_000300 ?date ;
-    #                             rdf:type sio:SIO_001314 .
-
-    #               ?journaln  sio:SIO_000300 ?journal ;
-    #                             rdf:type cbgp:journal ;
-    #                             rdf:type obo:GSSO_004587 .
-
-    #               ?volumen  sio:SIO_000300 ?volume ;
-    #                             rdf:type cbgp:volume .
-
-    #                   }}
-
-    # READ
-    # PUBLICATIONS.query(publication)
+    attribute_triples << "  #{node} sio:SIO_000300 \"#{value}\" ;"
+    attribute_triples << "    rdf:type #{type} ."
   end
+
+  # Replace the last semicolon in main_triples with a period
+  main_triples[-1].sub!(/ ;$/, ' .')
+
+  # Join the triples
+  body = main_triples.join("\n") + "\n" + attribute_triples.join("\n")
+
+  # Build the full SPARQL query
+  <<~WRITE_DATASET
+        #{PREFIXES}
+
+        PREFIX dataset: <http://admin.cbgp.upm.es/graphs/datasets/#{datasettype}/#{primary_id}#>
+        PREFIX datasetgraph: <http://admin.cbgp.upm.es/graphs/datasets/#{datasettype}/#{primary_id}#>
+
+        INSERT DATA { GRAPH datasetgraph:container {
+    #{body}
+        }}
+  WRITE_DATASET
 end

@@ -9,17 +9,18 @@
         <h4 class="question-label"><%= label %></h4>
         <% widget = @question.widget.match(/.*\#(\S+)/)[1] %>
 
+        <!-- This is where I get the data from the @entry object, which is a CBGP::Dataset -->
         <% @value = @entry.public_send(@question.objectmethod) %> 
         <% @value ||= "" %> 
         <!-- value comes from database record -->
         <!-- value might be an object!  e.g. with CBGP::Publication::Author.  Widget has to deal with that! -->
         <% @answerblock = @question.answerblock %> 
  
-        <!-- widget cardinalilty or widget type should determine if it is an array or not... -->
+        <!-- TODO widget cardinalilty or widget type should determine if it is an array or not... -->
         <% @value = [@value] unless @value.is_a? Array  %>
         <% @value.each do |val| %>
             <%   @thisval = val %>
             <%= erb "_#{widget}".to_sym %> 
-        <%   end %>
+        <% end %>
         
     </div>

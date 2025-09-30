@@ -117,12 +117,12 @@ def set_routes
 
   get '/cbgp/dataset/:database' do
     @database = params[:database]
-    @questionnaire = generate_questionnaire(questionnaire_type: @database)
+    @questionnaire = generate_questionnaire(questionnaire_type: @database)  # questionnaire has all fields and possible answers
     if @database == 'add-publication'
       @entry = CBGP::Publication.new
       halt erb :publications, layout: :database_layout
     else
-      @entry = CBGP::Dataset.new(type: @database)
+      @entry = CBGP::Dataset.new(type: @database)  # the object into which the data will be inserted
       halt erb :dataset, layout: :database_layout
     end
   end
@@ -130,7 +130,7 @@ def set_routes
   post '/cbgp/dataset/:database' do
     @database = params[:database]
     identifier = params[:identifier]
-    idtype = identifier_type(id: identifier) # idtype is doi for publications
+    idtype, identifier = identifier_type(id: identifier) # idtype is doi for publications
     @questionnaire = generate_questionnaire(questionnaire_type: @database)
     if @database == 'add-publication'
       @entry = if idtype == 'doi'

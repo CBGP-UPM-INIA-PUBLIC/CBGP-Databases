@@ -1,6 +1,6 @@
 <!-- @answerblock [:type, :answers, :lang=, :lang, :ablockid=, :answers=, :type=, :ablockid] -->   
           <div class="inputtype">
           <!-- <label for="<%= @label  %>_ANSWER" style="font-size: .75em;"></label><br/> -->
-          <input type='text' name="<%= @question.questionid  %>" value="<%= @thisval %>" id="<%= @question.questionid  %>_ANSWER" size="<%= @thisval.to_s.length %>"/>
+          <input type='hidden' name="<%= @question.questionid  %>" value="<%= @thisval %>" id="<%= @question.questionid  %>_ANSWER" size="<%= @thisval.length %>"/>
           </div>
 

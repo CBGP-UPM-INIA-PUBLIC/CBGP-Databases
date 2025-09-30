@@ -1,6 +1,8 @@
 
     <div class="databases">
 
+    <!-- incoming @entry object and @questionnaire object -->
+
     <% label1, label2 = ["Staff Member", "Name"] if @database =~ /member/ %>
     <% label1, label2 = ["Project", "Project CBGP ID"] if @database =~ /project/ %>
 
@@ -8,8 +10,8 @@
       <table id="dataset_lookup" width="30%">
         <tr> <th>Add/Find <%= label1 %></th> </tr>
         <tr> <td>
-          <label for='staff_name'><%= label2 %> Lookup</label>
-          <input type='text' name='name' id="name">
+          <label for='main_id'><%= label2 %> Lookup</label>
+          <input type='text' name='main_id' id="main_id">
         </td></tr>
         <tr> <td>
           <input type="submit" value="Submit"/>

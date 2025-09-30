@@ -97,6 +97,10 @@ class QuestionnaireAnswerBlock
       @type = "FREE"
     elsif @ablockid == "NUM" # text field numerical
       @type = "NUM"
+    elsif @ablockid == "DATE" # text field numerical
+      @type = "DATE"
+    elsif @ablockid == "HIDDEN" # text field numerical
+      @type = "HIDDEN"
     else
       results = get_answer_block_query(ablockid: @ablockid) #    SELECT DISTINCT ?aid ?label ?order
       results.each do |result|
@@ -127,6 +131,8 @@ class QuestionnaireField
   def self.create_from_ontology(fieldid:)
     field = QuestionnaireField.new
     res = field_query(fieldid: fieldid).first # should only be one
+    return nil unless res
+    
     field.fieldid = fieldid.to_s
     field.label = res[:label].to_s
     field.answerblock = res[:answerblock].to_s

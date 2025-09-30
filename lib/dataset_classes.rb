@@ -1,26 +1,14 @@
 require_relative 'queries'
 require_relative 'core'
+require 'uuidtools'
 
 module CBGP
-  # class Member
-  #   attr_accessor :uniqid, :surnames, :names, :honorific, :upmid, :nationality, :position, :grupo
-
-  #   def initialize(surnames: '', names: '', honorific: '', upmid: '', grupo: '', nationality: '', position: '')
-  #     @uniqid = Time.now.to_i unless uniqid.match(/S/)
-  #     @surnames = surnames
-  #     @names = names
-  #     @honorific = honorific
-  #     @nationality = nationality
-  #     @position = position
-  #     @upmid = upmid
-  #     @grupo = grupo
-  #   end
-
-  # end
   class Dataset
-    attr_reader :fields # Expose sorted fields for UI ordering
+    attr_reader :fields, :form_type, :primary_id # Expose sorted fields for UI ordering
 
-    def initialize(type:)  # passed database type e.g. add_members
+    def initialize(type:, primary_id: SecureRandom.uuid)  # passed database type e.g. add_members
+      @form_type = type
+      @primary_id = primary_id
       sections = get_questionnaire_sections_query(questionnaire_type: type) # "add-publications", "add-project" "add-member"
       # abort sections.inspect
       # SELECT ?sec (str(?seclab) as ?label)
@@ -33,20 +21,28 @@ module CBGP
 
         sparql_results = get_section_questions_query(sectionid: sectionqid) 
         @data = {} # Internal storage: key by ?q for uniqueness
+
+        # TODO  Note that this only allows one Fieldset per dataset!  Not like the Duchenne app...
+        # fields is reset here to [], so any other fieldset is overwritten...
         @fields = [] # Array of field metadata, sorted by ?sequence
 
         # Process SPARQL results (array of hashes)
         sparql_results.each do |result|
-          q = result[:q]
+          q = result[:q].to_s  # "https://w3id.org/CBGP-App#tis123"
+          questionclass = result[:q].to_s.match(%r{.*?#(\S+)$})[1]   # "tis123"
+          # TODO  creating a symbol for methodname now might be a problem??!!
           method_name = result[:method].to_s.to_sym # e.g., :surname
           klass = result[:class].to_s.downcase # e.g., 'string'
           cardinality = result[:cardinality].to_s # 'multi' or 'single'
           answers_uri = result[:answers].to_s # URI for possible answers (stubbed fetch below)
           sequence = result[:sequence].to_s.to_i
+          is_primary = result[:primary].to_s || "false"
 
           # Store metadata, sorted later
-          @fields << { q: q, label: result[:label].to_s, widget: result[:widget].to_s, method: method_name,
-                      class: klass, cardinality: cardinality, answers: answers_uri, sequence: sequence }
+          @fields << { q: q, questionclass: questionclass, label: result[:label].to_s, 
+                      widget: result[:widget].to_s.downcase, method: method_name,
+                      class: klass, cardinality: cardinality, answers: answers_uri, 
+                      is_primary: is_primary, sequence: sequence }
 
           # Initialize internal data
           @data[q] = (cardinality == 'multi' ? [] : nil)
@@ -113,6 +109,34 @@ module CBGP
       else
         raise ArgumentError, "Value #{value} must be one of #{allowed_answers}" unless allowed_answers.include?(value)
       end
+    end
+
+    def self.load_from_params(params:)
+      warn "PARAMS"
+      warn "#{params.inspect}"
+      # abort "breaking here"
+#       PARAMS
+# {"mem_primary_id"=> "8347820934957453", "mem1"=>"qwerew", "mem2"=>"qwerqwer", "mem3"=>"4352345", "mem4"=>"3455", "mem5"=>"", 
+#  "mem6"=>"qwrqew@twqtr", "mem7"=>"werqewr@asdgfasdf", "mem9"=>"", "mem10"=>"", "mem11"=>"3241234-123123", 
+# "permanence"=>"permanent_yes", "int_project_code"=>"23432234", "ext_project_reference"=>"", 
+# "call_reference"=>"", "member_institution"=>"members_fgupm", "gender"=>"male", "nationality"=>"norway", 
+# "research-area_group"=>"synthetic-biology_bioengineering", "member_team_leader"=>"team_leader_yes", 
+# "group_institution"=>"UPM", "database"=>"add-member"}
+
+
+#  select ?g where {graph ?g {?pub sio:SIO_000671 ?id . ?id  sio:SIO_000300 "#{doi}" ;
+      dataset = CBGP::Parsers.params_parser_dataset(params: params)  # returns CBGP::Dataset' mimght overwrite primary_id
+      # what is the equivalent ID lookup here?
+      # TODO this afternoon!
+      res = retrieve_dataset_graph_query(primary_id: dataset.primary_id)
+      oldgraphid = res.first[:g].to_s if res.first
+      CBGP::Dataset.write_to_db(dataset: dataset, oldid: oldgraphid)  # oldid is deleted
+      dataset
+    end
+
+    def self.write_to_db(dataset:, oldid: nil)
+      warn 'WRITING DATASET TO DB'
+      write_dataset_to_db_query(dataset: dataset, oldid: oldid)
     end
   end
 end

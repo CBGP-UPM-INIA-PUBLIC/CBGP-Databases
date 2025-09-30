@@ -24,6 +24,7 @@ module CBGP
 
       jpath = JsonPath.new('["container-title"]')
       journal = jpath.on(dcite).first
+      return false unless journal
       return false if journal.empty?
 
       # not provided by datacite

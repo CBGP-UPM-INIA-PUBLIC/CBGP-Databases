@@ -57,3 +57,5 @@ gem "sanitize", "~> 7.0"
 gem "httparty", "~> 0.23.1"
 
 gem "dotenv", "~> 3.1"
+
+gem "uuidtools", "~> 3.0"

@@ -16,11 +16,11 @@ def generate_questionnaire(questionnaire_type:) # questionnaire_type comes in as
 end
 
 def identifier_type(id: nil)
-  type = false
-  if id =~ /doi/
-    type = 'doi'
-  elsif id
-    type = 'db_entry'
+
+  doi_regex = /^(?:https:\/\/doi\.org\/|doi:)?(10\.\d{4,}(?:\.\d+)*\/[^\/]+)$/
+  if match = id.match(doi_regex)
+    return "doi", match[1] # Return the canonical DOI (10.NNNN/identifier)
+  else
+    return 'db_entry', id # Return the original identifier if not a DOI
   end
-  type
 end

@@ -117,12 +117,12 @@ def set_routes
 
   get '/cbgp/dataset/:database' do
     @database = params[:database]
-    @questionnaire = generate_questionnaire(questionnaire_type: @database)  # questionnaire has all fields and possible answers
+    @questionnaire = generate_questionnaire(questionnaire_type: @database) # questionnaire has all fields and possible answers
     if @database == 'add-publication'
       @entry = CBGP::Publication.new
       halt erb :publications, layout: :database_layout
     else
-      @entry = CBGP::Dataset.new(type: @database)  # the object into which the data will be inserted
+      @entry = CBGP::Dataset.new(type: @database) # the object into which the data will be inserted
       halt erb :dataset, layout: :database_layout
     end
   end
@@ -157,11 +157,22 @@ def set_routes
     if @database == 'add-publication'
       @entry = CBGP::Publication.load_from_params(params: params)
       halt erb :publications, layout: database_layout
-    elsif %w[add-member add-project].include?(@database)
+    else
       @entry = CBGP::Dataset.load_from_params(params: params)
       halt erb :dataset, layout: :database_layout
     end
     halt 406
+  end
+
+  # QUERY FORMS
+
+  post '/cbgp/query-dataset/:database' do
+    @database = params[:database]
+    @questionnaire = generate_questionnaire(questionnaire_type: @database)
+    @entry = CBGP::Dataset.new(type: @database) # Initialize empty dataset for form structure
+    search_params = params.select { |k, v| v.present? && k != 'database' } # Filter non-empty search fields
+    @results = execute_search(search_params: search_params, dataset_type: @database) if search_params.any?
+    halt erb :query_dataset, layout: :database_layout
   end
 
   # ----------------------------------------------------------------------------

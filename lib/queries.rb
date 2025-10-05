@@ -119,7 +119,6 @@ def get_hierarchical_answer_block_query(ablockid:, language: $language)
   JSON.generate(tree) # Use JSON.generate for explicit control
 end
 
-
 def get_label_for_questionnaire_type(id:, language: $language)
   lab = SPARQL.parse("
     #{PREFIXES}
@@ -165,7 +164,7 @@ def field_query(fieldid:, language: $language)
         FILTER (lang(?label) = '#{language}')
         OPTIONAL {cbgp:#{fieldid} local:object-class ?objectclass .}
     }
-FIELDQ
+  FIELDQ
   warn "FIELD QUERY is #{query}"
   field = SPARQL.parse(query)
   field.execute(ONTOLOGY)
@@ -443,7 +442,7 @@ end
 def write_dataset_to_db(dataset:, oldid: nil)
   writequery = write_dataset_to_db_query(dataset: dataset, oldid: oldid)
   warn "\n\n\n\n#{writequery}\n\n\n"
-  # DATABASE_UPDATE.update(writequery)
+  DATABASE_UPDATE.update(writequery)
 end
 
 def write_dataset_to_db_query(dataset:, oldid: nil)
@@ -472,11 +471,11 @@ def write_dataset_to_db_query(dataset:, oldid: nil)
   end
 
   primary_node = "datasetgraph:#{primary_questionclass}"
-  primary_predicate = 'sio:SIO_000671'
+  primary_predicate = 'sio:SIO_000671' # has identifier
 
   main_triples << "  #{primary_predicate} #{primary_node} ;"
 
-  attribute_triples << "  #{primary_node} sio:SIO_000300 \"#{primary_value}\" ;"
+  attribute_triples << "  #{primary_node} sio:SIO_000300 \"#{primary_value}\" ;" # has value
   attribute_triples << "    rdf:type #{primary_type} ."
 
   # Handle other fields
@@ -521,3 +520,58 @@ def write_dataset_to_db_query(dataset:, oldid: nil)
         }}
   WRITE_DATASET
 end
+
+def build_search_query(search_params:, dataset_type:)
+  # Validate input
+  return nil unless search_params.is_a?(Hash) && !search_params.empty?
+
+  # Base SPARQL query structure
+  query = <<~SPARQL
+    #{PREFIXES}
+    PREFIX datasetgraph: <http://admin.cbgp.upm.es/graphs/datasets/#{dataset_type}/>
+
+    SELECT DISTINCT ?dataset
+    WHERE {
+  SPARQL
+
+  # Dynamic conditions based on search parameters
+  conditions = []
+  search_params.each do |method_name, value|
+    # Convert method name to URI (e.g., "contract_type" -> "cbgp:contract_type")
+    predicate = "cbgp:#{method_name}"
+    field_node = "datasetgraph:#{method_name}"
+
+    # Add condition for the field value
+    conditions << <<-CONDITION
+      GRAPH ?dataset {
+        ?dataset #{predicate} #{field_node} .
+        #{field_node} sio:SIO_000300 "#{value}" .
+        #{field_node} rdf:type ?field_type .
+      }
+    CONDITION
+  end
+
+  # Join conditions with AND logic (implicit in SPARQL GRAPH clauses)
+  query += conditions.join("\n")
+
+  # Close the query with dataset type filter
+  query += <<~SPARQL
+      # Ensure graphs are from the specified dataset type
+      FILTER (STRSTARTS(STR(?dataset), "http://admin.cbgp.upm.es/graphs/datasets/#{dataset_type}/"))
+    }
+    ORDER BY ?dataset
+  SPARQL
+
+  warn "Generated search query: #{query}"
+  query
+end
+
+def execute_search(search_params:, dataset_type:)
+  query = build_search_query(search_params: search_params, dataset_type: dataset_type)
+  return [] unless query
+
+  results = DATABASE.query(query)
+  results.map { |result| result[:dataset].to_s } # Return array of graph URIs
+end
+
+# Example usage (to be

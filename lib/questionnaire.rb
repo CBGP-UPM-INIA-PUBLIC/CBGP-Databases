@@ -19,7 +19,7 @@ class Questionnaire
     # SELECT ?sec (str(?seclab) as ?label)  WHERE {
     #   cbgp:#{questionnaire_type} local:has-fields ?sec . #  "add-publications", "add-project" "add-member"
     #   ?sec rdfs:label ?seclab .
-    warn "SECTIONS QUERY #{results.inspect}"
+    # warn "SECTIONS QUERY #{results.inspect}"
 
     results.each do |res| # get general information first
       section = res[:sec].to_s # comes in as full URI  e.g. https://w3id.org/CBGP-App#new-publication-questions
@@ -27,7 +27,7 @@ class Questionnaire
       warn "getting section #{section}" # new-publication-questions
       seclabel = res[:label].to_s
       sects << QuestionnaireSection.new(sectionid: sectionid, sectionlabel: seclabel)
-      warn "QUESTIONNAIRE SECTIONS #{sects.inspect}"
+      # warn "QUESTIONNAIRE SECTIONS #{sects.inspect}"
     end
     sects
   end
@@ -69,22 +69,35 @@ class QuestionnaireSection
 end
 
 class QuestionnaireQuestion
-  attr_accessor :questionid, :sequence, :objectclass, :objectmethod, :answerblock, :question, :selected_answer,
+  attr_accessor :questionid, :sequence, :objectclass, :objectmethod, :answerblock, :answertree, :question, :selected_answer,
                 :widget, :cardinality
 
   def initialize(questionid:, sequence:, objectclass:, objectmethod:, answerblockid:, question:, widget:, cardinality:) # questionid and answerblockid comes in as fragment only
     @question = question # text in the correct language
     @questionid = questionid
     @sequence = sequence
-    @widget = widget
+    @widget = widget.downcase
     @objectclass = objectclass
     @objectmethod = objectmethod
     @cardinality = cardinality
     @answerblockid = answerblockid
     @selected_answer = nil
+    @answertree  = nil
     @answerblock = QuestionnaireAnswerBlock.new(ablockid: @answerblockid)
+    warn "WIDGET IS #{@widget}"
+    if @widget.match(/TreeSelector/i)
+      @answertree = get_hierarchical_answer_block_query(ablockid: answerblockid)
+      @answertree = JSON.parse(@answertree)  # Now it's an array of hashes
+      # Optional: Sanitize curly quotes if visuals glitch (JS handles unicode fine, but for safety)
+      @answertree.each do |node|
+        node['text'] = node['text'].gsub(/[“”‘’]/, '"') if node['text']  # Straight quotes
+        node['children'].each { |child| child['text'] = child['text'].gsub(/[“”‘’]/, '"') if child['text'] } if node['children']
+      end
+      warn "Hierarchical Data: #{@answertree.inspect}"
+    end
   end
 end
+
 
 class QuestionnaireAnswerBlock
   attr_accessor :ablockid, :answers, :type
@@ -123,7 +136,7 @@ class QuestionnaireAnswer
 end
 
 class QuestionnaireField
-  attr_accessor :fieldid, :label, :answerblock, :objectclass, :objectmethod, :questionorder, :cardinality, :widgettype
+  attr_accessor :fieldid, :label, :answerblock, :answertree, :objectclass, :objectmethod, :questionorder, :cardinality, :widgettype
 
   def initialize
   end
@@ -134,14 +147,25 @@ class QuestionnaireField
     return nil unless res
     
     field.fieldid = fieldid.to_s
+
     field.label = res[:label].to_s
-    field.answerblock = res[:answerblock].to_s
     field.objectclass = res[:objectclass].to_s
     field.objectmethod = res[:objectmethod].to_s
     field.questionorder = res[:questionorder].to_s
     field.cardinality = res[:cardinality].to_s
-    field.widgettype = res[:widgettype].to_s
 
+    field.widgettype = res[:widgettype].to_s
+    field.answerblock = res[:answerblock].to_s
+    if @widget.match(/TreeSelector/i)
+      field.answertree = get_hierarchical_answer_block_query(ablockid: answerblockid)
+      field.answertree = JSON.parse(field.answertree)  # Now it's an array of hashes
+      # Optional: Sanitize curly quotes if visuals glitch (JS handles unicode fine, but for safety)
+      field.answertree.each do |node|
+        node['text'] = node['text'].gsub(/[“”‘’]/, '"') if node['text']  # Straight quotes
+        node['children'].each { |child| child['text'] = child['text'].gsub(/[“”‘’]/, '"') if child['text'] } if node['children']
+      end
+      warn "Hierarchical Data: #{field.answertree.inspect}"
+    end
     field
   end
 end

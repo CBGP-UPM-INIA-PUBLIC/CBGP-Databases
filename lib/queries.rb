@@ -96,11 +96,29 @@ def get_answer_block_query(ablockid:, language: $language)
       ?aid local:answer-order ?sequence .
     } ORDER BY ?sequence
 GET_ANSWER_BLOCK
-  warn "ANSWERBLOCK QUERY IS #{a}"
+  # warn "ANSWERBLOCK QUERY IS #{a}"
 
   a = SPARQL.parse(a)
   a.execute(ONTOLOGY)
 end
+
+def get_hierarchical_answer_block_query(ablockid:, language: $language)
+  query = <<~GET_HIERARCHICAL_ANSWERS
+    #{PREFIXES}
+    SELECT DISTINCT ?aid ?label ?parent ?sequence WHERE {
+      ?aid rdfs:subClassOf ?parent .
+      ?aid rdfs:label ?label .
+      FILTER (lang(?label) = "#{language}")
+      OPTIONAL { ?aid local:answer-order ?sequence . }
+    } ORDER BY ?sequence
+  GET_HIERARCHICAL_ANSWERS
+
+  warn "HIERARCHICAL ANSWERBLOCK QUERY IS #{query}"
+  results = SPARQL.parse(query).execute(ONTOLOGY)
+  tree = build_transitive_tree(results, ablockid: ablockid)
+  JSON.generate(tree) # Use JSON.generate for explicit control
+end
+
 
 def get_label_for_questionnaire_type(id:, language: $language)
   lab = SPARQL.parse("
@@ -148,7 +166,7 @@ def field_query(fieldid:, language: $language)
         OPTIONAL {cbgp:#{fieldid} local:object-class ?objectclass .}
     }
 FIELDQ
-  warn "query is #{query}"
+  warn "FIELD QUERY is #{query}"
   field = SPARQL.parse(query)
   field.execute(ONTOLOGY)
 end

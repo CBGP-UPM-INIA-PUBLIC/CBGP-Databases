@@ -5,6 +5,7 @@ require 'require_all'
 require 'rest-client'
 require 'sanitize'
 require 'httparty'
+require 'cgi'
 
 # App specific requires
 require_relative 'configuration'

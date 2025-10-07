@@ -1,20 +1,38 @@
 FROM ruby:3.3.0
 
-ENV LANG="en_US.UTF-8" LANGUAGE="en_US:UTF-8" LC_ALL="C.UTF-8"
+# Set environment variables
+ENV LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:UTF-8 \
+    LC_ALL=C.UTF-8
 
-RUN apt-get update --fix-missing -q
-RUN apt-get -y dist-upgrade --fix-missing -q
-RUN apt-get update -q
-RUN apt-get install -y --no-install-recommends build-essential nano
-RUN  apt-get install -y --no-install-recommends libxml++2.6-dev  libraptor2-0 && \
-  apt-get install -y --no-install-recommends libxslt1-dev locales software-properties-common cron && \
-  apt-get clean
+# Install system dependencies
+RUN apt-get update -qq && \
+    apt-get install -y --no-install-recommends \
+    build-essential \
+    nano \
+    libxml++2.6-dev \
+    libraptor2-0 \
+    libxslt1-dev \
+    locales \
+    software-properties-common \
+    cron && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN mkdir /server
+# Install specific Bundler version and set up application directory
+RUN gem update --system --silent && \
+    gem install bundler:2.6.4 --no-document && \
+    mkdir -p /server
+
 WORKDIR /server
-RUN gem update --system
-RUN gem install bundler:2.3.12
+
+# Copy Gemfile, Gemfile.lock, and .gemspec to support gemspec directive
+COPY Gemfile Gemfile.lock* *.gemspec /server/
+RUN bundle config set --local without 'development test' && \
+    bundle install --jobs=4 --retry=3
+
+# Copy the rest of the application
 COPY . /server
-RUN bundle install
-WORKDIR /server
+
+# Set entrypoint
 ENTRYPOINT ["sh", "/server/entrypoint.sh"]

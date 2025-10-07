@@ -76,6 +76,11 @@ def set_routes
     session[:language] = params[:language] if %w[en es].include?(params[:language])
     status 200
   end
+
+  get '/cbgp/refresh' do  # when the ontology is updated...
+    $ontology = RDF::Repository.load(CBGP_KB) # set in configuration.rb and/or in docker-compose
+    redirect '/cbgp/dashboard'
+  end
   # ----------------------------------------------------------------------------
   # ----------------------------------------------------------------------------
   # ----------------------------------------------------------------------------

@@ -7,10 +7,11 @@ require 'sparql/client'
 host = GRAPHDB_HOST || 'localhost:7200'
 GRAPHDB_USER || 'cbgp'
 GRAPHDB_PASS || 'cbgp'
+GRAPHDB_DBNAME || "kbdatabase"
 
-ONTOLOGY = RDF::Repository.load(CBGP_KB) # set in configuration.rb and/or in docker-compose
-DATABASE = SPARQL::Client.new("http://#{GRAPHDB_USER}:#{GRAPHDB_PASS}@#{host}/repositories/kbdatabase")
-DATABASE_UPDATE = SPARQL::Client.new("http://#{GRAPHDB_USER}:#{GRAPHDB_PASS}@#{host}/repositories/kbdatabase/statements")
+$ontology = RDF::Repository.load(CBGP_KB) # set in configuration.rb and/or in docker-compose
+DATABASE = SPARQL::Client.new("http://#{GRAPHDB_USER}:#{GRAPHDB_PASS}@#{host}/repositories/#{GRAPHDB_DBNAME}")
+DATABASE_UPDATE = SPARQL::Client.new("http://#{GRAPHDB_USER}:#{GRAPHDB_PASS}@#{host}/repositories/#{GRAPHDB_DBNAME}/statements")
 
 PREFIXES = "PREFIX cbgp: <https://w3id.org/CBGP-App#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
@@ -40,7 +41,7 @@ def get_questionnaire_types_query(language: $language)
     }
 GET_QUESTIONNAIRE_TYPES
   qs = SPARQL.parse(qs)
-  results = qs.execute(ONTOLOGY)
+  results = qs.execute($ontology)
   results.map { |r| r.to_h.transform_values(&:to_s) } # https://w3id.org/CBGP-App#add-member => "Add/Edit Member"
 end
 
@@ -60,7 +61,7 @@ def get_questionnaire_sections_query(questionnaire_type:, language: $language)
 GET_QUESTIONNAIRE_SECTIONS
   warn "QUERY IS #{qs}"
   qs = SPARQL.parse(qs)
-  qs.execute(ONTOLOGY)
+  qs.execute($ontology)
 end
 
 def get_section_questions_query(sectionid:, language: $language)
@@ -82,7 +83,7 @@ def get_section_questions_query(sectionid:, language: $language)
 
 GET_SECTION_QUESTIONS
   qs = SPARQL.parse(qs)
-  qs.execute(ONTOLOGY)
+  qs.execute($ontology)
 end
 
 def get_answer_block_query(ablockid:, language: $language)
@@ -99,7 +100,7 @@ GET_ANSWER_BLOCK
   # warn "ANSWERBLOCK QUERY IS #{a}"
 
   a = SPARQL.parse(a)
-  a.execute(ONTOLOGY)
+  a.execute($ontology)
 end
 
 def get_hierarchical_answer_block_query(ablockid:, language: $language)
@@ -114,7 +115,7 @@ def get_hierarchical_answer_block_query(ablockid:, language: $language)
   GET_HIERARCHICAL_ANSWERS
 
   warn "HIERARCHICAL ANSWERBLOCK QUERY IS #{query}"
-  results = SPARQL.parse(query).execute(ONTOLOGY)
+  results = SPARQL.parse(query).execute($ontology)
   tree = build_transitive_tree(results, ablockid: ablockid)
   JSON.generate(tree) # Use JSON.generate for explicit control
 end
@@ -132,7 +133,7 @@ def get_label_for_questionnaire_type(id:, language: $language)
     }
           ")
 
-  res = lab.execute(ONTOLOGY)
+  res = lab.execute($ontology)
   [res.first[:plabel].to_s, res.first[:label].to_s]
 end
 
@@ -146,7 +147,7 @@ def get_label_for_id(id:, language: $language)
     }
           ")
 
-  res = lab.execute(ONTOLOGY)
+  res = lab.execute($ontology)
   res.first[:label].to_s
 end
 
@@ -167,7 +168,7 @@ def field_query(fieldid:, language: $language)
   FIELDQ
   warn "FIELD QUERY is #{query}"
   field = SPARQL.parse(query)
-  field.execute(ONTOLOGY)
+  field.execute($ontology)
 end
 
 ###################### Publications ##################

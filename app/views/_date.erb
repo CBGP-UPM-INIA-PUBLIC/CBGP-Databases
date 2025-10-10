@@ -5,7 +5,7 @@
   formatted_date = date_value.match(/\d{4}-\d{2}-\d{2}/) ? date_value : ''
 %>
 <div class="inputtype">
-    <label for="mem5_ANSWER" style="font-size: .75em;">
+    <label for=<%= @answerblock.ablockid  %> style="font-size: .75em;">
     </label><br/>
     <input type="date" name="<%= @question.questionid  %>" id="<%= @answerblock.ablockid  %>" value="<%= formatted_date %>">
   </div>

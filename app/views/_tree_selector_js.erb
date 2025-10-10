@@ -1,0 +1,11 @@
+<script>
+  var $j = jQuery.noConflict();
+  $j(function() {
+    var treeData = <%= JSON.generate(@hierarchical_data) %>;
+    var questionId = "<%= question_id %>";
+    // ... (copy existing tree rendering logic from data entry, adjust for search)
+    // Ensure selected value is set from @thisval
+    $j('#selected-value_' + questionId).val("<%= @thisval %>");
+    // Add search and selection logic as before
+  });
+</script>

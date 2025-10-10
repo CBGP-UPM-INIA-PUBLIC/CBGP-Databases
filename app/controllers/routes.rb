@@ -171,13 +171,21 @@ def set_routes
 
   # QUERY FORMS
 
+  # Ensure the full route context is included
+  get '/cbgp/search-dataset/:database' do
+    @database = params[:database]
+    @questionnaire = generate_questionnaire(questionnaire_type: @database)
+    @entry = CBGP::Dataset.new(type: @database)
+    halt erb :search_dataset, layout: :database_layout
+  end
+
   post '/cbgp/query-dataset/:database' do
     @database = params[:database]
     @questionnaire = generate_questionnaire(questionnaire_type: @database)
-    @entry = CBGP::Dataset.new(type: @database) # Initialize empty dataset for form structure
-    search_params = params.select { |k, v| v.present? && k != 'database' } # Filter non-empty search fields
+    @entry = CBGP::Dataset.new(type: @database)
+    search_params = params.select { |k, v| !v.nil? && !v.empty? && k != 'database' }
     @results = execute_search(search_params: search_params, dataset_type: @database) if search_params.any?
-    halt erb :query_dataset, layout: :database_layout
+    halt erb :query_dataset, layout:  :database_layout
   end
 
   # ----------------------------------------------------------------------------

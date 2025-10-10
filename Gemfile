@@ -59,3 +59,5 @@ gem "httparty", "~> 0.23.1"
 gem "dotenv", "~> 3.1"
 
 gem "uuidtools", "~> 3.0"
+
+gem "ruby-lsp", "~> 0.26.1"

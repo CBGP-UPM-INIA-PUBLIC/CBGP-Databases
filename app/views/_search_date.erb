@@ -1,0 +1,27 @@
+<% 
+  # Initialize start and end values as empty strings for the initial search form
+  start_date_value = ""
+  end_date_value = ""
+  
+  # If @thisval contains a range (e.g., "2020-01-01 to 2025-12-31"), split it
+  if @thisval.is_a?(String) && @thisval.include?(" to ")
+    start_date, end_date = @thisval.split(" to ").map(&:strip)
+    start_date_value = extract_date(start_date).match(/\d{4}-\d{2}-\d{2}/) ? extract_date(start_date) : ""
+    end_date_value = extract_date(end_date).match(/\d{4}-\d{2}-\d{2}/) ? extract_date(end_date) : ""
+  end
+%>
+
+<div class="inputtype">
+  <label for="<%= @answerblock.ablockid %>_start" style="font-size: .75em;">Start Date</label><br/>
+  <input type="date" name="<%= @question.questionid %>[start]" id="<%= @answerblock.ablockid %>_start" value="<%= start_date_value %>">
+
+  <label for="<%= @answerblock.ablockid %>_end" style="font-size: .75em; margin-left: 10px;">End Date</label><br/>
+  <input type="date" name="<%= @question.questionid %>[end]" id="<%= @answerblock.ablockid %>_end" value="<%= end_date_value %>">
+</div>
+
+<% 
+  # Define extract_date method if not already available (stub for now)
+  def extract_date(date_str)
+    Date.parse(date_str).strftime("%Y-%m-%d") rescue ""
+  end
+%>

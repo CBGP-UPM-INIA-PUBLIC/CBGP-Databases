@@ -1,0 +1,11 @@
+<div class="databases">
+  <h3>Search <%= @database  %></h3>
+
+  <form action="/cbgp/query-dataset/<%= @database %>" method="post">
+    <table id="dataset_search" width="30%">
+      <tr><th>Search Criteria</th></tr>
+      <tr><td><%= erb :_questionnaire %></td></tr>
+      <tr><td><input type="submit" value="Search"/></td></tr>
+    </table>
+  </form>
+</div>

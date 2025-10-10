@@ -3,7 +3,7 @@
 <!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
 <!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
-  
+
   <%= erb :_head %>
 
   <body>
@@ -16,54 +16,91 @@
         x.style.display = "none";
       }
     }
+
+    // Function to set form action and mode
+    function setMode(mode) {
+      var form = document.getElementById('databaseForm');
+      var database = document.getElementById('database').value;
+      if (mode === 'search') {
+        form.action = "/cbgp/query-dataset/" + database;
+      } else {
+        form.action = "/cbgp/databases";
+      }
+      // Update button styles for visual feedback
+      document.getElementById('entryBtn').className = mode === 'entry' ? 'active' : '';
+      document.getElementById('searchBtn').className = mode === 'search' ? 'active' : '';
+    }
   </script>
 
-  
-      <%= erb :_logo_head %>
+  <%= erb :_logo_head %>
 
+  <div style="clear: both;">
+    <br/><br/>
+    <h1>CBGP - Dashboard</h1>
+    <br/>
+  </div>
 
-
-    <div style="clear: both;">
-      <br/><br/>
-
-      <h1>CBGP - Dashboard</h1>
-      <br/>
-    </div>
-
-    <div class="databases">
+  <div class="databases">
     <div style="float: right;">
-    
+      <!-- Optional: Add user info or logout -->
     </div>
-    <form action="/cbgp/databases" method="POST">
-    <table id="databases" width="30%">
-      <tr> <th>Select Database </th> </tr>
-      <tr> <td>
-        <select name="database" id="database">
-          <% @databases.each do |d| %>
-            <option value="<%= d[1] %>"> <%= d[0] %></option>
-          <% end %>
-        </select>
-      </td></tr>
-      <tr> <td>
-      <input type="submit" value="Select"/>
-      </td></tr>
+    <form id="databaseForm" action="/cbgp/databases" method="POST">
+      <table id="databases" width="30%">
+        <tr>
+          <th>Select Action</th>
+        </tr>
+        <tr>
+          <td>
+            <button type="button" id="entryBtn" class="mode-btn active" onclick="setMode('entry')">Data Entry</button>
+            <button type="button" id="searchBtn" class="mode-btn" onclick="setMode('search')">Data Search</button>
+          </td>
+        </tr>
+        <tr>
+          <th>Select Database</th>
+        </tr>
+        <tr>
+          <td>
+            <select name="database" id="database" onchange="setMode(document.getElementById('entryBtn').className.includes('active') ? 'entry' : 'search')">
+              <% @databases.each do |d| %>
+                <option value="<%= d[1] %>"><%= d[0] %></option>
+              <% end %>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <input type="submit" value="Proceed"/>
+          </td>
+        </tr>
+      </table>
+    </form>
+  </div>
 
-    </table>
+  <div style="clear: both;">
+    <%= erb :_footer %>
+  </div>
 
-    </div>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+  <!--[if lt IE 7]>
+    <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.2/CFInstall.min.js"></script>
+    <script>window.attachEvent("onload",function(){CFInstall.check({mode:"overlay"})})</script>
+  <![endif]-->
 
-
-    <div style="clear: both;">
-      <%= erb :_footer %>
-    </div>
-
-
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-    <!--[if lt IE 7]>
-      <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.2/CFInstall.min.js"></script>
-      <script>window.attachEvent("onload",function(){CFInstall.check({mode:"overlay"})})</script>
-    <![endif]-->
-  </body>
+  <style>
+    .mode-btn {
+      padding: 5px 10px;
+      margin-right: 10px;
+      border: 1px solid #ccc;
+      background-color: #f0f0f0;
+      cursor: pointer;
+    }
+    .mode-btn.active {
+      background-color: #4CAF50; /* Green for active */
+      color: white;
+      border-color: #4CAF50;
+    }
+    .mode-btn:hover {
+      background-color: #ddd;
+    }
+  </style>
 </html>
-
-

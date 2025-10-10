@@ -1,0 +1,9 @@
+<div class="inputtype">
+  <select name="<%= @question.questionid %>" id="<%= @answerblock.ablockid %>" width="70">
+    <option value="">-- select an option --</option>
+    <% @answerblock.answers.each do |answer| %>
+      <% selected = (@thisval == answer.answer || @thisval == answer.answerid) ? "selected" : "" %>
+      <option value="<%= answer.answerid %>" <%= selected %>><%= answer.answer %></option>
+    <% end %>
+  </select>
+</div>

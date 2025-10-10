@@ -1,24 +1,10 @@
-<!DOCTYPE html>
-<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
-<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
-<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
-  
-
-    <div style="clear: both;">
-          <div class="" style="">
-            <% sections = @questionnaire.sections %>
-            
-            <% sections.each do |sect| %>
-              <% @section = sect %>
-              <%= erb :_section %>
-            <% end %>
-          </div>
-
-
-          <br/><br/><br/>
-    </div>
-
-</html>
-
-
+<div style="clear: both;">
+  <div class="" style="">
+    <% sections = @questionnaire.sections %>
+    <% sections.each do |sect| %>
+      <% @section = sect %>
+      <%= erb :_section %>
+    <% end %>
+  </div>
+  <br/><br/><br/>
+</div>

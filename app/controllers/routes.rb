@@ -122,8 +122,10 @@ def set_routes
 
   get '/cbgp/dataset/:database' do
     @database = params[:database]
+    @mode = 'edit'
+
     @questionnaire = generate_questionnaire(questionnaire_type: @database) # questionnaire has all fields and possible answers
-    if @database == 'add-publication'
+    if @database == 'publication'
       @entry = CBGP::Publication.new
       halt erb :publications, layout: :database_layout
     else
@@ -135,17 +137,18 @@ def set_routes
   post '/cbgp/dataset/:database' do
     @database = params[:database]
     identifier = params[:identifier]
+    @mode = 'edit'
+
     idtype, identifier = identifier_type(id: identifier) # idtype is doi for publications
     @questionnaire = generate_questionnaire(questionnaire_type: @database)
-    if @database == 'add-publication'
+    if @database == 'publication'
       @entry = if idtype == 'doi'
                  CBGP::Publication.load_from_doi(doi: identifier)
                else
                  CBGP::Publication.new
                end
       halt erb :publications, layout: :database_layout
-    end
-    if %w[add-member add-project].include?(database)
+    else
       @entry = if idtype
                  CBGP::Dataset.load_from_identifier(identifier: identifier)
                else
@@ -158,8 +161,8 @@ def set_routes
   post '/cbgp/validate-dataset/:database' do
     @database = params[:database]
     @questionnaire = generate_questionnaire(questionnaire_type: @database)
-
-    if @database == 'add-publication'
+    @mode = 'edit'
+    if @database == 'publication'
       @entry = CBGP::Publication.load_from_params(params: params)
       halt erb :publications, layout: database_layout
     else
@@ -176,6 +179,18 @@ def set_routes
     @database = params[:database]
     @questionnaire = generate_questionnaire(questionnaire_type: @database)
     @entry = CBGP::Dataset.new(type: @database)
+    @mode = 'search'
+    halt erb :search_dataset, layout: :database_layout
+  end
+
+  get '/cbgp/search-dataset' do
+    @database = params[:database]
+    unless @database
+      halt 400, "Database parameter is required"
+    end
+    @questionnaire = generate_questionnaire(questionnaire_type: @database)
+    @entry = CBGP::Dataset.new(type: @database)
+    @mode = 'search'
     halt erb :search_dataset, layout: :database_layout
   end
 
@@ -185,6 +200,7 @@ def set_routes
     @entry = CBGP::Dataset.new(type: @database)
     search_params = params.select { |k, v| !v.nil? && !v.empty? && k != 'database' }
     @results = execute_search(search_params: search_params, dataset_type: @database) if search_params.any?
+    @mode = 'search'
     halt erb :query_dataset, layout:  :database_layout
   end
 

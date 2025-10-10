@@ -25,43 +25,18 @@ def identifier_type(id: nil)
   end
 end
 
-# Helper to construct tree from flat results
-# def build_tree_from_results(results, ablockid:)
-#   nodes = {}
-#   ablockid_fragment = ablockid.to_s.split('#').last  # Extract fragment, e.g., "categories"
 
-#   results.each do |result|
-#     aid = result[:aid].to_s.split('#').last  # Fragment, e.g., "permanent_researcher"
-#     parent = result[:parent]&.to_s&.split('#')&.last  # Parent fragment, e.g., "categories"
-
-#     # Map the answer block ID to '#' (root) for jsTree
-#     parent = '#' if parent == ablockid_fragment
-
-#     nodes[aid] = {
-#       id: aid,
-#       text: result[:label].to_s,
-#       parent: parent || '#',  # Default to root if no parent
-#       sequence: result[:sequence]&.to_i || 0  # Default to 0 if no sequence
-#     }
-#   end
-
-#   # Sort nodes by sequence for consistent ordering
-#   nodes.each_value { |node| node[:children] = [] }
-#   nodes.each_value do |node|
-#     next if node[:parent] == '#'
-#     parent_node = nodes[node[:parent]]
-#     parent_node[:children] << node if parent_node
-#   end
-
-#   # Return root nodes (parent = '#'), sorted by sequence
-#   tree = nodes.values.select { |n| n[:parent] == '#' }.sort_by { |n| n[:sequence] }
-#   tree
-# end
 
 require 'set'
 
-def build_transitive_tree(results, ablockid:)
-  ablockid_uri = "https://w3id.org/CBGP-App##{ablockid}"
+def build_transitive_tree(results, abblockid:)
+  abblockid = abblockid.to_s.strip
+  if abblockid.empty?
+    warn "Warning: abblockid is nil or empty; using default 'root'."
+    abblockid = 'root'
+  end
+  abblockid_uri = "https://w3id.org/CBGP-App##{abblockid}"
+
   nodes = {}
   children = Hash.new { |h, k| h[k] = [] }
 
@@ -89,7 +64,7 @@ def build_transitive_tree(results, ablockid:)
 
     nodes[aid] = {
       id: aid_fragment,
-      text: result[:label].to_s.gsub('"', '\"').gsub(/[\n\r\t]/, ' '), # Escape quotes and newlines
+      text: result[:label].to_s.gsub('"', '\"').gsub(/[\n\r\t]/, ' '),
       parent: parent_fragment || '#',
       sequence: sequence
     }
@@ -97,7 +72,7 @@ def build_transitive_tree(results, ablockid:)
   end
 
   descendants = Set.new
-  queue = [ablockid_uri]
+  queue = [abblockid_uri]
   while (current = queue.shift)
     next unless children[current]
     children[current].each do |child|
@@ -106,16 +81,17 @@ def build_transitive_tree(results, ablockid:)
     end
   end
 
-  nodes[ablockid_uri] ||= {
-    id: ablockid,
-    text: (get_label_for_id(id: ablockid) || ablockid).gsub('"', '\"').gsub(/[\n\r\t]/, ' '),
+  root_label = get_label_for_id(id: abblockid)
+  nodes[abblockid_uri] ||= {
+    id: abblockid,
+    text: (root_label || abblockid).gsub('"', '\"').gsub(/[\n\r\t]/, ' '),
     parent: '#',
     sequence: 0
   }
-  nodes.select! { |aid, _| aid == ablockid_uri || descendants.include?(aid) }
+  nodes.select! { |aid, _| aid == abblockid_uri || descendants.include?(aid) }
 
   nodes.each do |aid, node|
-    node[:parent] = '#' if node[:parent] == ablockid
+    node[:parent] = '#' if node[:parent] == abblockid
   end
 
   nodes.each_value { |node| node[:children] = [] }
@@ -129,27 +105,6 @@ def build_transitive_tree(results, ablockid:)
   warn "Tree: #{tree.inspect}"
   tree
 end
-
-# def get_hierarchical_answer_block_query(ablockid:, language: $language)
-#   query = <<~GET_HIERARCHICAL_ANSWERS
-#     #{PREFIXES}
-#     SELECT DISTINCT ?aid ?label ?parent ?sequence WHERE {
-#       { ?aid rdfs:subClassOf ?parent . }
-#       UNION
-#       { ?aid rdfs:label ?label . 
-#       FILTER (?aid = <https://w3id.org/CBGP-App##{ablockid}>) }
-#       ?aid rdfs:label ?label .
-#       FILTER (lang(?label) = "#{language}")
-#       OPTIONAL { ?aid local:answer-order ?sequence . }
-#     } ORDER BY ?sequence
-#   GET_HIERARCHICAL_ANSWERS
-
-#   warn "HIERARCHICAL ANSWERBLOCK QUERY IS #{query}"
-#   results = SPARQL.parse(query).execute(ONTOLOGY)
-#   warn "Query Results: #{results.map { |r| { aid: r[:aid], parent: r[:parent], label: r[:label], sequence: r[:sequence] } }.inspect}"
-#   tree = build_transitive_tree(results, ablockid: ablockid)
-#   JSON.generate(tree)
-# end
 
 
 def nest_children(node, nodes)

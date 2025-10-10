@@ -116,7 +116,7 @@ def get_hierarchical_answer_block_query(ablockid:, language: $language)
 
   warn "HIERARCHICAL ANSWERBLOCK QUERY IS #{query}"
   results = SPARQL.parse(query).execute($ontology)
-  tree = build_transitive_tree(results, ablockid: ablockid)
+  tree = build_transitive_tree(results, abblockid: ablockid)
   JSON.generate(tree) # Use JSON.generate for explicit control
 end
 
@@ -137,19 +137,32 @@ def get_label_for_questionnaire_type(id:, language: $language)
   [res.first[:plabel].to_s, res.first[:label].to_s]
 end
 
-def get_label_for_id(id:, language: $language)
-  lab = SPARQL.parse("
-    #{PREFIXES}
+def get_label_for_id(id:)
+ return nil if id.nil? || id.empty?
 
-    SELECT ?label WHERE {
-      cbgp:#{id} rdfs:label ?label .
-      FILTER (lang(?label) = '#{language}')
-    }
-          ")
+ # Strip the document fragment from the URI if it includes a '#'
+ id = id.to_s.split('#').last if id.to_s.include?('#')
 
-  res = lab.execute($ontology)
-  res.first[:label].to_s
+ query = <<~LABEL_QUERY
+ #{PREFIXES}
+ SELECT ?label WHERE {
+ cbgp:#{id} rdfs:label ?label .
+ FILTER (lang(?label) = "en")
+ }
+ LIMIT 1
+ LABEL_QUERY
+
+ warn "LABEL QUERY FOR #{id}: #{query}"
+ res = SPARQL.parse(query).execute($ontology)
+ if res.any? && res.first&.bound?(:label)
+ res.first[:label].to_s
+ else
+ warn "No label found for id: #{id}"
+ id # Fallback to id
+ end
 end
+
+
 
 def field_query(fieldid:, language: $language)
   query = <<~FIELDQ

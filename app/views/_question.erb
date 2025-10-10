@@ -6,18 +6,31 @@
   <h4 class="question-label"><%= label %></h4>
   <% widget = @question.widget.match(/.*\#(\S+)/)[1] %>
 
-  <!-- For search form, initialize @value as empty -->
-  <% @value = "" %>
-  <% @value = [@value] unless @value.is_a?(Array) %> 
-  <% @answerblock = @question.answerblock %> 
-  <% @hierarchical_data = @question.answertree %>
+  <!-- Initialize @value based on mode -->
+  <% if @mode == 'search' %>
+    <% @value = "" %>
+    <% @value = [@value] unless @value.is_a?(Array) %>
+    <% @answerblock = @question.answerblock %>
+    <% @hierarchical_data = @question.answertree %>
+    <% @value.each do |val| %>
+      <% @thisval = val %>
+      <% if widget == "date" %>
+        <%= erb :_search_date %>
+      <% else %>
+        <%= erb "_search_#{widget}".to_sym %>
+      <% end %>
+    <% end %>
+  <% else %> <!-- Assume add/edit mode -->
 
-  <% @value.each do |val| %>
-    <% @thisval = val %>
-    <% if widget == "date" %>
-      <%= erb :_search_date %>
-    <% else %>
-      <%= erb "_search_#{widget}".to_sym %> 
+<% @value = @entry.public_send(@question.objectmethod) || "" %>
+<% warn "Question #{@question.questionid}: objectmethod=#{@question.objectmethod}, value=#{@value.inspect}" %>
+  
+    <% @value = [@value] unless @value.is_a?(Array) %>
+    <% @answerblock = @question.answerblock %>
+    <% @hierarchical_data = @question.answertree %>
+    <% @value.each do |val| %>
+      <% @thisval = val %>
+      <%= erb "_#{widget}".to_sym %> <!-- Use original widgets for add/edit -->
     <% end %>
   <% end %>
 </div>

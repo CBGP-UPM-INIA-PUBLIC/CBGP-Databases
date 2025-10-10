@@ -72,25 +72,25 @@ class QuestionnaireQuestion
   attr_accessor :questionid, :sequence, :objectclass, :objectmethod, :answerblock, :answertree, :question, :selected_answer,
                 :widget, :cardinality
 
-  def initialize(questionid:, sequence:, objectclass:, objectmethod:, answerblockid:, question:, widget:, cardinality:) # questionid and answerblockid comes in as fragment only
-    @question = question # text in the correct language
+  def initialize(questionid:, sequence:, objectclass:, objectmethod:, answerblockid:, question:, widget:, cardinality:)
+    @question = question
     @questionid = questionid
     @sequence = sequence
     @widget = widget.downcase
     @objectclass = objectclass
     @objectmethod = objectmethod
     @cardinality = cardinality
-    @answerblockid = answerblockid
+    @answerblockid = answerblockid  # This sets the instance variable
     @selected_answer = nil
-    @answertree  = nil
+    @answertree = nil
     @answerblock = QuestionnaireAnswerBlock.new(ablockid: @answerblockid)
     warn "WIDGET IS #{@widget}"
     if @widget.match(/TreeSelector/i)
-      @answertree = get_hierarchical_answer_block_query(ablockid: answerblockid)
-      @answertree = JSON.parse(@answertree)  # Now it's an array of hashes
-      # Optional: Sanitize curly quotes if visuals glitch (JS handles unicode fine, but for safety)
+      @answertree = get_hierarchical_answer_block_query(ablockid: @answerblockid)  # Fixed: use @answerblockid
+      @answertree = JSON.parse(@answertree)
+      # Optional: Sanitize curly quotes...
       @answertree.each do |node|
-        node['text'] = node['text'].gsub(/[“”‘’]/, '"') if node['text']  # Straight quotes
+        node['text'] = node['text'].gsub(/[“”‘’]/, '"') if node['text']
         node['children'].each { |child| child['text'] = child['text'].gsub(/[“”‘’]/, '"') if child['text'] } if node['children']
       end
       warn "Hierarchical Data: #{@answertree.inspect}"
@@ -156,8 +156,8 @@ class QuestionnaireField
 
     field.widgettype = res[:widgettype].to_s
     field.answerblock = res[:answerblock].to_s
-    if @widget.match(/TreeSelector/i)
-      field.answertree = get_hierarchical_answer_block_query(ablockid: answerblockid)
+    if field.widgettype.match(/TreeSelector/i)
+      field.answertree = get_hierarchical_answer_block_query(ablockid: field.answerblock)
       field.answertree = JSON.parse(field.answertree)  # Now it's an array of hashes
       # Optional: Sanitize curly quotes if visuals glitch (JS handles unicode fine, but for safety)
       field.answertree.each do |node|

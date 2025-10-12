@@ -535,9 +535,12 @@ def write_dataset_to_db_query(dataset:, oldid: nil)
   WRITE_DATASET
 end
 
+
+
+
 def build_search_query(search_params:, dataset_type:)
-  # Validate input
-  return nil unless search_params.is_a?(Hash) && !search_params.empty?
+  # Validate input: ensure at least one non-empty parameter
+  return nil unless search_params.is_a?(Hash) && search_params.any? { |k, v| !v.nil? && (!v.is_a?(Hash) && !v.to_s.strip.empty? || v.is_a?(Hash) && v.values.any? { |val| !val.to_s.strip.empty? }) }
 
   # Base SPARQL query structure
   query = <<~SPARQL
@@ -551,24 +554,48 @@ def build_search_query(search_params:, dataset_type:)
   # Dynamic conditions based on search parameters
   conditions = []
   search_params.each do |method_name, value|
-    # Convert method name to URI (e.g., "contract_type" -> "cbgp:contract_type")
+    # Skip empty or irrelevant values
+    next if value.nil? || (value.is_a?(String) && value.strip.empty?)
+    next if value.is_a?(Hash) && value.values.all? { |val| val.to_s.strip.empty? }
+
     predicate = "cbgp:#{method_name}"
     field_node = "datasetgraph:#{method_name}"
 
-    # Add condition for the field value
-    conditions << <<-CONDITION
+    # Handle date range fields (mem5, mem13, mem14, mem15)
+    if %w[mem5 mem13 mem14 mem15].include?(method_name.to_s) && value.is_a?(Hash)
+      start_date = value['start']&.strip
+      end_date = value['end']&.strip
+      next if start_date.to_s.empty? && end_date.to_s.empty? # Skip empty date ranges
+
+      # Serialize to JSON with escaped quotes
+      json_value = JSON.generate(value).gsub('"', '\"')
+      conditions << <<-CONDITION
       GRAPH ?dataset {
         ?dataset #{predicate} #{field_node} .
-        #{field_node} sio:SIO_000300 "#{value}" .
+        #{field_node} sio:SIO_000300 "#{json_value}" .
         #{field_node} rdf:type ?field_type .
       }
-    CONDITION
+      CONDITION
+    else
+      # Handle simple string fields (e.g., group_institution)
+      escaped_value = value.to_s.gsub('"', '\"')
+      conditions << <<-CONDITION
+      GRAPH ?dataset {
+        ?dataset #{predicate} #{field_node} .
+        #{field_node} sio:SIO_000300 "#{escaped_value}" .
+        #{field_node} rdf:type ?field_type .
+      }
+      CONDITION
+    end
   end
 
-  # Join conditions with AND logic (implicit in SPARQL GRAPH clauses)
+  # Return nil if no valid conditions
+  return nil if conditions.empty?
+
+  # Join conditions
   query += conditions.join("\n")
 
-  # Close the query with dataset type filter
+  # Close the query
   query += <<~SPARQL
       # Ensure graphs are from the specified dataset type
       FILTER (STRSTARTS(STR(?dataset), "http://admin.cbgp.upm.es/graphs/datasets/#{dataset_type}/"))
@@ -585,7 +612,6 @@ def execute_search(search_params:, dataset_type:)
   return [] unless query
 
   results = DATABASE.query(query)
+  warn "Search results: #{results.map { |r| r.to_h }.inspect}"
   results.map { |result| result[:dataset].to_s } # Return array of graph URIs
 end
-
-# Example usage (to be

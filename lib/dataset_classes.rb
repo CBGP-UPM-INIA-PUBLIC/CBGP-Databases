@@ -114,6 +114,7 @@ module CBGP
     def self.load_from_params(params:)
       warn "PARAMS"
       warn "#{params.inspect}"
+      oldgraphid = params["primary_id"]
       # abort "breaking here"
 #       PARAMS
 # {"mem_primary_id"=> "8347820934957453", "mem1"=>"qwerew", "mem2"=>"qwerqwer", "mem3"=>"4352345", "mem4"=>"3455", "mem5"=>"", 
@@ -126,6 +127,7 @@ module CBGP
 
 #  select ?g where {graph ?g {?pub sio:SIO_000671 ?id . ?id  sio:SIO_000300 "#{doi}" ;
       dataset = CBGP::Parsers.params_parser_dataset(params: params)  # returns CBGP::Dataset' mimght overwrite primary_id
+      
       # what is the equivalent ID lookup here?
       # TODO this afternoon!
       res = retrieve_dataset_graph_query(primary_id: dataset.primary_id)
@@ -136,7 +138,29 @@ module CBGP
 
     def self.write_to_db(dataset:, oldid: nil)
       warn 'WRITING DATASET TO DB'
-      write_dataset_to_db_query(dataset: dataset, oldid: oldid)
+      write_dataset_to_db(dataset: dataset, oldid: oldid)
     end
+
+    def self.get_questionnaire_fields(questionnaire_type:)
+      questionnaire = generate_questionnaire(questionnaire_type: questionnaire_type)
+      fields = []
+      questionnaire.sections.each do |section|
+        section.questions.each do |question|
+          # :questionid, :sequence, :objectclass, :objectmethod, :ablockid, :answertree, :question, :selected_answer,
+          #      :widget, :cardinality, :answerblock
+          fields << {
+            fieldid: question.questionid,  # this is the ontological class of tjhe question
+            label: question.question,
+            objectmethod: question.objectmethod,
+            objectclass: question.objectclass,
+            widget: question.widget,
+            answerblockid: question.ablockid
+          }
+        end
+      end
+      fields.sort_by { |f| f[:fieldid] } # Sort for consistent column order
+    end
+
+
   end
 end

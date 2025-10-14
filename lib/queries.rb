@@ -59,7 +59,7 @@ def get_questionnaire_sections_query(questionnaire_type:, language: $language)
       FILTER (lang(?seclab) = "#{language}")
     }
 GET_QUESTIONNAIRE_SECTIONS
-  warn "QUERY IS #{qs}"
+  # warn "QUERY IS #{qs}"
   qs = SPARQL.parse(qs)
   qs.execute($ontology)
 end
@@ -114,7 +114,7 @@ def get_hierarchical_answer_block_query(ablockid:, language: $language)
     } ORDER BY ?sequence
   GET_HIERARCHICAL_ANSWERS
 
-  warn "HIERARCHICAL ANSWERBLOCK QUERY IS #{query}"
+  # warn "HIERARCHICAL ANSWERBLOCK QUERY IS #{query}"
   results = SPARQL.parse(query).execute($ontology)
   tree = build_transitive_tree(results, abblockid: ablockid)
   JSON.generate(tree) # Use JSON.generate for explicit control
@@ -152,7 +152,7 @@ def get_label_for_id(id:)
  LIMIT 1
  LABEL_QUERY
 
- warn "LABEL QUERY FOR #{id}: #{query}"
+#  warn "LABEL QUERY FOR #{id}: #{query}"
  res = SPARQL.parse(query).execute($ontology)
  if res.any? && res.first&.bound?(:label)
  res.first[:label].to_s
@@ -179,7 +179,7 @@ def field_query(fieldid:, language: $language)
         OPTIONAL {cbgp:#{fieldid} local:object-class ?objectclass .}
     }
   FIELDQ
-  warn "FIELD QUERY is #{query}"
+  # warn "FIELD QUERY is #{query}"
   field = SPARQL.parse(query)
   field.execute($ontology)
 end
@@ -440,7 +440,7 @@ def retrieve_dataset_graph_query(primary_id:)
 
 SELECT_DS
 
-  warn "retrieve dataset graph query is: #{retds}"
+  warn "retrieve dataset graph query is:\n #{retds}"
   # pubexists = SPARQL.parse(retpub)  # validate query or die
   DATABASE.query(retds)
 end
@@ -455,81 +455,67 @@ end
 
 def write_dataset_to_db(dataset:, oldid: nil)
   writequery = write_dataset_to_db_query(dataset: dataset, oldid: oldid)
-  warn "\n\n\n\n#{writequery}\n\n\n"
+  warn "WRITE DATASET QUERY\n#{writequery}\n\n\n"
+  # abort
   DATABASE_UPDATE.update(writequery)
 end
 
 def write_dataset_to_db_query(dataset:, oldid: nil)
-  delete_dataset_query(oldid: oldid) if oldid
-
   datasettype = dataset.form_type
   primary_id = dataset.primary_id
 
-  # Build the triples
-  main_subject = 'dataset:dataset'
-  main_triples = ["#{main_subject} rdf:type sio:SIO_000089 ;"]
-
-  attribute_triples = []
-
-  # Handle primary identifier specially
-  primary_field = dataset.fields.find { |f| f[:is_primary] }
-  primary_value = primary_id # Default to dataset.primary_id
-  primary_questionclass = 'primary_id'
-  primary_type = 'sio:SIO_000115' # Default type for identifier
-
-  if primary_field
-    primary_questionclass = primary_field[:questionclass]
-    primary_method = primary_field[:method]
-    primary_value = dataset.send(primary_method) if primary_method && dataset.respond_to?(primary_method)
-    primary_type = primary_field[:answers] || primary_field[:class] || primary_type
+  if oldid
+    oldgraph = "http://admin.cbgp.upm.es/graphs/datasets/#{datasettype}/context/#{oldid}"
+    delete_dataset_query(oldid: oldgraph)  
   end
 
-  primary_node = "datasetgraph:#{primary_questionclass}"
-  primary_predicate = 'sio:SIO_000671' # has identifier
 
-  main_triples << "  #{primary_predicate} #{primary_node} ;"
 
-  attribute_triples << "  #{primary_node} sio:SIO_000300 \"#{primary_value}\" ;" # has value
-  attribute_triples << "    rdf:type #{primary_type} ."
+  datasetPREFIX =  "<http://admin.cbgp.upm.es/graphs/datasets/#{datasettype}/dataset/>"
+  datasetgraphPREFIX = "<http://admin.cbgp.upm.es/graphs/datasets/#{datasettype}/context/>"
+  #context = "datasetgraphPREFIX:#{primary_id}"
+
+  # subject_class = "cbgp:#{primary_questionclass}"  # cbgp:mem15  comes from the cbgp prefix which is the ontology base URI
+  
+  # Build the triples
+
+  triples = []
+  triples << "dataset:#{primary_id} rdf:type sio:SIO_000089 ;  # sio dataset"  # sio:dataset
+  triples << "   rdf:type cbgp:#{datasettype} ;"  # cbgp:members
+  
+  triples << "   sio:SIO_000671 \"#{primary_id}\" .  # has identifier"  # sio:has-identifier   ../admin.cbgp.../datasets/members/dataset/abc123/mem15
+
 
   # Handle other fields
+
   dataset.fields.each do |field|
-    next if field[:is_primary]
-
-    questionclass = field[:questionclass]
-    method_name = field[:method]
-    next unless dataset.respond_to?(method_name)
-
-    value = dataset.send(method_name)
+    # warn field.inspect + "\n\n\n"
+    
+    questionclass = field[:questionclass]  # the class of each question, from the ontology   e.g. mem1  if it is cbgp:mem1
+    method = field[:method]
+    # warn "value is #{dataset.send(method.to_sym)}"
+    next unless dataset.respond_to?(method.to_sym)
+    value = dataset.send(method.to_sym)
     next if value.nil? || value.to_s.empty?
 
-    # Assume cardinality is 1 for simplicity; handle arrays if needed in future
-    predicate = "<#{field[:q]}>" # Use full URI for predicate
+    this_attribute = datasetPREFIX.gsub(/[<>]/, "") + "/#{primary_id}/#{questionclass}"
 
-    node = "datasetgraph:#{questionclass}"
-
-    type = field[:answers] || field[:class] || "cbgp:#{questionclass}"
-
-    main_triples << "  #{predicate} #{node} ;"
-
-    attribute_triples << "  #{node} sio:SIO_000300 \"#{value}\" ;"
-    attribute_triples << "    rdf:type #{type} ."
+    triples << "dataset:#{primary_id} sio:SIO_000008 <#{this_attribute}> .  # has attribute" # has attribute
+    triples << "<#{this_attribute}> rdf:type cbgp:#{questionclass} ."
+    triples << "<#{this_attribute}> sio:SIO_000300 \"#{value}\" . # has value\n"
   end
 
-  # Replace the last semicolon in main_triples with a period
-  main_triples[-1].sub!(/ ;$/, ' .')
-
   # Join the triples
-  body = main_triples.join("\n") + "\n" + attribute_triples.join("\n")
+  body = triples.join("\n")
 
   # Build the full SPARQL query
   <<~WRITE_DATASET
         #{PREFIXES}
 
-        PREFIX dataset: <http://admin.cbgp.upm.es/graphs/datasets/#{datasettype}/#{primary_id}#>
-        PREFIX datasetgraph: <http://admin.cbgp.upm.es/graphs/datasets/#{datasettype}/#{primary_id}#>
+        PREFIX dataset: #{datasetPREFIX}
+        PREFIX datasetgraph: #{datasetgraphPREFIX}
 
-        INSERT DATA { GRAPH datasetgraph:container {
+        INSERT DATA { GRAPH datasetgraph:#{primary_id} {
     #{body}
         }}
   WRITE_DATASET
@@ -542,49 +528,59 @@ def build_search_query(search_params:, dataset_type:)
   # Validate input: ensure at least one non-empty parameter
   return nil unless search_params.is_a?(Hash) && search_params.any? { |k, v| !v.nil? && (!v.is_a?(Hash) && !v.to_s.strip.empty? || v.is_a?(Hash) && v.values.any? { |val| !val.to_s.strip.empty? }) }
 
+  datasetPREFIX =  "<http://admin.cbgp.upm.es/graphs/datasets/#{dataset_type}/dataset/>"
+  datasetgraphPREFIX = "<http://admin.cbgp.upm.es/graphs/datasets/#{dataset_type}/context/>"
   # Base SPARQL query structure
   query = <<~SPARQL
     #{PREFIXES}
-    PREFIX datasetgraph: <http://admin.cbgp.upm.es/graphs/datasets/#{dataset_type}/>
+    PREFIX dataset: #{datasetPREFIX}
+    PREFIX datasetgraph: #{datasetgraphPREFIX}
 
-    SELECT DISTINCT ?dataset
+    SELECT DISTINCT ?datasetgraph
     WHERE {
+          GRAPH ?datasetgraph {
+
   SPARQL
 
   # Dynamic conditions based on search parameters
   conditions = []
-  search_params.each do |method_name, value|
+  dates = {}
+  search_params.each do |questionclass, value|
+    warn "questionclass #{questionclass}  value #{value}"
     # Skip empty or irrelevant values
     next if value.nil? || (value.is_a?(String) && value.strip.empty?)
     next if value.is_a?(Hash) && value.values.all? { |val| val.to_s.strip.empty? }
 
-    predicate = "cbgp:#{method_name}"
-    field_node = "datasetgraph:#{method_name}"
-
-    # Handle date range fields (mem5, mem13, mem14, mem15)
-    if %w[mem5 mem13 mem14 mem15].include?(method_name.to_s) && value.is_a?(Hash)
+    if value.is_a?(Hash)  # this is a date range
       start_date = value['start']&.strip
       end_date = value['end']&.strip
       next if start_date.to_s.empty? && end_date.to_s.empty? # Skip empty date ranges
 
-      # Serialize to JSON with escaped quotes
-      json_value = JSON.generate(value).gsub('"', '\"')
+      # FILTER (?start >= "2023-01-01"^^xsd:date && ?start <= "2023-12-31"^^xsd:date)
+      filter = ""
+      if !start_date.to_s.empty? && !end_date.to_s.empty? 
+        filter = "FILTER (?datevalue >= \"#{start_date}\"^^xsd:date && ?datevalue <= \"#{end_date}\"^^xsd:date) "
+      elsif !start_date.to_s.empty? 
+        filter = "FILTER (?datevalue >= \"#{start_date}\"^^xsd:date) "
+      elsif  !end_date.to_s.empty? 
+        filter = "FILTER (?datevalue >= \"#{end_date}\"^^xsd:date) "
+      end
+
       conditions << <<-CONDITION
-      GRAPH ?dataset {
-        ?dataset #{predicate} #{field_node} .
-        #{field_node} sio:SIO_000300 "#{json_value}" .
-        #{field_node} rdf:type ?field_type .
-      }
+        ?dataset sio:SIO_000008 ?attribute .  # has attribute.
+        ?attribute sio:SIO_000300 ?datevalue .
+        ?attribute rdf:type cbgp:#{questionclass} .  # this is how we get the right attribute
+        #{filter} .
+
       CONDITION
     else
       # Handle simple string fields (e.g., group_institution)
       escaped_value = value.to_s.gsub('"', '\"')
       conditions << <<-CONDITION
-      GRAPH ?dataset {
-        ?dataset #{predicate} #{field_node} .
-        #{field_node} sio:SIO_000300 "#{escaped_value}" .
-        #{field_node} rdf:type ?field_type .
-      }
+        ?dataset sio:SIO_000008 ?attribute .  # has attribute.
+        ?attribute sio:SIO_000300 "#{escaped_value}" .
+        ?attribute rdf:type cbgp:#{questionclass} .  # this is how we get the right attribute
+      
       CONDITION
     end
   end
@@ -597,13 +593,13 @@ def build_search_query(search_params:, dataset_type:)
 
   # Close the query
   query += <<~SPARQL
-      # Ensure graphs are from the specified dataset type
-      FILTER (STRSTARTS(STR(?dataset), "http://admin.cbgp.upm.es/graphs/datasets/#{dataset_type}/"))
+        }
     }
-    ORDER BY ?dataset
+    # ORDER BY ?datasetgraph
   SPARQL
 
-  warn "Generated search query: #{query}"
+  warn "Generated search query:\n#{query}\n\n\n"
+  # abort
   query
 end
 
@@ -613,5 +609,55 @@ def execute_search(search_params:, dataset_type:)
 
   results = DATABASE.query(query)
   warn "Search results: #{results.map { |r| r.to_h }.inspect}"
-  results.map { |result| result[:dataset].to_s } # Return array of graph URIs
+  results.map { |result| result[:datasetgraph].to_s } # Return array of graph URIs
+end
+
+
+
+def fetch_dataset_details(datasetgraph_uris, dataset_type)
+  return [] if datasetgraph_uris.empty?
+
+  fields = CBGP::Dataset.get_questionnaire_fields(questionnaire_type: dataset_type)
+  # :fieldid, :label, :answerblock, :answertree, :objectclass, :objectmethod, :questionorder, :cardinality, :widgettype
+
+  results = []
+
+  datasetgraph_uris.each do |uri|
+    # Build dynamic SPARQL query for all fields
+    select_clause = fields.map { |f| "?#{f[:fieldid]}" }.join(' ') # creates a novel variable for each class e.g. ?mem1   ?mem5
+    where_clause = fields.map do |f|
+      <<~SPARQL
+        OPTIONAL {
+          ?dataset sio:SIO_000008 ?attribute#{f[:fieldid]} .
+          ?attribute#{f[:fieldid]} sio:SIO_000300 ?#{f[:fieldid]} .  # creates a novel variable for each class e.g. ?mem1   ?mem5
+          ?attribute#{f[:fieldid]} rdf:type cbgp:#{f[:fieldid]} .  # fieldid is the question class
+        }
+      SPARQL
+    end.join("\n")
+
+    query = <<~SPARQL
+      #{PREFIXES}
+      SELECT #{select_clause}
+      WHERE {
+        GRAPH <#{uri}> {
+          #{where_clause}
+        }
+      }
+    SPARQL
+
+    warn "Fetching details for dataset graph: #{uri}"
+    warn "Query: #{query}"
+    result = DATABASE.query(query).first
+    if result
+      details = { dataset: uri }
+      fields.each do |f|
+        value = result[f[:fieldid].to_sym]&.to_s
+        details[f[:fieldid].to_sym] = value
+      end
+      results << details
+    end
+  end
+
+  warn "Dataset details: #{results.inspect}"
+  results
 end

@@ -120,6 +120,7 @@ def set_routes
   # ----------------------------------------------------------------------------
   # Let's try to make it fully generic!
 
+  # create the empty form
   get '/cbgp/dataset/:database' do
     @database = params[:database]
     @mode = 'edit'
@@ -134,30 +135,33 @@ def set_routes
     end
   end
 
-  post '/cbgp/dataset/:database' do
-    @database = params[:database]
-    identifier = params[:identifier]
-    @mode = 'edit'
+  # this used to be the lookup box... I want to remove that
+  # we will eventually put this backl, with a button from the search results page
+  # post '/cbgp/dataset/:database' do
+  #   @database = params[:database]
+  #   identifier = params[:identifier]
+  #   @mode = 'edit'
 
-    idtype, identifier = identifier_type(id: identifier) # idtype is doi for publications
-    @questionnaire = generate_questionnaire(questionnaire_type: @database)
-    if @database == 'publication'
-      @entry = if idtype == 'doi'
-                 CBGP::Publication.load_from_doi(doi: identifier)
-               else
-                 CBGP::Publication.new
-               end
-      halt erb :publications, layout: :database_layout
-    else
-      @entry = if idtype
-                 CBGP::Dataset.load_from_identifier(identifier: identifier)
-               else
-                 CBGP::Dataset.new(type: @database)
-               end
-      halt erb :dataset, layout: :database_layout
-    end
-  end
+  #   idtype, identifier = identifier_type(id: identifier) # idtype is doi for publications
+  #   @questionnaire = generate_questionnaire(questionnaire_type: @database)
+  #   if @database == 'publication'
+  #     @entry = if idtype == 'doi'
+  #                CBGP::Publication.load_from_doi(doi: identifier)
+  #              else
+  #                CBGP::Publication.new
+  #              end
+  #     halt erb :publications, layout: :database_layout
+  #   else
+  #     @entry = if idtype
+  #                CBGP::Dataset.load_from_identifier(identifier: identifier)
+  #              else
+  #                CBGP::Dataset.new(type: @database)
+  #              end
+  #     halt erb :dataset, layout: :database_layout
+  #   end
+  # end
 
+  # the form has been filled
   post '/cbgp/validate-dataset/:database' do
     @database = params[:database]
     @questionnaire = generate_questionnaire(questionnaire_type: @database)
@@ -172,6 +176,19 @@ def set_routes
     halt 406
   end
 
+  # QUERY FORMS
+  # QUERY FORMS
+  # QUERY FORMS
+  # QUERY FORMS
+  # QUERY FORMS
+  # QUERY FORMS
+  # QUERY FORMS
+  # QUERY FORMS
+  # QUERY FORMS
+  # QUERY FORMS
+  # QUERY FORMS
+  # QUERY FORMS
+  # QUERY FORMS
   # QUERY FORMS
 
   # Ensure the full route context is included
@@ -196,13 +213,17 @@ def set_routes
 
   post '/cbgp/query-dataset/:database' do
     @database = params[:database]
-    @questionnaire = generate_questionnaire(questionnaire_type: @database)
-    @entry = CBGP::Dataset.new(type: @database)
-    search_params = params.select { |k, v| !v.nil? && !v.empty? && k != 'database' }
-    @results = execute_search(search_params: search_params, dataset_type: @database) if search_params.any?
-    @mode = 'search'
-    halt erb :query_dataset, layout:  :database_layout
+    search_params = params.reject { |k, _| k == 'database' }
+    warn "Search params: #{search_params.inspect}"
+    @results = execute_search(search_params: search_params, dataset_type: @database)
+    warn "Search URIs: #{@results.inspect}"
+    @fields = CBGP::Dataset::get_questionnaire_fields(questionnaire_type: @database)
+    # warn "Fields: #{@fields.inspect}"
+    @dataset_details = fetch_dataset_details(@results, @database)
+    warn "Dataset details for rendering: #{@dataset_details.inspect}"
+    erb :query_dataset, layout: :database_layout
   end
+
 
   # ----------------------------------------------------------------------------
   # ----------------------------------------------------------------------------

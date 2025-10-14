@@ -53,14 +53,14 @@ class QuestionnaireSection
       qid = qurl.gsub(/.*\#/, "") # everything up to the hash in the URL
       question = res[:label].to_s
       answerblock = res[:answers].to_s # check that this is a URI an dnot a fr4agtment
-      answerblockid = answerblock.gsub(/.*\#/, "") # everything up to the hash in the URL
+      ablockid = answerblock.gsub(/.*\#/, "") # everything up to the hash in the URL
       sequence = res[:sequence].to_i
       widget = res[:widget].to_s
       objectclass = res[:class].to_s
       objectmethod = res[:method].to_s
       cardinality = res[:cardinality].to_s
       qs << QuestionnaireQuestion.new(
-        questionid: qid, question: question, answerblockid: answerblockid, sequence: sequence,
+        questionid: qid, question: question, ablockid: ablockid, sequence: sequence,
         widget: widget, cardinality: cardinality, objectclass: objectclass, objectmethod: objectmethod,
       )
     end
@@ -69,31 +69,31 @@ class QuestionnaireSection
 end
 
 class QuestionnaireQuestion
-  attr_accessor :questionid, :sequence, :objectclass, :objectmethod, :answerblock, :answertree, :question, :selected_answer,
-                :widget, :cardinality
+  attr_accessor :questionid, :sequence, :objectclass, :objectmethod, :ablockid, :answertree, :question, :selected_answer,
+                :widget, :cardinality, :answerblock
 
-  def initialize(questionid:, sequence:, objectclass:, objectmethod:, answerblockid:, question:, widget:, cardinality:)
+  def initialize(questionid:, sequence:, objectclass:, objectmethod:, ablockid:, question:, widget:, cardinality:)
     @question = question
-    @questionid = questionid
+    @questionid = questionid   # this is the ontology class (e.g. cbgp:mem1  becomes questionid = "mem1")
     @sequence = sequence
     @widget = widget.downcase
     @objectclass = objectclass
     @objectmethod = objectmethod
     @cardinality = cardinality
-    @answerblockid = answerblockid  # This sets the instance variable
+    @ablockid = ablockid  # This sets the instance variable
     @selected_answer = nil
     @answertree = nil
-    @answerblock = QuestionnaireAnswerBlock.new(ablockid: @answerblockid)
-    warn "WIDGET IS #{@widget}"
+    @answerblock = QuestionnaireAnswerBlock.new(ablockid: @ablockid)
+    # warn "WIDGET IS #{@widget}"
     if @widget.match(/TreeSelector/i)
-      @answertree = get_hierarchical_answer_block_query(ablockid: @answerblockid)  # Fixed: use @answerblockid
+      @answertree = get_hierarchical_answer_block_query(ablockid: @ablockid)  # Fixed: use @answerblockid
       @answertree = JSON.parse(@answertree)
       # Optional: Sanitize curly quotes...
       @answertree.each do |node|
         node['text'] = node['text'].gsub(/[“”‘’]/, '"') if node['text']
         node['children'].each { |child| child['text'] = child['text'].gsub(/[“”‘’]/, '"') if child['text'] } if node['children']
       end
-      warn "Hierarchical Data: #{@answertree.inspect}"
+      # warn "Hierarchical Data: #{@answertree.inspect}"
     end
   end
 end
@@ -146,7 +146,7 @@ class QuestionnaireField
     res = field_query(fieldid: fieldid).first # should only be one
     return nil unless res
     
-    field.fieldid = fieldid.to_s
+    field.fieldid = fieldid.to_s  # this is the class name of that question in teh ontlogy.  e.g. cbgp:mem1  the fieldid is "mem1"
 
     field.label = res[:label].to_s
     field.objectclass = res[:objectclass].to_s

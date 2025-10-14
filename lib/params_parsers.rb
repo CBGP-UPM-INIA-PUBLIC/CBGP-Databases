@@ -37,7 +37,7 @@ module CBGP
       # "research-area_group"=>"synthetic-biology_bioengineering", "member_team_leader"=>"team_leader_yes",
       # "group_institution"=>"UPM", "database"=>"add-member"}
 
-      dataset = CBGP::Dataset.new(type: params.delete('database')) # e.g. "database"=>"add-member"
+      dataset = CBGP::Dataset.new(type: params.delete('database')) # e.g. "database"=>"member"
       params.each do |id, value| # id is the #fragment of the Field (e.g. Journal Name  #newpub6)
         self.parse_simple_field(id: id, value: value, object: dataset) # inserts data into the Dataset object
       end

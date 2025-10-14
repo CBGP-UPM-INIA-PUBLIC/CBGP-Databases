@@ -102,7 +102,7 @@ def build_transitive_tree(results, abblockid:)
   end
 
   tree = nodes.values.select { |n| n[:parent] == '#' }.sort_by { |n| n[:sequence] }
-  warn "Tree: #{tree.inspect}"
+  # warn "Tree: #{tree.inspect}"
   tree
 end
 

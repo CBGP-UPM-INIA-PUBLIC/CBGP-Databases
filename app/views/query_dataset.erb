@@ -1,20 +1,30 @@
-<div class="databases">
-  <h3>Search <%= @database =~ /member/ ? "Staff Members" : "Projects" %></h3>
-
-  <form action="/cbgp/query-dataset/<%= @database %>" method="post">
-    <table id="dataset_search" width="30%">
-      <tr><th>Search Criteria</th></tr>
-      <tr><td><%= erb :_questionnaire %></td></tr>
-      <tr><td><input type="submit" value="Search"/></td></tr>
+<div id="databases">
+  <h3>Search Results</h3>
+  <% if @dataset_details.empty? %>
+    <div class="error-messages">
+      <p>No results found for your search.</p>
+    </div>
+  <% else %>
+    <table>
+      <thead>
+        <tr>
+          <th>Dataset ID</th>
+          <% @fields.each do |field| %>
+            <th><%= field[:label] %></th>
+          <% end %>
+        </tr>
+      </thead>
+      <tbody>
+        <% @dataset_details.each do |dataset| %>
+          <tr>
+            <td><%= dataset[:dataset].split('/').last %></td>
+            <% @fields.each do |field| %>
+            <% warn "#{field[:fieldid]} = #{dataset[field[:fieldid].to_sym]}" %>
+              <td><%= dataset[field[:fieldid].to_sym] || '-' %></td>
+            <% end %>
+          </tr>
+        <% end %>
+      </tbody>
     </table>
-  </form>
-
-  <% if @results && @results.any? %>
-    <h4>Matching Records</h4>
-    <ul>
-      <% @results.each do |graph_uri| %>
-        <li><a href="/cbgp/view-dataset/<%= @database %>?graph=<%= graph_uri %>"><%= graph_uri %></a></li>
-      <% end %>
-    </ul>
   <% end %>
 </div>

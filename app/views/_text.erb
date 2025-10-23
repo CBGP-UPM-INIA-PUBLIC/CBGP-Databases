@@ -1,6 +1,18 @@
 <!-- @answerblock [:type, :answers, :lang=, :lang, :ablockid=, :answers=, :type=, :ablockid] -->   
-          <div class="inputtype">
-          <!-- <label for="<%= @label  %>_ANSWER" style="font-size: .75em;"></label><br/> -->
-          <input type='text' name="<%= @question.questionid  %>" value="<%= @thisval %>" id="<%= @question.questionid  %>_ANSWER" size="<%= @thisval.to_s.length %>"/>
-          </div>
-
+<div class="inputtype">
+  <div id="<%= @question.questionid %>_container">
+    <% @value = @entry.public_send(@question.objectmethod) || (@question.cardinality == "multi" ? [""] : "") %>
+    <% @value = [@value] unless @value.is_a?(Array) %>
+    <% @value.each_with_index do |val, index| %>
+      <div class="text-input-row" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+        <input type="text" name="<%= @question.questionid %>[]" value="<%= val %>" id="<%= @question.questionid %>_<%= index + 1 %>_ANSWER" size="50" />
+        <% if @question.cardinality == "multi" %>
+          <button type="button" class="add-input" data-question-id="<%= @question.questionid %>">+</button>
+          <% if index > 0 %>
+            <button type="button" class="remove-input" data-index="<%= index %>">−</button>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

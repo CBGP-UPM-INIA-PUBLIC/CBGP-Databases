@@ -1,5 +1,4 @@
 <!-- @answerblock [:type, :answers, :lang=, :lang, :ablockid=, :answers=, :type=, :ablockid] -->   
-          <div class="inputtype">
-          <!-- <label for="<%= @label  %>_ANSWER" style="font-size: .75em;"></label><br/> -->
-          <input type='text' name="<%= @question.questionid  %>" value="<%= @thisval %>" id="<%= @question.questionid  %>_ANSWER"  placeholder="Enter value"/>
-          </div>
+<div class="inputtype">
+  <input type="text" name="<%= @question.questionid %>" value="<%= @thisval %>" id="<%= @question.questionid %>_ANSWER" placeholder="Enter <%= @question.question.downcase %> to filter" style="width: 50%;" />
+</div>

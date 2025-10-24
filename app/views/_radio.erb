@@ -1,19 +1,11 @@
 <!-- @answerblock [:type, :answers, :lang=, :lang, :ablockid=, :answers=, :type=, :ablockid] -->     
 
-          <div class="inputtype">
-          <select name="<%= @question.questionid  %>" id="<%= @answerblock.ablockid  %>" width="70">
-            <option hidden disabled value selected> -- select an option -- </option>
-            <%  @answerblock.answers.each do |answer| %>
-            <!-- <% warn "#{@answerblock.ablockid} THISVAL: #{@thisval}" %> -->
-            <!-- answer [:aid, :widget, :answer, :lang, :answerid=, :answerid, :sequence=, :lang=, :sequence, :aid=, :widget=, :answer=, :order=, :order] -->
-              <% if answer.answer == @thisval %>
-                <option value="<%= answer.answerid %>" selected="selected"><%=  answer.answer %></option>
-              <% else %>
-                <option value="<%= answer.answerid %>"><%=  answer.answer %></option>
-              <% end %>
-            <% end %>
-          </select>
-          </div>
-    
-
-  
+<div class="inputtype">
+  <select name="<%= @question.questionid %>" id="<%= @answerblock.ablockid %>" style="width: 50%;">
+    <option hidden disabled value selected> -- select an option -- </option>
+    <% @answerblock.answers.each do |answer| %>
+      <% selected = (@thisval == answer.answerid) ? "selected=\"selected\"" : "" %>
+      <option value="<%= answer.answerid %>" <%= selected %>><%= answer.answer %></option>
+    <% end %>
+  </select>
+</div>

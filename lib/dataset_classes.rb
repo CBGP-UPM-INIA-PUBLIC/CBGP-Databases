@@ -4,7 +4,7 @@ require 'uuidtools'
 
 module CBGP
   class Dataset
-    attr_reader :fields, :form_type, :primary_id
+    attr_accessor :fields, :form_type, :primary_id
 
     def initialize(type:, primary_id: SecureRandom.uuid)
       @form_type = type
@@ -37,7 +37,7 @@ module CBGP
                        class: klass, cardinality: cardinality, answers: answers_uri,
                        is_primary: is_primary, sequence: sequence }
 
-          @data[q] = (cardinality == 'multi' ? [] : nil)
+          @data[q] = (cardinality == 'Multiple' ? [] : nil)
 
           define_singleton_method(method_name) do
             @data[q]
@@ -55,7 +55,7 @@ module CBGP
     end
 
     def coerce_value(value, klass, cardinality)
-      if cardinality == 'multi' && value.is_a?(Array)
+      if cardinality == 'Multiple' && value.is_a?(Array)
         value.map { |v| v.to_s.strip }.reject { |v| v.empty? }
       else
         case klass
@@ -183,7 +183,7 @@ end
 #           # TODO  creating a symbol for methodname now might be a problem??!!
 #           method_name = result[:method].to_s.to_sym # e.g., :surname
 #           klass = result[:class].to_s.downcase # e.g., 'string'
-#           cardinality = result[:cardinality].to_s # 'multi' or 'single'
+#           cardinality = result[:cardinality].to_s # 'Multiple' or 'single'
 #           answers_uri = result[:answers].to_s # URI for possible answers (stubbed fetch below)
 #           sequence = result[:sequence].to_s.to_i
 #           is_primary = result[:primary].to_s || "false"
@@ -195,7 +195,7 @@ end
 #                       is_primary: is_primary, sequence: sequence }
 
 #           # Initialize internal data
-#           @data[q] = (cardinality == 'multi' ? [] : nil)
+#           @data[q] = (cardinality == 'Multiple' ? [] : nil)
 
 #           # Metaprogram getter
 #           define_singleton_method(method_name) do
@@ -207,7 +207,7 @@ end
 #             coerced_value = coerce_value(value, klass, cardinality)
 #             validate_value(coerced_value, fetch_answers(answers_uri)) if answers_uri
 
-#             if cardinality == 'multi'
+#             if cardinality == 'Multiple'
 #               if value.is_a?(Array)
 #                 @data[q] = coerced_value # Replace array
 #               else

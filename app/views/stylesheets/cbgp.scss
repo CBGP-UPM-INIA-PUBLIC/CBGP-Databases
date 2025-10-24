@@ -37,7 +37,6 @@ th {
   font-weight: 100;
 }
 
-
 #databases {
   font-family: Arial, Helvetica, sans-serif;
   max-width: 1200px;
@@ -45,6 +44,10 @@ th {
   padding: 30px 20px;
   background-color: #fff;
   box-shadow: 2px 5px 10px rgba(0, 0, 0, 0.5);
+}
+
+#dataset_validate {
+  margin: 0 auto;
 }
 
 #databases table {
@@ -79,48 +82,6 @@ th {
   font-size: 16px;
   color: #333;
 }
-// #databases {
-//   font-family: Arial, Helvetica, sans-serif;
-//   border-collapse: collapse;
-//   width: 100%;
-//   display: flex;
-//   justify-content: center;
-//   align-items: center;
-//   flex-direction: column;
-// }
-
-// .databases table {
-//   width: 40%;
-//   margin: 0 auto;
-//   text-align: center;
-// }
-
-// .databases th,
-// .databases td {
-//   text-align: center;
-// }
-
-// .databases input,
-// .databases textarea {
-//   margin: 0 auto;
-//   display: block;
-// }
-
-// #databases tr:nth-child(even) {
-//   background-color: #bdedc8;
-// }
-
-// #databases tr:hover {
-//   background-color: #f2f2f2;
-// }
-
-// #databases th {
-//   padding-top: 12px;
-//   padding-bottom: 12px;
-//   text-align: left;
-//   background-color: #f2f2f2;
-//   color: #114203;
-// }
 
 #publication_validate {
   width: 100%;
@@ -224,8 +185,8 @@ h3 {
 }
 
 .author {
-  display: flex; /* Use flexbox to place name and ORCiD side-by-side */
-  align-items: center; /* Vertically center the fields */
+  display: flex;
+  align-items: center;
   width: 100%;
   margin-bottom: 10px;
 }
@@ -240,8 +201,8 @@ h3 {
 .author input {
   text-align: left;
   box-sizing: border-box;
-  flex: 1; /* Allow inputs to take remaining space */
-  margin-right: 10px; /* Space between name and ORCiD */
+  flex: 1;
+  margin-right: 10px;
 }
 
 /* Remove margin-right from the last input to avoid extra space */
@@ -358,15 +319,58 @@ button {
   margin-bottom: 20px;
 }
 
-
 .text-input-row {
   display: flex;
   align-items: center;
   gap: 10px;
   margin-bottom: 10px;
 }
-.add-input, .remove-input {
+.text-input-row input,
+.text-input-row button {
+  vertical-align: middle;
+  height: 28px;
+  line-height: 28px;
+}
+.add-input,
+.remove-input {
   cursor: pointer;
   padding: 5px 10px;
   font-size: 16px;
+}
+
+/* Specific overrides for Multiple text fields - high specificity to override inline */
+.databases form table td .inputtype .text-input-row {
+  margin-bottom: 0 !important; /* Zero bottom margin between rows */
+  align-items: center !important; /* Reinforce flex centering */
+}
+
+.databases form table td .inputtype .text-input-row input {
+  height: 28px !important;
+  line-height: 1.2 !important; /* Compact line height */
+  padding: 0 5px !important;
+  vertical-align: middle !important;
+  margin: 0 !important; /* Strip any input margins */
+  box-sizing: border-box !important;
+}
+
+.databases form table td .inputtype .text-input-row button.remove-input,
+.databases form table td .inputtype .text-input-row button.add-input {
+  height: 28px !important;
+  line-height: 1 !important; /* Tight line height to match input */
+  padding: 0 8px !important; /* Slight horizontal padding for clickability, no vertical */
+  margin: 0 !important; /* Eliminate all button margins */
+  border: 1px solid #777 !important; /* Match input border if needed */
+  border-radius: 2px !important; /* Consistent with other form elements */
+  font-size: 14px !important; /* Smaller font to fit height without overflow */
+  align-self: center !important; /* Force perfect vertical alignment */
+  box-sizing: border-box !important;
+  background-color: #9cbd6f !important; /* Optional: Match button theme if desired */
+  color: #333 !important;
+  cursor: pointer !important;
+}
+
+/* Ensure the + button below the container aligns similarly if it's floating */
+.databases form table td .inputtype .add-input {
+  margin-top: 5px !important; /* Tiny top margin to separate from last row */
+  display: inline-block !important;
 }

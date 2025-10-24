@@ -482,7 +482,7 @@ def write_dataset_to_db_query(dataset:, oldid: nil)
     next if value.nil? || (value.is_a?(Array) && value.empty?)
 
     questionclass = field[:questionclass]
-    if field[:cardinality] == 'multi' && value.is_a?(Array)
+    if field[:cardinality] == 'Multiple' && value.is_a?(Array)
       value.each_with_index do |val, index|
         next if val.to_s.strip.empty?
 
@@ -793,7 +793,7 @@ def fetch_dataset_details(datasetgraph_uris, dataset_type)
     result_set = DATABASE.query(query)
     details = { dataset: uri }
     fields.each do |f|
-      if f[:cardinality] == 'multi'
+      if f[:cardinality] == 'Multiple'
         values = result_set.map { |r| r[f[:fieldid].to_sym]&.to_s }.compact.uniq
         details[f[:fieldid].to_sym] = values unless values.empty?
       else

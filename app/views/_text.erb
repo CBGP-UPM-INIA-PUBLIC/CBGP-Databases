@@ -1,18 +1,24 @@
 <!-- @answerblock [:type, :answers, :lang=, :lang, :ablockid=, :answers=, :type=, :ablockid] -->   
 <div class="inputtype">
   <div id="<%= @question.questionid %>_container">
-    <% @value = @entry.public_send(@question.objectmethod) || (@question.cardinality == "multi" ? [""] : "") %>
-    <% @value = [@value] unless @value.is_a?(Array) %>
-    <% @value.each_with_index do |val, index| %>
-      <div class="text-input-row" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-        <input type="text" name="<%= @question.questionid %>[]" value="<%= val %>" id="<%= @question.questionid %>_<%= index + 1 %>_ANSWER" size="50" />
-        <% if @question.cardinality == "multi" %>
-          <button type="button" class="add-input" data-question-id="<%= @question.questionid %>">+</button>
+    <% warn "Text Widget: questionid=#{@question.questionid}, cardinality=#{@question.cardinality}, value=#{@thisval.inspect}" %>
+    <% if @question.cardinality == "Multiple" %>
+      <% @thisval = [""] if @thisval.nil? || (@thisval.is_a?(Array) && @thisval.empty?) %>
+      <% @thisval.each_with_index do |val, index| %>
+        <div class="text-input-row" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+          <input type="text" name="<%= @question.questionid %>[]" value="<%= val %>" id="<%= @question.questionid %>_<%= index + 1 %>_ANSWER" size="50" style="vertical-align: middle;" />
           <% if index > 0 %>
             <button type="button" class="remove-input" data-index="<%= index %>">−</button>
           <% end %>
-        <% end %>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="text-input-row" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+        <input type="text" name="<%= @question.questionid %>" value="<%= @thisval.to_s.gsub(/^\["|"\]$/, '') %>" id="<%= @question.questionid %>_ANSWER" size="50" style="vertical-align: middle;" />
       </div>
     <% end %>
   </div>
+  <% if @question.cardinality == "Multiple" %>
+    <button type="button" class="add-input" data-question-id="<%= @question.questionid %>">+</button>
+  <% end %>
 </div>

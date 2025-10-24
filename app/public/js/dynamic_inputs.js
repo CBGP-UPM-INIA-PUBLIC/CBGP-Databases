@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
+  // Add input field
   document.querySelectorAll('.add-input').forEach(button => {
     button.addEventListener('click', function() {
       const questionId = this.getAttribute('data-question-id');
@@ -12,14 +13,14 @@ document.addEventListener('DOMContentLoaded', function() {
       newRow.style.gap = '10px';
       newRow.style.marginBottom = '10px';
       newRow.innerHTML = `
-        <input type="text" name="${questionId}[]" id="${questionId}_${index}_ANSWER" size="50" />
-        <button type="button" class="add-input" data-question-id="${questionId}">+</button>
-        <button type="button" class="remove-input" data-index="${index - 1}">−</button>
+        <input type="text" name="${questionId}[]" id="${questionId}_${index}_ANSWER" size="50" style="vertical-align: middle;" />
+        <button type="button" class="remove-input" data-index="${index - 1}" style="vertical-align: middle;">−</button>
       `;
-      container.insertBefore(newRow, this.parentElement);
+      container.appendChild(newRow);
     });
   });
 
+  // Remove input field
   document.addEventListener('click', function(event) {
     if (event.target.classList.contains('remove-input')) {
       const container = event.target.closest('.inputtype').querySelector('div[id$="_container"]');

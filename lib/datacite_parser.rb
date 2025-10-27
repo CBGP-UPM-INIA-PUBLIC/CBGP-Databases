@@ -17,7 +17,7 @@ module CBGP
         if retry_attempts < 5
           retry
         else
-          warn "failed.  next"
+          warn 'failed.  next'
           return false
         end
       end
@@ -38,30 +38,29 @@ module CBGP
       jpath = JsonPath.new('author[*]')
       results = jpath.on(dcite)
       results.each_with_index do |author, index|
-        aname = "Authorship not found in record"
-        orcid = "" 
-        if author.respond_to? "[]"
-          orcid = author['ORCID'].gsub(/https?\:\/\/orcid.org\//, "") if author['ORCID']
+        aname = 'Authorship not found in record'
+        orcid = ''
+        if author.respond_to? '[]'
+          orcid = author['ORCID'].gsub(%r{https?://orcid.org/}, '') if author['ORCID']
           orcid = Sanitize.fragment(orcid)
           aname = "#{author['given']} #{author['family']}"
           aname = Sanitize.fragment(aname)
         end
 
         aut = CBGP::Publication::Author.new(name: aname, orcid: orcid,
-                                            rank: "#{index.to_i + 1}")  # start rank at 1 not 0
+                                            rank: "#{index.to_i + 1}") # start rank at 1 not 0
         authors << aut
       end
-      
+
       jpath = JsonPath.new('created["date-time"]')
       results = jpath.on(dcite).first
-      date = "1900-01-01"
+      date = '1900-01-01'
       date = results[0..9] if results # comes back as dateand time - TODO can also be "issued", which is more complex
       # warn "DCDATE", date, "\n\n"
 
       jpath = JsonPath.new('DOI')
       doi = jpath.on(dcite).first
       doi = Sanitize.fragment(doi)
-
 
       ####  HERE!!
 
@@ -75,13 +74,13 @@ module CBGP
 
       jpath = JsonPath.new('page')
       pages = jpath.on(dcite).first
-      startpage= pages
+      startpage = pages
       endpage = pages
       # jpath.on(dcite).split('-')
 
-      pub = CBGP::Publication.new(
+      CBGP::Publication.new(
         doi: doi,
-        authors: [authors], # make it a list of lists so that only one instance is sent to the widget
+        authors: authors, # make it a list of lists so that only one instance is sent to the widget
         affiliations: [affiliations],
         title: title,
         journal: journal,
@@ -93,9 +92,8 @@ module CBGP
         scopusd1: '',
         sochoa: ''
       )
-# abort "affiliations #{affiliations.inspect} pub: #{pub.affiliations}"
+      # abort "affiliations #{affiliations.inspect} pub: #{pub.affiliations}"
       # warn "PUB = #{pub.inspect}"
-      pub
     end
   end
 end

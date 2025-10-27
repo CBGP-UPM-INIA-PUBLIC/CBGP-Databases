@@ -77,7 +77,7 @@ def set_routes
     status 200
   end
 
-  get '/cbgp/refresh' do  # when the ontology is updated...
+  get '/cbgp/refresh' do # when the ontology is updated...
     $ontology = RDF::Repository.load(CBGP_KB) # set in configuration.rb and/or in docker-compose
     redirect '/cbgp/dashboard'
   end
@@ -137,29 +137,29 @@ def set_routes
 
   # this used to be the lookup box... I want to remove that
   # we will eventually put this backl, with a button from the search results page
-  # post '/cbgp/dataset/:database' do
-  #   @database = params[:database]
-  #   identifier = params[:identifier]
-  #   @mode = 'edit'
+  post '/cbgp/dataset/:database' do
+    @database = params[:database]
+    identifier = params[:identifier]
+    @mode = 'edit'
 
-  #   idtype, identifier = identifier_type(id: identifier) # idtype is doi for publications
-  #   @questionnaire = generate_questionnaire(questionnaire_type: @database)
-  #   if @database == 'publication'
-  #     @entry = if idtype == 'doi'
-  #                CBGP::Publication.load_from_doi(doi: identifier)
-  #              else
-  #                CBGP::Publication.new
-  #              end
-  #     halt erb :publications, layout: :database_layout
-  #   else
-  #     @entry = if idtype
-  #                CBGP::Dataset.load_from_identifier(identifier: identifier)
-  #              else
-  #                CBGP::Dataset.new(type: @database)
-  #              end
-  #     halt erb :dataset, layout: :database_layout
-  #   end
-  # end
+    idtype, identifier = identifier_type(id: identifier) # idtype is doi for publications
+    @questionnaire = generate_questionnaire(questionnaire_type: @database)
+    if @database == 'publication'
+      @entry = if idtype == 'doi'
+                 CBGP::Publication.load_from_doi(doi: identifier)
+               else
+                 CBGP::Publication.new
+               end
+      halt erb :publications, layout: :database_layout
+    else
+      @entry = if idtype
+                 CBGP::Dataset.load_from_identifier(identifier: identifier)
+               else
+                 CBGP::Dataset.new(type: @database)
+               end
+      halt erb :dataset, layout: :database_layout
+    end
+  end
 
   # the form has been filled
   post '/cbgp/validate-dataset/:database' do
@@ -202,9 +202,7 @@ def set_routes
 
   get '/cbgp/search-dataset' do
     @database = params[:database]
-    unless @database
-      halt 400, "Database parameter is required"
-    end
+    halt 400, 'Database parameter is required' unless @database
     @questionnaire = generate_questionnaire(questionnaire_type: @database)
     @entry = CBGP::Dataset.new(type: @database)
     @mode = 'search'
@@ -217,13 +215,12 @@ def set_routes
     warn "Search params: #{search_params.inspect}"
     @results = execute_search(search_params: search_params, dataset_type: @database)
     warn "Search URIs: #{@results.inspect}"
-    @fields = CBGP::Dataset::get_questionnaire_fields(questionnaire_type: @database)
+    @fields = CBGP::Dataset.get_questionnaire_fields(questionnaire_type: @database)
     # warn "Fields: #{@fields.inspect}"
     @dataset_details = fetch_dataset_details(@results, @database)
     warn "Dataset details for rendering: #{@dataset_details.inspect}"
     erb :query_dataset, layout: :database_layout
   end
-
 
   # ----------------------------------------------------------------------------
   # ----------------------------------------------------------------------------

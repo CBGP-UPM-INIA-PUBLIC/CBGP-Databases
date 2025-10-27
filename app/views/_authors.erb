@@ -1,4 +1,6 @@
+<% @thisval << CBGP::Publication::Author.new unless @thisval.first %>
 <% @thisval.each do |auth|  %>
+<% warn "AUTH is #{auth.inspect}" %>
             <div id="authorlist" class="inputtype">
             <!-- PUT FORM FIELDS IN HERE?  -->
 

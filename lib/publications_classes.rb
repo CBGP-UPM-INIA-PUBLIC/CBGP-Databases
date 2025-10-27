@@ -8,7 +8,7 @@ module CBGP
     attr_accessor :doi, :authors, :affiliations, :title, :journal, :volume, :date, :uniqid,
                   :cbgp_corresponding, :pubtype, :oa, :scopusq, :scopusd1, :sochoa
 
-    def initialize(doi: '', authors: [[]], affiliations: [[]],
+    def initialize(doi: '', authors: [], affiliations: [],
                    title: '', journal: '', date: '',
                    cbgp_corresponding: '', pubtype: '',
                    oa: '', scopusq: '', scopusd1: '', sochoa: '', uniqid: '')

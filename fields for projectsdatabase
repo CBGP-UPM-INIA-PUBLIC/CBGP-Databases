@@ -19,3 +19,23 @@ CBGP overheads
 Annual income
 Annual overheads
 Annual CBGP overheads
+
+
+1. ields for Gonzalo/CBGP Web
+Name 
+Surname(s)
+Category
+Research area – Group 
+Team leader? 
+Office 
+Office phone number 
+Laboratory
+Laboratory phone number 
+Institutional email address
+ID → ** This should be an ID that is attached to their profile picture, if one (we still need to implement this)
+
+2. listas_correo_CBGP XML
+Category 
+Institution
+Group institution
+Institutional email address

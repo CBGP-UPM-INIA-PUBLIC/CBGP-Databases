@@ -22,7 +22,8 @@ NOTIFY_PW = ENV.fetch('NOTIFY_PW', nil)
 GRAPHDB_HOST = ENV.fetch('GRAPHDB_HOST', nil)
 GRAPHDB_USER = ENV.fetch('GRAPHDB_USER', nil)
 GRAPHDB_PASS = ENV.fetch('GRAPHDB_PASS', nil)
-GRAPHDB_DBNAME = ENV.fetch('GRAPHDB_DBNAME', "kbdatabase")
-CBGP_KB = ENV.fetch('CBGP_KB', "https://w3id.org/CBGP-App")
+GRAPHDB_DBNAME = ENV.fetch('GRAPHDB_DBNAME', 'kbdatabase')
+CBGP_KB = ENV.fetch('CBGP_KB', 'https://w3id.org/CBGP-App')
+BASE_URI = 'http://admin.cbgp.upm.es/graphs/datasets/'
 
 warn USERS

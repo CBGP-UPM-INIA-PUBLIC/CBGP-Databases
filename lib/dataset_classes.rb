@@ -4,11 +4,11 @@ require 'uuidtools'
 
 module CBGP
   class Dataset
-    attr_accessor :fields, :form_type, :primary_id
+    attr_accessor :fields, :form_type, :primary_id, :id
 
-    def initialize(type:, primary_id: SecureRandom.uuid)
+    def initialize(type:, primary_id: nil)
       @form_type = type
-      @primary_id = primary_id
+      @primary_id = primary_id #  SecureRandom.uuid
       sections = get_questionnaire_sections_query(questionnaire_type: type)
       @data = {}
       @fields = []
@@ -89,10 +89,22 @@ module CBGP
       end
     end
 
-    def self.load_from_params(params:)
+    # data has been entered into the HTML form.  Here we are validating it
+    def self.load_from_params_and_write(params:)
       warn "PARAMS: #{params.inspect}"
-      dataset = new(type: params['database'])
-      dataset.primary_id = params['primary_id'] if params['primary_id'] && !params['primary_id'].empty?
+      # Create the instance – NO auto-generation of primary_id in initialize anymore
+      # primary_id starts as nil
+      dataset = CBGP::Dataset.new(type: params['database'])
+
+      # ensure a primary_id exists
+      # - If params include a primary_id (hidden field from edit form) → reuse it (update existing graph)
+      # - Otherwise (new record) → generate a fresh UUID now
+      primary_id_param = params['primary_id'].to_s.strip
+      dataset.primary_id = if primary_id_param.empty?
+                             SecureRandom.uuid # Fresh ID for new records
+                           else
+                             primary_id_param # Reuse existing ID for updates
+                           end
 
       dataset.fields.each do |field|
         value = params[field[:questionclass]]
@@ -104,22 +116,50 @@ module CBGP
                               coerced_value)
         end
       end
+      dataset.write_to_db
       dataset
     end
 
-    def self.load_from_identifier(identifier:)
-      dataset = new(type: 'add-project')
-      dataset.primary_id = identifier
-      res = retrieve_dataset_graph_query(primary_id: identifier)
-      return dataset if res.empty?
+    def self.load_from_graph(graph:, database:)
+      dataset = new(type: database)
 
-      graph_uri = res.first[:g].to_s
-      details = fetch_dataset_details([graph_uri], dataset.form_type).first
-      dataset.fields.each do |field|
-        value = details[field[:questionclass].to_sym]
-        dataset.public_send("#{field[:method]}=", value) if value
+      # graphuri = res.first[:g].to_s  # comes back as sparql result
+      warn "\n\nLOAD FROM GRAPHURI FOUND GRAPH #{graph}\n\n"
+      res = retrieve_dataset_id_from_graph_query(graph: graph) # comes back as a sparql query result
+      abort "lookup of graph #{graph} failed" unless res&.first
+      primary_id = res.first[:id].to_s
+      abort "can't retrieve primary id for graph #{graph}" if primary_id.empty?
+      dataset.primary_id = primary_id
+      details = fetch_dataset_raw_data(graphuri: graph, database: database)
+      dataset.fields.each do |field| # dataset is a CBGP::Dataset object that is empty
+        value = details[field[:questionclass].to_sym] # get the value for this field
+        # metaprogramming set value for the associated object method
+        dataset.public_send("#{field[:method]}=", value) if value # Load up the Dataset object
       end
       dataset
+    end
+
+    def self.load_from_primary_id(primary_id:, database:)
+      dataset = new(type: database)
+      abort 'primary id cannot be empty - load from identifier ' if primary_id.empty?
+      dataset.primary_id = primary_id
+      graphuri = retrieve_dataset_graph_query(primary_id: primary_id) # returns sparql results
+      abort "can't load record with primary id #{primary_id}" unless graphuri
+      graphuri = graphuri.first[:g].to_s # it's a sparql result
+
+      warn "\n\nLOAD FROM GRAPHURI FOUND GRAPH #{graphuri}\n\n"
+      details = fetch_dataset_raw_data(graphuri: graphuri, database: database)
+      dataset.fields.each do |field| # dataset is a CBGP::Dataset object that is empty
+        value = details[field[:questionclass].to_sym] # get the value for this field
+        # metaprogramming set value for the associated object method
+        dataset.public_send("#{field[:method]}=", value) if value # Load up the Dataset object
+      end
+      dataset
+    end
+
+    def write_to_db
+      warn 'WRITING DATASET TO DB'
+      write_dataset_to_db(dataset: self, oldid: primary_id)
     end
 
     def self.write_to_db(dataset:, oldid: nil)
@@ -139,176 +179,12 @@ module CBGP
             objectclass: question.objectclass,
             widget: question.widget,
             answerblockid: question.ablockid,
-            cardinality: question.cardinality
+            cardinality: question.cardinality,
+            sequence: question.sequence
           }
         end
       end
-      fields.sort_by { |f| f[:fieldid] }
+      fields.sort_by { |f| f[:sequence] }
     end
   end
 end
-
-# require_relative 'queries'
-# require_relative 'core'
-# require 'uuidtools'
-
-# module CBGP
-#   class Dataset
-#     attr_reader :fields, :form_type, :primary_id # Expose sorted fields for UI ordering
-
-#     def initialize(type:, primary_id: SecureRandom.uuid)  # passed database type e.g. add_members
-#       @form_type = type
-#       @primary_id = primary_id
-#       sections = get_questionnaire_sections_query(questionnaire_type: type) # "add-publications", "add-project" "add-member"
-#       # abort sections.inspect
-#       # SELECT ?sec (str(?seclab) as ?label)
-#       sections.each do |thissection|
-#         sectionid = thissection[:sec].to_s
-#         sectionqid = sectionid.gsub(/.*\#/, "") # remove everything up to the hash in the URL
-#         _sectionlabel = thissection[:label]
-#         warn "secid #{sectionid}"
-#         warn "qid #{sectionqid}"
-
-#         sparql_results = get_section_questions_query(sectionid: sectionqid)
-#         @data = {} # Internal storage: key by ?q for uniqueness
-
-#         # TODO  Note that this only allows one Fieldset per dataset!  Not like the Duchenne app...
-#         # fields is reset here to [], so any other fieldset is overwritten...
-#         @fields = [] # Array of field metadata, sorted by ?sequence
-
-#         # Process SPARQL results (array of hashes)
-#         sparql_results.each do |result|
-#           q = result[:q].to_s  # "https://w3id.org/CBGP-App#tis123"
-#           questionclass = result[:q].to_s.match(%r{.*?#(\S+)$})[1]   # "tis123"
-#           # TODO  creating a symbol for methodname now might be a problem??!!
-#           method_name = result[:method].to_s.to_sym # e.g., :surname
-#           klass = result[:class].to_s.downcase # e.g., 'string'
-#           cardinality = result[:cardinality].to_s # 'Multiple' or 'single'
-#           answers_uri = result[:answers].to_s # URI for possible answers (stubbed fetch below)
-#           sequence = result[:sequence].to_s.to_i
-#           is_primary = result[:primary].to_s || "false"
-
-#           # Store metadata, sorted later
-#           @fields << { q: q, questionclass: questionclass, label: result[:label].to_s,
-#                       widget: result[:widget].to_s.downcase, method: method_name,
-#                       class: klass, cardinality: cardinality, answers: answers_uri,
-#                       is_primary: is_primary, sequence: sequence }
-
-#           # Initialize internal data
-#           @data[q] = (cardinality == 'Multiple' ? [] : nil)
-
-#           # Metaprogram getter
-#           define_singleton_method(method_name) do
-#             @data[q]
-#           end
-
-#           # Metaprogram setter with type coercion and basic validation
-#           define_singleton_method("#{method_name}=") do |value|
-#             coerced_value = coerce_value(value, klass, cardinality)
-#             validate_value(coerced_value, fetch_answers(answers_uri)) if answers_uri
-
-#             if cardinality == 'Multiple'
-#               if value.is_a?(Array)
-#                 @data[q] = coerced_value # Replace array
-#               else
-#                 @data[q] << coerced_value # Append single value
-#               end
-#             else
-#               @data[q] = coerced_value
-#             end
-#           end
-#         end
-#       end
-
-#       # Sort fields by sequence for UI/display order
-#       @fields.sort_by! { |f| f[:sequence] }
-#     end
-
-#     # Helper: Coerce value to type (extend as needed)
-#     def coerce_value(value, klass, _cardinality)
-#       case klass
-#       when 'string'
-#         value.to_s
-#       when 'integer'
-#         value.to_i
-#       when 'date'
-#         Date.parse(value.to_s)
-#       # Add more types: float, boolean, etc.
-#       else
-#         value # Fallback: no coercion
-#       end
-#     rescue StandardError => e
-#       raise ArgumentError, "Invalid value #{value} for type #{klass}: #{e.message}"
-#     end
-
-#     # Stub: Fetch possible answers from KB (replace with real SPARQL query to ?answers URI)
-#     def fetch_answers(_answers_uri)
-#       # Example: Query KB for list of allowed values
-#       # return sparql_client.query("SELECT ?answer WHERE { <#{answers_uri}> :hasAnswer ?answer }").map { |r| r[:answer] }
-#       [] # Stub: empty means no validation
-#     end
-
-#     # Basic validation (extend with custom rules)
-#     def validate_value(value, allowed_answers)
-#       return if allowed_answers.empty?
-
-#       if value.is_a?(Array)
-#         unless value.all? { |v| allowed_answers.include?(v) }
-#           raise ArgumentError, "Value #{value} must be one of #{allowed_answers}"
-#         end
-#       else
-#         raise ArgumentError, "Value #{value} must be one of #{allowed_answers}" unless allowed_answers.include?(value)
-#       end
-#     end
-
-#     def self.load_from_params(params:)
-#       warn "PARAMS"
-#       warn "#{params.inspect}"
-#       oldgraphid = params["primary_id"]
-#       # abort "breaking here"
-# #       PARAMS
-# # {"mem_primary_id"=> "8347820934957453", "mem1"=>"qwerew", "mem2"=>"qwerqwer", "mem3"=>"4352345", "mem4"=>"3455", "mem5"=>"",
-# #  "mem6"=>"qwrqew@twqtr", "mem7"=>"werqewr@asdgfasdf", "mem9"=>"", "mem10"=>"", "mem11"=>"3241234-123123",
-# # "permanence"=>"permanent_yes", "int_project_code"=>"23432234", "ext_project_reference"=>"",
-# # "call_reference"=>"", "member_institution"=>"members_fgupm", "gender"=>"male", "nationality"=>"norway",
-# # "research-area_group"=>"synthetic-biology_bioengineering", "member_team_leader"=>"team_leader_yes",
-# # "group_institution"=>"UPM", "database"=>"add-member"}
-
-# #  select ?g where {graph ?g {?pub sio:SIO_000671 ?id . ?id  sio:SIO_000300 "#{doi}" ;
-#       dataset = CBGP::Parsers.params_parser_dataset(params: params)  # returns CBGP::Dataset' mimght overwrite primary_id
-
-#       # what is the equivalent ID lookup here?
-#       # TODO this afternoon!
-#       res = retrieve_dataset_graph_query(primary_id: dataset.primary_id)
-#       oldgraphid = res.first[:g].to_s if res.first
-#       CBGP::Dataset.write_to_db(dataset: dataset, oldid: oldgraphid)  # oldid is deleted
-#       dataset
-#     end
-
-#     def self.write_to_db(dataset:, oldid: nil)
-#       warn 'WRITING DATASET TO DB'
-#       write_dataset_to_db(dataset: dataset, oldid: oldid)
-#     end
-
-#     def self.get_questionnaire_fields(questionnaire_type:)
-#       questionnaire = generate_questionnaire(questionnaire_type: questionnaire_type)
-#       fields = []
-#       questionnaire.sections.each do |section|
-#         section.questions.each do |question|
-#           # :questionid, :sequence, :objectclass, :objectmethod, :ablockid, :answertree, :question, :selected_answer,
-#           #      :widget, :cardinality, :answerblock
-#           fields << {
-#             fieldid: question.questionid,  # this is the ontological class of tjhe question
-#             label: question.question,
-#             objectmethod: question.objectmethod,
-#             objectclass: question.objectclass,
-#             widget: question.widget,
-#             answerblockid: question.ablockid
-#           }
-#         end
-#       end
-#       fields.sort_by { |f| f[:fieldid] } # Sort for consistent column order
-#     end
-
-#   end
-# end

@@ -61,3 +61,7 @@ gem "dotenv", "~> 3.1"
 gem "uuidtools", "~> 3.0"
 
 gem "ruby-lsp", "~> 0.26.1"
+
+gem "base64", "~> 0.2.0"
+
+gem "time", "~> 0.4.2"

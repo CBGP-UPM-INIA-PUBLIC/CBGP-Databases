@@ -374,3 +374,70 @@ button {
   margin-top: 5px !important; /* Tiny top margin to separate from last row */
   display: inline-block !important;
 }
+
+
+
+/* FOR SEARCH RESULTS DISPLAY */
+/* Horizontal scroll wrapper – forces scroll when table is naturally wider than the 1200px container */
+#databases .table-scroll {
+  overflow-x: auto;                  /* Core fix: enables horizontal scroll */
+  -webkit-overflow-scrolling: touch; /* Smooth feel on any touch devices */
+  margin: 20px 0;
+  border: 1px solid #ddd;            /* Optional subtle border around the scrollable area */
+  padding: 1px;                      /* Tiny padding to avoid edge clipping */
+}
+
+/* Let the table take its natural width instead of forcing 100% (this was causing the "crush") */
+#databases .table-scroll table {
+  width: auto;                       /* Key change: allows table to grow wide → triggers scroll */
+  border-collapse: collapse;         /* Keep your existing style */
+}
+
+/* Headers: prevent wrapping so they stay on one line (clean look, forces scroll for many columns) */
+#databases th {
+  white-space: nowrap;               /* No wrapping → single-line headers */
+  min-width: 100px;                  /* Prevent columns from getting too narrow */
+  text-align: center;                /* Keep your centering */
+}
+
+/* Cells: allow wrapping and smart word-breaking for long content (emails, IDs, etc.) */
+#databases td {
+  white-space: normal;               /* Allow natural line breaks */
+  word-break: break-word;            /* Break long unbreakable strings cleanly */
+  min-width: 120px;                  /* Slightly wider base for readability */
+  vertical-align: middle;
+  text-align: center;                /* Keep your centering */
+}
+
+/* Special cell for Dataset ID – slightly narrower since IDs are predictable length */
+#databases td.dataset-id-cell {
+  min-width: 80px;
+  white-space: nowrap;               /* Keep ID on one line */
+}
+
+/* Link styling – matches your green theme */
+#databases .dataset-link {
+  color: #114203;
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+#databases .dataset-link:hover {
+  color: #0d5704;
+  text-decoration: none;
+}
+
+
+/* search results css */
+.download-csv-link {
+  float: right;                  /* Aligns nicely to the right of the heading */
+  font-size: 18px;
+  color: #114203;
+  text-decoration: underline;
+  margin-top: 10px;              /* Vertical alignment tweak */
+}
+
+.download-csv-link:hover {
+  color: #0d5704;
+  text-decoration: none;
+}

@@ -135,42 +135,74 @@ def set_routes
     end
   end
 
-  # this used to be the lookup box... I want to remove that
-  # we will eventually put this backl, with a button from the search results page
-  post '/cbgp/dataset/:database' do
-    @database = params[:database]
-    identifier = params[:identifier]
-    @mode = 'edit'
+  # # This is a database lookup based on an incoming identifier
+  # post '/cbgp/dataset/:database' do
+  #   @database = params[:database]
+  #   identifier = params[:identifier]
+  #   abort "post '/cbgp/dataset/:database' was not sent an identifier" unless identifier
+  #   @mode = 'edit'
 
-    idtype, identifier = identifier_type(id: identifier) # idtype is doi for publications
-    @questionnaire = generate_questionnaire(questionnaire_type: @database)
-    if @database == 'publication'
-      @entry = if idtype == 'doi'
-                 CBGP::Publication.load_from_doi(doi: identifier)
-               else
-                 CBGP::Publication.new
-               end
-      halt erb :publications, layout: :database_layout
-    else
-      @entry = if idtype
-                 CBGP::Dataset.load_from_identifier(identifier: identifier)
-               else
-                 CBGP::Dataset.new(type: @database)
-               end
-      halt erb :dataset, layout: :database_layout
-    end
+  #   idtype, identifier = identifier_type(id: identifier) # idtype is doi for publications
+  #   @questionnaire = generate_questionnaire(questionnaire_type: @database)
+  #   if @database == 'publication'
+  #     @entry = if idtype == 'doi'
+  #                CBGP::Publication.load_from_doi(doi: identifier)
+  #                #  else
+  #                #    CBGP::Publication.new
+  #              end
+  #     halt erb :publications, layout: :database_layout
+  #   else
+  #     @entry = if idtype # this is becoming a pain in the ass... only pubs use a special kind of unique identifier...
+  #                CBGP::Dataset.load_from_identifier(identifier: identifier)
+  #                #  else
+  #                #    CBGP::Dataset.new(type: @database)
+  #              end
+  #     halt erb :dataset, layout: :database_layout
+  #   end
+  # end
+
+  # # GET route to view/edit an existing dataset by its primary_id (UUID)
+  # # This mirrors the POST logic but uses GET for linkability from search results.
+  # # It loads the existing data (if found) and renders the same edit form.
+  # # You can later add a @mode = 'view' and make fields readonly in the ERB if desired.
+  # get '/cbgp/dataset/:database/:primary_id' do
+  #   @database = params[:database]
+  #   @primary_id = params[:primary_id]  # the UUID-like identifier
+  #   @mode = 'edit'                     # reuse edit mode (form fields editable)
+
+  #   @questionnaire = generate_questionnaire(questionnaire_type: @database)
+
+  #   if @database == 'publication'
+  #     # Publications have special handling – adjust if needed
+  #     @entry = CBGP::Publication.new # fallback, or load if you have identifier logic
+  #     halt erb :publications, layout: :database_layout
+  #   else
+  #     # Load existing dataset by primary_id
+  #     @entry = CBGP::Dataset.load_from_identifier(identifier: @primary_id, database: @database)
+  #     halt erb :dataset, layout: :database_layout
+  #   end
+  # end
+
+  # POST route: lookup by identifier submitted in form body (e.g., DOI for publications)
+  post '/cbgp/dataset/:database' do
+    load_dataset_for_edit(database: params[:database], primary_id: params[:primary_id]) # look to helpers
   end
 
-  # the form has been filled
+  # GET route: direct access by primary_id (UUID) in URL – perfect for links from search results
+  get '/cbgp/dataset/:database/:primary_id' do
+    load_dataset_for_edit(database: params[:database], primary_id: params[:primary_id]) # look to helpers
+  end
+
+  # the form has been filled - now validate it
   post '/cbgp/validate-dataset/:database' do
     @database = params[:database]
-    @questionnaire = generate_questionnaire(questionnaire_type: @database)
-    @mode = 'edit'
+    @questionnaire = generate_questionnaire(questionnaire_type: @database) # create the fields that will carry the answers provided
+    @mode = 'edit' # the HTML form has a query mode and an edit mode.  Select the edit mode
     if @database == 'publication'
       @entry = CBGP::Publication.load_from_params(params: params)
       halt erb :publications, layout: database_layout
-    else
-      @entry = CBGP::Dataset.load_from_params(params: params)
+    else # member or project
+      @entry = CBGP::Dataset.load_from_params_and_write(params: params)
       halt erb :dataset, layout: :database_layout
     end
     halt 406
@@ -197,175 +229,39 @@ def set_routes
     @questionnaire = generate_questionnaire(questionnaire_type: @database)
     @entry = CBGP::Dataset.new(type: @database)
     @mode = 'search'
-    halt erb :search_dataset, layout: :database_layout
+    halt erb :search_dataset_inputform, layout: :database_layout
   end
 
-  get '/cbgp/search-dataset' do
+  get '/cbgp/search-dataset' do # creates the search page iwth database in the POST body
     @database = params[:database]
     halt 400, 'Database parameter is required' unless @database
     @questionnaire = generate_questionnaire(questionnaire_type: @database)
     @entry = CBGP::Dataset.new(type: @database)
     @mode = 'search'
-    halt erb :search_dataset, layout: :database_layout
+    halt erb :search_dataset_inputform, layout: :database_layout
   end
 
-  post '/cbgp/query-dataset/:database' do
+  post '/cbgp/query-dataset/:database' do # genereates the results page
     @database = params[:database]
-    search_params = params.reject { |k, _| k == 'database' }
-    warn "Search params: #{search_params.inspect}"
-    @results = execute_search(search_params: search_params, dataset_type: @database)
-    warn "Search URIs: #{@results.inspect}"
+    @questionnaire = generate_questionnaire(questionnaire_type: @database)
     @fields = CBGP::Dataset.get_questionnaire_fields(questionnaire_type: @database)
+
+    search_params = params.reject { |k, _| k == 'database' }
+    # warn "Search params: #{search_params.inspect}"
+    graphuris = execute_search(search_params: search_params, dataset_type: @database) # returns strings
+    # warn "Graph URIs: #{graphuris.inspect}"
     # warn "Fields: #{@fields.inspect}"
-    @dataset_details = fetch_dataset_details(@results, @database)
-    warn "Dataset details for rendering: #{@dataset_details.inspect}"
-    erb :query_dataset, layout: :database_layout
+    @datasets = []
+    graphuris.each do |graphuri| # these are sparql results!
+      warn "LOADING Graph URI: #{graphuri}"
+      @datasets << CBGP::Dataset.load_from_graph(graph: graphuri, database: @database)
+    end
+    # warn "Dataset details for rendering: #{@datasets.inspect}"
+    erb :search_dataset_resultform, layout: :database_layout
   end
 
-  # ----------------------------------------------------------------------------
-  # ----------------------------------------------------------------------------
-  # ----------------------------------------------------------------------------
-  # ----------------------------------------------------------------------------
-  # ----------------------------------------------------------------------------
-  # Pubs Dashboard and Publications
-
-  # get "/cbgp/pubs_dashboard" do
-  #   erb :pubs_dashboard
-  # end
-
-  # get '/cbgp/publications' do
-  #   doi = params[:doi]
-  #   @questionnaire = generate_questionnaire(questionnaire_type: 'add-publication')
-  #   @entry = if doi
-  #              CBGP::Publication.load_from_doi(doi: doi)
-  #            else
-  #              CBGP::Publication.new
-  #            end
-  #   halt erb :publications
-  # end
-
-  # post '/cbgp/publications' do
-  #   doi = params[:doi]
-  #   @questionnaire = generate_questionnaire(questionnaire_type: 'add-publication')
-  #   #    begin
-  #   @entry = if doi
-  #              CBGP::Publication.load_from_doi(doi: doi)
-  #            else
-  #              CBGP::Publication.new
-  #            end
-  #   halt erb :publications
-  #   #    rescue StandardError => e
-  #   #      halt 422, e.to_s
-  #   #    end
-  #   #    halt 403
-  # end
-
-  # post '/cbgp/publications/bulk' do
-  #   dois = params[:dois]
-  #   #    begin
-  #   @messages = (CBGP::Publication.bulk_load_from_dois(dois: dois) if dois)
-
-  #   halt erb :bulkpubs
-  # end
-
-  # get '/cbgp/publications/bulk' do
-  #   halt erb :bulkpubs
-  # end
-
-  # post '/cbgp/validate-publication' do
-  #   @questionnaire = generate_questionnaire(questionnaire_type: 'add-publication')
-  #   @entry = CBGP::Publication.load_from_params(params: params)
-  #   halt erb :publications
-  # end
-
-  # ----------------------------------------------------------------------------
-  # ----------------------------------------------------------------------------
-  # ----------------------------------------------------------------------------
-  # ----------------------------------------------------------------------------
-  # ----------------------------------------------------------------------------
-  # Projects Dashboard
-
-  # get "/cbgp/projects_dashboard" do
-  #   erb :projects_dashboard
-  # end
-
-  # get '/cbgp/projects' do
-  #   cbgp_id = params['cbgp_id']
-  #   @questionnaire = generate_questionnaire(questionnaire_type: 'add-project')
-  #   @entry = if cbgp_id
-  #              CBGP::Project.load_from_cbgp_id(cbgp_id: cbgp_id)
-  #            else
-  #              CBGP::Project.new
-  #            end
-  #   halt erb :projects
-  # end
-
-  # # This comes from the top part of projects.erb, wehre there's a CBGP ID field that can be posted
-  # post '/cbgp/projects' do
-  #   #    begin
-  #   cbgp_id = params['cbgp_id']
-  #   @questionnaire = generate_questionnaire(questionnaire_type: 'add-project')
-  #   @entry = if cbgp_id
-  #              CBGP::Project.load_from_cbgp_id(cbgp_id: cbgp_id)
-  #            else
-  #              CBGP::Project.new
-  #            end
-  #   halt erb :projects
-  #   #    rescue StandardError => e
-  #   #      halt 422, e.to_s
-  #   #    end
-  #   #    halt 403
-  # end
-
-  # # This comes from the bottom part of projects.erb, the questionnaire section, posted as params
-  # post '/cbgp/validate-project' do
-  #   @questionnaire = generate_questionnaire(questionnaire_type: 'add-project')
-  #   @entry = CBGP::Project.load_from_params(params: params)
-  #   halt erb :projects
-  # end
-
-  # ----------------------------------------------------------------------------
-  # ----------------------------------------------------------------------------
-  # ----------------------------------------------------------------------------
-  # ----------------------------------------------------------------------------
-  # ----------------------------------------------------------------------------
-  # Members Dashboard
-
-  # get '/cbgp/members' do
-  #   cbgp_id = params['cbgp_id']
-  #   @questionnaire = generate_questionnaire(questionnaire_type: 'add-member')
-  #   @entry = if cbgp_id
-  #              CBGP::Member.load_from_cbgp_id(cbgp_id: cbgp_id)
-  #            else
-  #              CBGP::Member.new
-  #            end
-  #   halt erb :members
-  # end
-
-  # # This comes from the top part of projects.erb, wehre there's a CBGP ID field that can be posted
-  # post '/cbgp/members' do
-  #   #    begin
-  #   cbgp_id = params['cbgp_id']
-  #   @questionnaire = generate_questionnaire(questionnaire_type: 'add-member')
-  #   @entry = if cbgp_id
-  #              CBGP::Member.load_from_cbgp_id(cbgp_id: cbgp_id)
-  #            else
-  #              CBGP::Member.new
-  #            end
-  #   halt erb :members
-  #   #    rescue StandardError => e
-  #   #      halt 422, e.to_s
-  #   #    end
-  #   #    halt 403
-  # end
-
-  # # This comes from the bottom part of projects.erb, the questionnaire section, posted as params
-  # post '/cbgp/validate-member' do
-  #   @questionnaire = generate_questionnaire(questionnaire_type: 'add-member')
-  #   @entry = CBGP::Member.load_from_params(params: params)
-  #   halt erb :members
-  # end
-
+  ####################################################
+  #
   post '/cbgp/publications/bulk' do
     dois = params[:dois]
     #    begin
@@ -376,5 +272,47 @@ def set_routes
 
   get '/cbgp/publications/bulk' do
     halt erb :bulkpubs
+  end
+
+  ################# HELPERS
+  #
+  ## Merged handling for loading existing datasets (both by direct primary_id via GET and by identifier via POST)
+  # The core logic is extracted into a helper method for full DRY compliance.
+  # Both routes now delegate to the same code path.
+  # - POST remains for form-based lookup (e.g., entering a DOI or other identifier)
+  # - GET remains for direct linkability from search results (using the internal primary_id UUID)
+  # The helper automatically detects special identifier types (e.g., DOI for publications) and routes accordingly.
+
+  helpers do
+    def load_dataset_for_edit(database:, primary_id:)
+      halt 400, 'primary Identifier required' if primary_id.to_s.strip.empty?
+
+      @database = database
+      @mode = 'edit'
+      @questionnaire = generate_questionnaire(questionnaire_type: @database)
+
+      # Detect if the identifier is a special type (e.g., DOI) and clean it
+      # If identifier_type returns nil/nothing special, fall back to the raw identifier
+      idtype, clean_identifier = identifier_type(id: primary_id)
+      clean_identifier ||= identifier
+
+      if @database == 'publication'
+        if idtype == 'doi'
+          @entry = CBGP::Publication.load_from_doi(doi: clean_identifier)
+        else
+          abort 'not allowed to load a dataset without a DOI but this should be changed!'
+          # Fallback for publication primary_id (UUID) lookup
+          # TODO: If Publication supports loading by primary_id, use it here.
+          # For now, create new (or implement Publication.load_from_primary_id if needed)
+          # @entry = CBGP::Publication.new
+          # Optional future: @entry = CBGP::Publication.load_from_primary_id(primary_id: clean_identifier)
+        end
+        erb :publications, layout: :database_layout
+      else
+        # Standard datasets: always load by identifier (primary_id or equivalent)
+        @entry = CBGP::Dataset.load_from_primary_id(database: database, primary_id: clean_identifier)
+        erb :dataset, layout: :database_layout
+      end
+    end
   end
 end

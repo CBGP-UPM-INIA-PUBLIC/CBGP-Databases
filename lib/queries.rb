@@ -152,7 +152,7 @@ def get_label_for_id(id:)
     LIMIT 1
   LABEL_QUERY
 
-  #  warn "LABEL QUERY FOR #{id}: #{query}"
+  warn "LABEL QUERY FOR #{id}: #{query}"
   res = SPARQL.parse(query).execute($ontology)
   if res.any? && res.first&.bound?(:label)
     res.first[:label].to_s
@@ -425,7 +425,7 @@ end
 ###################### DATASET ##################
 ###################### DATASET ##################
 
-def retrieve_dataset_graph_query(primary_id:)
+def retrieve_dataset_graph_query(primary_id:) # this is prone to collisions, but... one day...
   retds = <<SELECT_DS
         #{PREFIXES}
   select ?g where {
@@ -443,6 +443,22 @@ SELECT_DS
   DATABASE.query(retds)
 end
 
+def retrieve_dataset_id_from_graph_query(graph:)
+  retds = <<SELECT_DS
+        #{PREFIXES}
+  select ?id where {
+  graph <#{graph}> {
+      ?dataset sio:SIO_000671 ?idnode .
+      ?idnode  sio:SIO_000300 ?id ;
+        rdf:type sio:SIO_000115 ; # identifier
+  }}
+SELECT_DS
+
+  warn "retrieve dataset id query is:\n #{retds}"
+  # pubexists = SPARQL.parse(retpub)  # validate query or die
+  DATABASE.query(retds)
+end
+
 def delete_dataset_query(oldid:)
   delete = <<DELETE_DATASET
   DROP GRAPH <#{oldid}>
@@ -451,187 +467,123 @@ DELETE_DATASET
   DATABASE_UPDATE.update(delete)
 end
 
+# Executes a SPARQL UPDATE query to write (insert) a dataset's RDF data into the database.
+# If an `oldid` is provided (e.g., when updating an existing dataset), it first deletes
+# the old graph containing the previous version of the data.
+# Returns the raw response from the database update operation.
 def write_dataset_to_db(dataset:, oldid: nil)
+  # Build the full INSERT DATA query (with optional preceding DELETE)
   writequery = write_dataset_to_db_query(dataset: dataset, oldid: oldid)
+
+  # Debug: print the query being sent
   warn "WRITE DATASET QUERY\n#{writequery}\n\n\n"
-  # abort
-  DATABASE_UPDATE.update(writequery)
+
+  # Execute the update query against the update-capable endpoint/database
+  resp = DATABASE_UPDATE.update(writequery)
+
+  # Debug: print the database response (useful for spotting errors)
+  warn "write dataset response #{resp.inspect}"
+
+  resp
 end
 
+# Builds the full SPARQL UPDATE query string for inserting a dataset's data.
+# The data uses a reified attribute pattern (common in SIO/RDF modelling):
+#   - The dataset node has sio:SIO_000008 (has attribute) pointing to a blank-ish node
+#   - That attribute node is typed with rdf:type cbgp:<questionclass>
+#   - The attribute node has sio:SIO_000300 (has value) with the literal value
+# If `oldid` is provided, a DELETE step for the old graph is prepended.
+# All values are stored as plain string literals (with proper escaping).
 def write_dataset_to_db_query(dataset:, oldid: nil)
-  datasettype = dataset.form_type
-  primary_id = dataset.primary_id
+  database = dataset.form_type # e.g., the specific subtype of dataset  (member, project, etc.)
+  primary_id  = dataset.primary_id # the unique identifier for this dataset instance
+  warn "WRITE DATASET primary_id is #{primary_id}\n\n"
 
+  # If this is an update (oldid present), delete the entire old named graph first
   if oldid
-    oldgraph = "http://admin.cbgp.upm.es/graphs/datasets/#{datasettype}/context/#{oldid}"
-    delete_dataset_query(oldid: oldgraph)
+    # Old graph URI is constructed directly (no prefix, full URI string
+    delete_dataset_query(oldid: "#{BASE_URI}#{database}/context/#{oldid}") # assumed method that runs DROP GRAPH or DELETE WHERE
   end
 
-  datasetPREFIX = "<http://admin.cbgp.upm.es/graphs/datasets/#{datasettype}/dataset/>"
-  datasetgraphPREFIX = "<http://admin.cbgp.upm.es/graphs/datasets/#{datasettype}/context/>"
+  # PREFIX bases:
+  # - dataset:      points to the base URI for dataset nodes (ends with /dataset/uniqid>)
+  # - datasetgraph: points to the base URI for named graphs (ends with /context/uniqid>)
+  datasetPREFIX      = "<#{BASE_URI}#{database}/dataset/>"
+  datasetgraphPREFIX = "<#{BASE_URI}#{database}/context/>"
+  datasetFragmentPREFIX = "<#{BASE_URI}#{database}/dataset/#{primary_id}#>"
 
   triples = []
+  # Core typing triples for the dataset node itself
+  # PREFIX dataset: #{datasetPREFIX}
+  # PREFIX datasetfrag: #{datasetFragmentPREFIX}
+  # PREFIX datasetgraph: #{datasetgraphPREFIX}
   triples << "dataset:#{primary_id} rdf:type sio:SIO_000089 ;"
-  triples << "   rdf:type cbgp:#{datasettype} ;"
-  triples << "   sio:SIO_000671 \"#{primary_id}\" ."
+  triples << "   rdf:type cbgp:#{database} ;"
+  triples << '   sio:SIO_000671 datasetfrag:primary_id .'
+  triples << "   datasetfrag:primary_id sio:SIO_000300 \"#{primary_id}\" ;"
+  triples << '           rdf:type sio:SIO_000115 . # identifier.'
 
+  # Process each field defined in the questionnaire/schema
   dataset.fields.each do |field|
+    # Skip if the dataset object doesn't have a getter method for this field
     next unless dataset.respond_to?(field[:method])
 
-    value = dataset.public_send(field[:method])
+    value = dataset.public_send(field[:method]) # actual value(s) from the dataset object
+
+    # Skip completely if nil or an empty array
     next if value.nil? || (value.is_a?(Array) && value.empty?)
 
-    questionclass = field[:questionclass]
+    questionclass = field[:questionclass] # the specific property/class name for this field
+
+    # Helper to properly escape a value for a SPARQL string literal:
+    # - Always convert to string first (fixes the error when value is Date, Integer, etc.)
+    # - Escape backslashes first, then double quotes (standard order)
+    # - This produces safe "literal" content
+    escape_for_literal = ->(v) { v.to_s.gsub('\\', '\\\\').gsub('"', '\\"') }
+
     if field[:cardinality] == 'Multiple' && value.is_a?(Array)
+      # Multi-valued field: one reified attribute per array item
       value.each_with_index do |val, index|
+        # Skip empty/whitespace-only items (after converting to string)
         next if val.to_s.strip.empty?
 
-        this_attribute = "#{datasetPREFIX.gsub(/[<>]/, '')}/#{primary_id}/#{questionclass}_#{index + 1}"
+        # Build a unique URI for this specific attribute instance
+        # (removes < > from prefix → clean base, then appends ID + field + index)
+        this_attribute = "#{datasetPREFIX.gsub(/[<>]/, '')}#{primary_id}/#{questionclass}_#{index + 1}"
+
         triples << "dataset:#{primary_id} sio:SIO_000008 <#{this_attribute}> ."
         triples << "<#{this_attribute}> rdf:type cbgp:#{questionclass} ."
-        triples << "<#{this_attribute}> sio:SIO_000300 \"#{val.gsub('"', '\"')}\" ."
+        triples << "<#{this_attribute}> sio:SIO_000300 \"#{escape_for_literal.call(val)}\" ."
       end
     else
-      this_attribute = "#{datasetPREFIX.gsub(/[<>]/, '')}/#{primary_id}/#{questionclass}"
+      # Single-valued field
+      # Optional improvement: skip if the string value is blank (consistent with multi-valued)
+      # (Uncomment if you want to avoid inserting empty literals)
+      # next if value.to_s.strip.empty?
+
+      # Build URI for the single attribute
+      this_attribute = "#{datasetPREFIX.gsub(/[<>]/, '')}#{primary_id}/#{questionclass}"
+
       triples << "dataset:#{primary_id} sio:SIO_000008 <#{this_attribute}> ."
       triples << "<#{this_attribute}> rdf:type cbgp:#{questionclass} ."
-      triples << "<#{this_attribute}> sio:SIO_000300 \"#{value.gsub('"', '\"')}\" ."
+      triples << "<#{this_attribute}> sio:SIO_000300 \"#{escape_for_literal.call(value)}\" ."
     end
   end
 
+  # Join all triples into the GRAPH body
   body = triples.join("\n")
+
+  # Full SPARQL UPDATE query with prefixes and INSERT DATA into the named graph
   <<~WRITE_DATASET
     #{PREFIXES}
     PREFIX dataset: #{datasetPREFIX}
+    PREFIX datasetfrag: #{datasetFragmentPREFIX}
     PREFIX datasetgraph: #{datasetgraphPREFIX}
     INSERT DATA { GRAPH datasetgraph:#{primary_id} {
     #{body}
     }}
   WRITE_DATASET
 end
-
-# def write_dataset_to_db_query(dataset:, oldid: nil)
-#   datasettype = dataset.form_type
-#   primary_id = dataset.primary_id
-
-#   if oldid
-#     oldgraph = "http://admin.cbgp.upm.es/graphs/datasets/#{datasettype}/context/#{oldid}"
-#     delete_dataset_query(oldid: oldgraph)
-#   end
-
-#   datasetPREFIX =  "<http://admin.cbgp.upm.es/graphs/datasets/#{datasettype}/dataset/>"
-#   datasetgraphPREFIX = "<http://admin.cbgp.upm.es/graphs/datasets/#{datasettype}/context/>"
-#   #context = "datasetgraphPREFIX:#{primary_id}"
-
-#   # subject_class = "cbgp:#{primary_questionclass}"  # cbgp:mem15  comes from the cbgp prefix which is the ontology base URI
-
-#   # Build the triples
-
-#   triples = []
-#   triples << "dataset:#{primary_id} rdf:type sio:SIO_000089 ;  # sio dataset"  # sio:dataset
-#   triples << "   rdf:type cbgp:#{datasettype} ;"  # cbgp:members
-
-#   triples << "   sio:SIO_000671 \"#{primary_id}\" .  # has identifier"  # sio:has-identifier   ../admin.cbgp.../datasets/members/dataset/abc123/mem15
-
-#   # Handle other fields
-
-#   dataset.fields.each do |field|
-#     # warn field.inspect + "\n\n\n"
-
-#     questionclass = field[:questionclass]  # the class of each question, from the ontology   e.g. mem1  if it is cbgp:mem1
-#     method = field[:method]
-#     # warn "value is #{dataset.send(method.to_sym)}"
-#     next unless dataset.respond_to?(method.to_sym)
-#     value = dataset.send(method.to_sym)
-#     next if value.nil? || value.to_s.empty?
-
-#     this_attribute = datasetPREFIX.gsub(/[<>]/, "") + "/#{primary_id}/#{questionclass}"
-
-#     triples << "dataset:#{primary_id} sio:SIO_000008 <#{this_attribute}> .  # has attribute" # has attribute
-#     triples << "<#{this_attribute}> rdf:type cbgp:#{questionclass} ."
-#     triples << "<#{this_attribute}> sio:SIO_000300 \"#{value}\" . # has value\n"
-#   end
-
-#   # Join the triples
-#   body = triples.join("\n")
-
-#   # Build the full SPARQL query
-#   <<~WRITE_DATASET
-#         #{PREFIXES}
-
-#         PREFIX dataset: #{datasetPREFIX}
-#         PREFIX datasetgraph: #{datasetgraphPREFIX}
-
-#         INSERT DATA { GRAPH datasetgraph:#{primary_id} {
-#     #{body}
-#         }}
-#   WRITE_DATASET
-# end
-
-# def build_search_query(search_params:, dataset_type:)
-#   # Validate input: ensure at least one non-empty parameter
-#   return nil unless search_params.is_a?(Hash) && search_params.any? do |k, v|
-#     !v.nil? && ((!v.is_a?(Hash) && !v.to_s.strip.empty?) || (v.is_a?(Hash) && v.values.any? do |val|
-#       !val.to_s.strip.empty?
-#     end))
-#   end
-
-#   datasetPREFIX = "<http://admin.cbgp.upm.es/graphs/datasets/#{dataset_type}/dataset/>"
-#   datasetgraphPREFIX = "<http://admin.cbgp.upm.es/graphs/datasets/#{dataset_type}/context/>"
-#   # Base SPARQL query structure
-#   query = <<~SPARQL
-#     #{PREFIXES}
-#     PREFIX dataset: #{datasetPREFIX}
-#     PREFIX datasetgraph: #{datasetgraphPREFIX}
-
-#     SELECT DISTINCT ?datasetgraph
-#     WHERE {
-#           GRAPH ?datasetgraph {
-
-#   SPARQL
-
-#   # Dynamic conditions based on search parameters
-#   conditions = []
-#   dates = {}
-#   search_params.each do |questionclass, value|
-#     warn "questionclass #{questionclass}  value #{value}"
-#     # Skip empty or irrelevant values
-#     next if value.nil? || (value.is_a?(String) && value.strip.empty?)
-#     next if value.is_a?(Hash) && value.values.all? { |val| val.to_s.strip.empty? }
-
-#     if value.is_a?(Hash) # this is a date range
-#       start_date = value['start']&.strip
-#       end_date = value['end']&.strip
-#       next if start_date.to_s.empty? && end_date.to_s.empty? # Skip empty date ranges
-
-#       # FILTER (?start >= "2023-01-01"^^xsd:date && ?start <= "2023-12-31"^^xsd:date)
-#       filter = ''
-#       if !start_date.to_s.empty? && !end_date.to_s.empty?
-#         filter = "FILTER (?datevalue >= \"#{start_date}\"^^xsd:date && ?datevalue <= \"#{end_date}\"^^xsd:date) "
-#       elsif !start_date.to_s.empty?
-#         filter = "FILTER (?datevalue >= \"#{start_date}\"^^xsd:date) "
-#       elsif !end_date.to_s.empty?
-#         filter = "FILTER (?datevalue >= \"#{end_date}\"^^xsd:date) "
-#       end
-
-#       conditions << <<-CONDITION
-#         ?dataset sio:SIO_000008 ?attribute .  # has attribute.
-#         ?attribute sio:SIO_000300 ?datevalue .
-#         ?attribute rdf:type cbgp:#{questionclass} .  # this is how we get the right attribute
-#         #{filter} .
-
-#       CONDITION
-#     else
-#       # Handle simple string fields (e.g., group_institution)
-#       escaped_value = value.to_s.gsub('"', '\"')
-#       conditions << <<-CONDITION
-#         ?dataset sio:SIO_000008 ?attribute .  # has attribute.
-#         ?attribute sio:SIO_000300 "#{escaped_value}" .
-#         ?attribute rdf:type cbgp:#{questionclass} .  # this is how we get the right attribute
-
-#       CONDITION
-#     end
-#   end
 
 def build_search_query(search_params:, dataset_type:)
   return nil unless search_params.is_a?(Hash) && search_params.any? do |k, v|
@@ -640,8 +592,8 @@ def build_search_query(search_params:, dataset_type:)
     end))
   end
 
-  datasetPREFIX = "<http://admin.cbgp.upm.es/graphs/datasets/#{dataset_type}/dataset/>"
-  datasetgraphPREFIX = "<http://admin.cbgp.upm.es/graphs/datasets/#{dataset_type}/context/>"
+  datasetPREFIX = "<#{BASE_URI}#{dataset_type}/dataset/>"
+  datasetgraphPREFIX = "<#{BASE_URI}#{dataset_type}/context/>"
   fields = CBGP::Dataset.get_questionnaire_fields(questionnaire_type: dataset_type)
 
   query = <<~SPARQL
@@ -712,98 +664,69 @@ def execute_search(search_params:, dataset_type:)
   results.map { |result| result[:datasetgraph].to_s } # Return array of graph URIs
 end
 
-# def fetch_dataset_details(datasetgraph_uris, dataset_type)
-#   return [] if datasetgraph_uris.empty?
+# Fetches metadata/details for a dataset graphs identified by their URIs.
+# The details are pulled from a SPARQL endpoint using fields defined in a "questionnaire"
+# for the given dataset_type (e.g., specific attributes like title, description, etc.).
+# Returns an array of hashes, one hash per dataset URI, containing only the fields that
+# actually have values.
+def fetch_dataset_raw_data(graphuri:, database:)
+  # Get the list of fields (metadata properties) that we care about for this dataset_type.
+  # Each field is a hash with keys like :fieldid (the property name), :cardinality ('Multiple' or single), etc.
+  fields = CBGP::Dataset.get_questionnaire_fields(questionnaire_type: database)
 
-#   fields = CBGP::Dataset.get_questionnaire_fields(questionnaire_type: dataset_type)
-#   # :fieldid, :label, :answerblock, :answertree, :objectclass, :objectmethod, :questionorder, :cardinality, :widgettype
+  # Build the SELECT clause: ?field1 ?field2 ?field3 ...
+  select_clause = fields.map { |f| "?#{f[:fieldid]}" }.join(' ')
 
-#   results = []
-
-#   datasetgraph_uris.each do |uri|
-#     # Build dynamic SPARQL query for all fields
-#     select_clause = # creates a novel variable for each class e.g. ?mem1   ?mem5
-#       fields.map do |f|
-#         "?#{f[:fieldid]}"
-#       end.join(' ')
-#     where_clause = fields.map do |f|
-#       <<~SPARQL
-#         OPTIONAL {
-#           ?dataset sio:SIO_000008 ?attribute#{f[:fieldid]} .
-#           ?attribute#{f[:fieldid]} sio:SIO_000300 ?#{f[:fieldid]} .  # creates a novel variable for each class e.g. ?mem1   ?mem5
-#           ?attribute#{f[:fieldid]} rdf:type cbgp:#{f[:fieldid]} .  # fieldid is the question class
-#         }
-#       SPARQL
-#     end.join("\n")
-
-#     query = <<~SPARQL
-#       #{PREFIXES}
-#       SELECT #{select_clause}
-#       WHERE {
-#         GRAPH <#{uri}> {
-#           #{where_clause}
-#         }
-#       }
-#     SPARQL
-
-#     warn "Fetching details for dataset graph: #{uri}"
-#     warn "Query: #{query}"
-#     result = DATABASE.query(query).first
-#     next unless result
-
-#     details = { dataset: uri }
-#     fields.each do |f|
-#       value = result[f[:fieldid].to_sym]&.to_s
-#       details[f[:fieldid].to_sym] = value
-#     end
-#     results << details
-#   end
-
-#   warn "Dataset details: #{results.inspect}"
-#   results
-# end
-def fetch_dataset_details(datasetgraph_uris, dataset_type)
-  return [] if datasetgraph_uris.empty?
-
-  fields = CBGP::Dataset.get_questionnaire_fields(questionnaire_type: dataset_type)
-  results = []
-
-  datasetgraph_uris.each do |uri|
-    select_clause = fields.map { |f| "?#{f[:fieldid]}" }.join(' ')
-    where_clause = fields.map do |f|
-      <<~SPARQL
-        OPTIONAL {
-          ?dataset sio:SIO_000008 ?attribute#{f[:fieldid]} .
-          ?attribute#{f[:fieldid]} sio:SIO_000300 ?#{f[:fieldid]} .
-          ?attribute#{f[:fieldid]} rdf:type cbgp:#{f[:fieldid]} .
-        }
-      SPARQL
-    end.join("\n")
-
-    query = <<~SPARQL
-      #{PREFIXES}
-      SELECT #{select_clause}
-      WHERE {
-        GRAPH <#{uri}> {
-          #{where_clause}
-        }
+  # Build the WHERE clause: for each field, an OPTIONAL block that looks for
+  #   ?dataset sio:SIO_000008 ?attributeXXX .
+  #   ?attributeXXX sio:SIO_000300 ?XXX .          # the actual literal value
+  #   ?attributeXXX rdf:type cbgp:XXX .            # typed as the specific property
+  # This pattern is common in RDF data models that use reified attributes.
+  where_clause = fields.map do |f|
+    <<~SPARQL
+      OPTIONAL {
+        ?dataset sio:SIO_000008 ?attribute#{f[:fieldid]} .
+        ?attribute#{f[:fieldid]} sio:SIO_000300 ?#{f[:fieldid]} .
+        ?attribute#{f[:fieldid]} rdf:type cbgp:#{f[:fieldid]} .
       }
     SPARQL
+  end.join("\n")
 
-    result_set = DATABASE.query(query)
-    details = { dataset: uri }
-    fields.each do |f|
-      if f[:cardinality] == 'Multiple'
-        values = result_set.map { |r| r[f[:fieldid].to_sym]&.to_s }.compact.uniq
-        details[f[:fieldid].to_sym] = values unless values.empty?
-      else
-        details[f[:fieldid].to_sym] = result_set.first & [f[:fieldid].to_sym]&.to_s
-      end
+  # Full SPARQL query: prefixes + SELECT + WHERE { GRAPH <uri> { ... } }
+  query = <<~SPARQL
+    #{PREFIXES}
+    SELECT #{select_clause}
+    WHERE {
+      GRAPH <#{graphuri}> {
+        #{where_clause}
+      }
+    }
+  SPARQL
+
+  # Execute the query against the RDF/SPARQL database (DATABASE is a configured RDF::Repository or similar)
+  result_set = DATABASE.query(query)
+
+  # Start building a hash for this dataset's details, with the URI itself included
+  details = { dataset: graphuri }
+
+  # Now extract values from the query results for each field
+  fields.each do |f|
+    field_sym = f[:fieldid].to_sym # e.g., :title, :description
+
+    if f[:cardinality] == 'Multiple'
+      # For multi-valued fields: collect the value from EVERY solution (row),
+      # convert to string (if present), remove nil, remove duplicates
+      values = result_set.map { |r| r[field_sym]&.to_s }.compact.uniq
+      # Only store the array if we actually found values
+      details[field_sym] = values unless values.empty?
+    else
+      # For single-valued fields: take the value from the FIRST solution only
+      # ---------------------------------------------------------
+      details[field_sym] = result_set.first[field_sym]&.to_s # FIXED VERSION
     end
-    results << details
   end
 
-  warn "Dataset details: #{results.inspect}"
-  results
+  warn "Dataset details: #{details.inspect}"
+  details
 end
-# this is the end of the world as we know iii
+# this is the end of the world as we know it

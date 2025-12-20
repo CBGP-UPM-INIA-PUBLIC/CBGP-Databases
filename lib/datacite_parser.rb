@@ -47,9 +47,9 @@ module CBGP
           aname = Sanitize.fragment(aname)
         end
 
-        aut = CBGP::Publication::Author.new(name: aname, orcid: orcid,
-                                            rank: "#{index.to_i + 1}") # start rank at 1 not 0
-        authors << aut
+        # aut = CBGP::Publication::Author.new(name: aname, orcid: orcid,
+        #                                     rank: "#{index.to_i + 1}") # start rank at 1 not 0
+        authors << aname
       end
 
       jpath = JsonPath.new('created["date-time"]')
@@ -78,22 +78,19 @@ module CBGP
       endpage = pages
       # jpath.on(dcite).split('-')
 
-      CBGP::Publication.new(
-        doi: doi,
-        authors: authors, # make it a list of lists so that only one instance is sent to the widget
-        affiliations: [affiliations],
-        title: title,
-        journal: journal,
-        date: date,
-        cbgp_corresponding: '',
-        pubtype: '',
-        oa: '',
-        scopusq: '',
-        scopusd1: '',
-        sochoa: ''
-      )
+      dataset = CBGP::Dataset.new(type: 'publication')
+
+      dataset.doi = doi
+      dataset.authors = authors # make it a list of lists so that only one instance is sent to the widget
+      dataset.affiliations = [affiliations]
+      dataset.title = title
+      dataset.journal = journal
+      dataset.date = date
+
       # abort "affiliations #{affiliations.inspect} pub: #{pub.affiliations}"
       # warn "PUB = #{pub.inspect}"
+
+      dataset
     end
   end
 end

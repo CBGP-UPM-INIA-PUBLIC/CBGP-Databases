@@ -1,0 +1,23 @@
+
+
+    <div class="databases">
+    
+      <form action="/cbgp/loaders/load" method="POST">
+      <table id="publication_lookup" width="30%">
+        <tr> <th>Add/Find Publication</th> </tr>
+        <tr> <td>
+          <label for='identifier'>DOI Lookup</label>
+          <input type='text' name='doi' id="doi">
+        </td></tr>
+        <tr> <td>
+          <input type="submit" value="Submit"/>
+          <input type="hidden" name="database" value="publications"/>
+        </td></tr>
+        <tr> <td>
+          <a href="/cbgp/publications/bulk"><h4>Switch to Bulk Upload</h4></a>
+        </td></tr>
+      </table>
+      </form>
+
+
+    </div>

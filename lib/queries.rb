@@ -585,12 +585,40 @@ def write_dataset_to_db_query(dataset:, oldid: nil)
   WRITE_DATASET
 end
 
+#####################################################
+######################################################
+################    SEARCH   #########################
+######################################################
+######################################################
+
+def execute_search(search_params:, dataset_type:)
+  query = build_search_query(search_params: search_params, dataset_type: dataset_type)
+  return [] unless query
+
+  results = DATABASE.query(query)
+  warn "Search results: #{results.map { |r| r.to_h }.inspect}"
+  results.map { |result| result[:datasetgraph].to_s } # Return array of graph URIs
+end
+
 def build_search_query(search_params:, dataset_type:)
-  return nil unless search_params.is_a?(Hash) && search_params.any? do |k, v|
-    !v.nil? && ((!v.is_a?(Hash) && !v.to_s.strip.empty?) || (v.is_a?(Hash) && v.values.any? do |val|
-      !val.to_s.strip.empty?
-    end))
-  end
+  # Early-exit guard clause: returns nil if the search_params do not contain any meaningful (non-empty) search criteria.
+  # This prevents running an expensive or meaningless search when the user submitted an empty/blanks-only form.
+  #
+  # It supports nested params (common in complex search forms, e.g., date ranges like { start: "", end: "" })
+  # by recursively checking inside hash values.
+  #
+  # Returns: the original search_params (implicitly, if it passes) or nil (if empty/blank).
+  return nil unless search_params.is_a?(Hash) && # Must be a hash...
+                    search_params.any? do |k, v| # ...and at least one key-value pair must satisfy:
+                      !v.nil? && # - Value is not nil
+                      ( # - AND the value is "non-blank" in one of two ways:
+                        (!v.is_a?(Hash) && !v.to_s.strip.empty?) || #   1. Simple scalar value (string, number, etc.):
+                        #      - Convert to string, strip whitespace, ensure not empty
+                        (v.is_a?(Hash) && v.values.any? do |val| #   2. Nested hash value (e.g., { gte: "2023", lte: "" }):
+                          !val.to_s.strip.empty? #      - At least one of its values, after to_s.strip, is non-empty
+                        end)
+                      )
+                    end
 
   datasetPREFIX = "<#{BASE_URI}#{dataset_type}/dataset/>"
   datasetgraphPREFIX = "<#{BASE_URI}#{dataset_type}/context/>"
@@ -653,15 +681,6 @@ def build_search_query(search_params:, dataset_type:)
 
   warn "Generated search query:\n#{query}\n\n\n"
   query
-end
-
-def execute_search(search_params:, dataset_type:)
-  query = build_search_query(search_params: search_params, dataset_type: dataset_type)
-  return [] unless query
-
-  results = DATABASE.query(query)
-  warn "Search results: #{results.map { |r| r.to_h }.inspect}"
-  results.map { |result| result[:datasetgraph].to_s } # Return array of graph URIs
 end
 
 # Fetches metadata/details for a dataset graphs identified by their URIs.

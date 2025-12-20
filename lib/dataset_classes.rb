@@ -159,11 +159,14 @@ module CBGP
 
     def write_to_db
       warn 'WRITING DATASET TO DB'
-      write_dataset_to_db(dataset: self, oldid: primary_id)
+      self.primary_id = SecureRandom.uuid unless primary_id
+      write_dataset_to_db(dataset: self)
     end
 
     def self.write_to_db(dataset:, oldid: nil)
+      # TODO: Should check... probably an existing primary_id should be made the old id for deletion??  think about this
       warn 'WRITING DATASET TO DB'
+      dataset.primary_id = SecureRandom.uuid if dataset.primary_id.empty?
       write_dataset_to_db(dataset: dataset, oldid: oldid)
     end
 

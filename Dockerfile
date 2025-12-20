@@ -5,6 +5,7 @@ ENV LANG=en_US.UTF-8 \
     LANGUAGE=en_US:UTF-8 \
     LC_ALL=C.UTF-8
 
+RUN echo 'Acquire::ForceIPv4 "true";' > /etc/apt/apt.conf.d/99force-ipv
 # Install system dependencies
 RUN apt-get update -qq && \
     apt-get install -y --no-install-recommends \

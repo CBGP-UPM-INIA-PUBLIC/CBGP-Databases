@@ -126,7 +126,8 @@ def set_routes
     @mode = 'edit'
 
     @questionnaire = generate_questionnaire(questionnaire_type: @database) # questionnaire has all fields and possible answers
-    if @database == 'publication'
+    # if @database == 'publication'
+    if @database == 'publicationxxxx'
       @entry = CBGP::Publication.new
       halt erb :publications, layout: :database_layout
     else
@@ -135,55 +136,7 @@ def set_routes
     end
   end
 
-  # # This is a database lookup based on an incoming identifier
-  # post '/cbgp/dataset/:database' do
-  #   @database = params[:database]
-  #   identifier = params[:identifier]
-  #   abort "post '/cbgp/dataset/:database' was not sent an identifier" unless identifier
-  #   @mode = 'edit'
-
-  #   idtype, identifier = identifier_type(id: identifier) # idtype is doi for publications
-  #   @questionnaire = generate_questionnaire(questionnaire_type: @database)
-  #   if @database == 'publication'
-  #     @entry = if idtype == 'doi'
-  #                CBGP::Publication.load_from_doi(doi: identifier)
-  #                #  else
-  #                #    CBGP::Publication.new
-  #              end
-  #     halt erb :publications, layout: :database_layout
-  #   else
-  #     @entry = if idtype # this is becoming a pain in the ass... only pubs use a special kind of unique identifier...
-  #                CBGP::Dataset.load_from_identifier(identifier: identifier)
-  #                #  else
-  #                #    CBGP::Dataset.new(type: @database)
-  #              end
-  #     halt erb :dataset, layout: :database_layout
-  #   end
-  # end
-
-  # # GET route to view/edit an existing dataset by its primary_id (UUID)
-  # # This mirrors the POST logic but uses GET for linkability from search results.
-  # # It loads the existing data (if found) and renders the same edit form.
-  # # You can later add a @mode = 'view' and make fields readonly in the ERB if desired.
-  # get '/cbgp/dataset/:database/:primary_id' do
-  #   @database = params[:database]
-  #   @primary_id = params[:primary_id]  # the UUID-like identifier
-  #   @mode = 'edit'                     # reuse edit mode (form fields editable)
-
-  #   @questionnaire = generate_questionnaire(questionnaire_type: @database)
-
-  #   if @database == 'publication'
-  #     # Publications have special handling – adjust if needed
-  #     @entry = CBGP::Publication.new # fallback, or load if you have identifier logic
-  #     halt erb :publications, layout: :database_layout
-  #   else
-  #     # Load existing dataset by primary_id
-  #     @entry = CBGP::Dataset.load_from_identifier(identifier: @primary_id, database: @database)
-  #     halt erb :dataset, layout: :database_layout
-  #   end
-  # end
-
-  # POST route: lookup by identifier submitted in form body (e.g., DOI for publications)
+  # POST route: lookup by identifier submitted in form body
   post '/cbgp/dataset/:database' do
     load_dataset_for_edit(database: params[:database], primary_id: params[:primary_id]) # look to helpers
   end
@@ -198,7 +151,8 @@ def set_routes
     @database = params[:database]
     @questionnaire = generate_questionnaire(questionnaire_type: @database) # create the fields that will carry the answers provided
     @mode = 'edit' # the HTML form has a query mode and an edit mode.  Select the edit mode
-    if @database == 'publication'
+    # if @database == 'publication'
+    if @database == 'publicationxxx'
       @entry = CBGP::Publication.load_from_params(params: params)
       halt erb :publications, layout: database_layout
     else # member or project
@@ -208,6 +162,38 @@ def set_routes
     halt 406
   end
 
+  # LOADERS
+  # LOADERS
+  # LOADERS
+  # LOADERS
+  # LOADERS
+  # LOADERS
+  # LOADERS
+  # LOADERS
+  # LOADERS
+  # LOADERS
+  # LOADERS
+  # LOADERS
+  # LOADERS
+  # LOADERS
+
+  # GET route: direct access by primary_id (UUID) in URL – perfect for links from search results
+  post '/cbgp/loaders' do
+    type = params['loader']
+    halt erb :doi_loader, layout: :database_layout if type.to_s == 'DOI'
+  end
+
+  post '/cbgp/loaders/load' do
+    warn 'loading publication'
+    doi = params['doi']
+    @database = params['database'] || 'publications'
+    @entry = CBGP::Loaders.load_doi(doi: doi)
+    @questionnaire = generate_questionnaire(questionnaire_type: @database) # create the fields that will carry the answers provided
+    @mode = 'edit' # the HTML form has a query mode and an edit mode.  Select the edit mode
+    halt erb :dataset, layout: :database_layout
+  end
+
+  #
   # QUERY FORMS
   # QUERY FORMS
   # QUERY FORMS
@@ -261,6 +247,7 @@ def set_routes
   end
 
   ####################################################
+  ################# LOADERS
   #
   post '/cbgp/publications/bulk' do
     dois = params[:dois]

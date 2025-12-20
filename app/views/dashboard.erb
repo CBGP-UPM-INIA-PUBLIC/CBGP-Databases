@@ -20,6 +20,24 @@
         <!-- Optional: Add user info or logout -->
       </div>
 
+      <!-- Loaders  -->
+      <form action="/cbgp/loaders" method="POST" style="display: inline-block; margin-right: 20px;">
+        <table id="load_data" width="30%">
+          <tr><th>Data Loaders</th></tr>
+          <tr><td>
+            <% @loaders = ["DOI"] %>
+            <select name="loader" id="select_loader">
+              <% @loaders.each do |d| %>
+                <option value="<%= d %>"><%= d %></option>
+              <% end %>
+            </select>
+          </td></tr>
+          <tr><td>
+            <input type="submit" value="Load Data"/>
+          </td></tr>
+        </table>
+      </form>
+
       <!-- Form for Adding New Data -->
       <form action="/cbgp/databases" method="POST" style="display: inline-block; margin-right: 20px;">
         <table id="add_new_data" width="30%">

@@ -151,15 +151,8 @@ def set_routes
     @database = params[:database]
     @questionnaire = generate_questionnaire(questionnaire_type: @database) # create the fields that will carry the answers provided
     @mode = 'edit' # the HTML form has a query mode and an edit mode.  Select the edit mode
-    # if @database == 'publication'
-    if @database == 'publicationxxx'
-      @entry = CBGP::Publication.load_from_params(params: params)
-      halt erb :publications, layout: database_layout
-    else # member or project
-      @entry = CBGP::Dataset.load_from_params_and_write(params: params)
-      halt erb :dataset, layout: :database_layout
-    end
-    halt 406
+    @entry = CBGP::Dataset.load_from_params_and_write(params: params)
+    halt erb :dataset, layout: :database_layout
   end
 
   # LOADERS
@@ -183,10 +176,11 @@ def set_routes
     halt erb :doi_loader, layout: :database_layout if type.to_s == 'DOI'
   end
 
-  post '/cbgp/loaders/load' do
+  post '/cbgp/loaders/load' do # this routine presumes it is always a DOI
     warn 'loading publication'
-    doi = params['doi']
-    @database = params['database'] || 'publications'
+    doi = params['doi'] # this routine presumes it is always a DOI
+    @database = params['database'] || 'publication'
+    warn "database type #{@database}"
     @entry = CBGP::Loaders.load_doi(doi: doi)
     @questionnaire = generate_questionnaire(questionnaire_type: @database) # create the fields that will carry the answers provided
     @mode = 'edit' # the HTML form has a query mode and an edit mode.  Select the edit mode

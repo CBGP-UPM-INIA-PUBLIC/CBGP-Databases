@@ -89,37 +89,6 @@ module CBGP
       end
     end
 
-    # data has been entered into the HTML form.  Here we are validating it
-    def self.load_from_params_and_write(params:)
-      warn "PARAMS: #{params.inspect}"
-      # Create the instance – NO auto-generation of primary_id in initialize anymore
-      # primary_id starts as nil
-      dataset = CBGP::Dataset.new(type: params['database'])
-
-      # ensure a primary_id exists
-      # - If params include a primary_id (hidden field from edit form) → reuse it (update existing graph)
-      # - Otherwise (new record) → generate a fresh UUID now
-      primary_id_param = params['primary_id'].to_s.strip
-      dataset.primary_id = if primary_id_param.empty?
-                             SecureRandom.uuid # Fresh ID for new records
-                           else
-                             primary_id_param # Reuse existing ID for updates
-                           end
-
-      dataset.fields.each do |field|
-        value = params[field[:questionclass]]
-        next unless value
-
-        coerced_value = dataset.coerce_value(value, field[:class], field[:cardinality])
-        if coerced_value && (!coerced_value.is_a?(Array) || !coerced_value.empty?)
-          dataset.public_send("#{field[:method]}=",
-                              coerced_value)
-        end
-      end
-      dataset.write_to_db
-      dataset
-    end
-
     def self.load_from_graph(graph:, database:)
       dataset = new(type: database)
 
@@ -154,6 +123,37 @@ module CBGP
         # metaprogramming set value for the associated object method
         dataset.public_send("#{field[:method]}=", value) if value # Load up the Dataset object
       end
+      dataset
+    end
+
+    # data has been entered into the HTML form, or a loader. Here we are validating it
+    def self.load_from_params_and_write(params:)
+      warn "PARAMS: #{params.inspect}"
+      # Create the instance – NO auto-generation of primary_id in initialize anymore
+      # primary_id starts as nil
+      dataset = CBGP::Dataset.new(type: params['database'])
+
+      # ensure a primary_id exists
+      # - If params include a primary_id (hidden field from edit form) → reuse it (update existing graph)
+      # - Otherwise (new record) → generate a fresh UUID now
+      primary_id_param = params['primary_id'].to_s.strip
+      dataset.primary_id = if primary_id_param.empty?
+                             SecureRandom.uuid # Fresh ID for new records
+                           else
+                             primary_id_param # Reuse existing ID for updates
+                           end
+
+      dataset.fields.each do |field|
+        value = params[field[:questionclass]]
+        next unless value
+
+        coerced_value = dataset.coerce_value(value, field[:class], field[:cardinality])
+        if coerced_value && (!coerced_value.is_a?(Array) || !coerced_value.empty?)
+          dataset.public_send("#{field[:method]}=",
+                              coerced_value)
+        end
+      end
+      dataset.write_to_db
       dataset
     end
 

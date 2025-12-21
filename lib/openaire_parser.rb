@@ -17,19 +17,6 @@ module CBGP
 
       return false if journal.empty?
 
-      affiliations = []
-      # Define the JSONPath query with a wildcard to match all "rel" elements
-      jpath = JsonPath.new('response.results.result[0].metadata["oaf:entity"]["oaf:result"].rels.rel[*].legalname.$') # the affiliation name
-      # jpath = JsonPath.new('$["response"]["results"]["result"][0]["metadata"]["oaf:entity"]["oaf:result"]["rels"]["rel"][*]["legalname"]')
-      # Execute the query and get all matches
-      results = jpath.on(oaire)
-      # Loop through the results and print each legalname
-      results.each_with_index do |legalname, index|
-        # puts "rel[#{index}].legalname: #{legalname}"
-        legalname = Sanitize.fragment(legalname)
-        affiliations << legalname
-      end
-
       jpath = JsonPath.new('response.results.result[0].metadata["oaf:entity"]["oaf:result"].title[0].$')
       title = jpath.on(oaire)
       title = Sanitize.fragment(title)
@@ -38,8 +25,8 @@ module CBGP
       jpath = JsonPath.new('response.results.result[0].metadata["oaf:entity"]["oaf:result"].creator[*]')
       results = jpath.on(oaire)
       results.each_with_index do |author, _index|
-        aut = CBGP::Publication::Author.new(name: author['$'], orcid: author['@orcid'], rank: '0')
-        aut = Sanitize.fragment(aut)
+        # aut = CBGP::Publication::Author.new(name: author['$'], orcid: author['@orcid'], rank: '0')
+        aut = Sanitize.fragment(author['$'])
         # rank is totally useless from open aire
         authors << aut
       end
@@ -66,7 +53,7 @@ module CBGP
       end
 
       jpath = JsonPath.new('response.results.result[0].metadata["oaf:entity"]["oaf:result"].journal["@vol"]')
-      volume = jpath.on(oaire)
+      _volume = jpath.on(oaire)
 
       # OpenAPIRE graph doesn't capture this!
       # issue = ''
@@ -74,27 +61,24 @@ module CBGP
       # issue = jpath.on(oaire)
 
       jpath = JsonPath.new('response.results.result[0].metadata["oaf:entity"]["oaf:result"].journal["@sp"]')
-      startpage = jpath.on(oaire)
+      _startpage = jpath.on(oaire)
 
       jpath = JsonPath.new('response.results.result[0].metadata["oaf:entity"]["oaf:result"].journal["@ep"]')
-      endpage = jpath.on(oaire)
+      _endpage = jpath.on(oaire)
 
       dataset = CBGP::Dataset.new(type: 'publication')
 
       dataset.doi = doi
-      dataset.authors = [authors] # make it a list of lists so that only one instance is sent to the widget
-      dataset.affiliations = [affiliations]
+      dataset.authors = authors # make it a list of lists so that only one instance is sent to the widget
+      dataset.affiliations = get_affiliation_from_doi_json(json: oaire)
       dataset.title = title
       dataset.journal = journal
       dataset.date = date
 
-      # abort "affiliations #{affiliations.inspect} pub: #{pub.affiliations}"
-      # warn "PUB = #{pub.inspect}"
-
       dataset
     end
 
-    def self.openaire_affiliations(pub:, doi:)
+    def self.openaire_affiliations(pub:, doi:) # rubocop:disable Metrics/MethodLength
       begin
         # abort
         warn "https://api.openaire.eu/search/publications?doi=#{doi}&format=json"
@@ -104,25 +88,31 @@ module CBGP
         warn "error #{e.inspect}"
         return false
       end
+      pub.affiliations = get_affiliation_from_doi_json(json: oaire)
+      pub.oa = get_os_from_doi_json(json: oaire)
+      pub
+    end
 
+    def self.get_affiliation_from_doi_json(json:)
       affiliations = []
       # Define the JSONPath query with a wildcard to match all "rel" elements
       jpath = JsonPath.new('response.results.result[0].metadata["oaf:entity"]["oaf:result"].rels.rel[*].legalname.$') # the affiliation name
       # Execute the query and get all matches
-      results = jpath.on(oaire)
+      results = jpath.on(json)
       # Loop through the results and print each legalname
       results.each_with_index do |legalname, index|
         puts "rel[#{index}].legalname: #{legalname}"
-        affiliations << legalname
+        affiliations << legalname unless affiliations.include? legalname
       end
-      pub.affiliations = [affiliations]
+      affiliations
+    end
 
+    def self.get_os_from_doi_json(json:)
       oa = ''
       jpath = JsonPath.new('response.results.result[0].metadata["oaf:entity"]["oaf:result"].bestaccessright["@classid"]')
-      result = jpath.on(oaire)
-      pub.oa = 'Yes' if result.first == 'OPEN'
-
-      pub
+      result = jpath.on(json)
+      oa = 'Yes' if result.first == 'OPEN'
+      oa
     end
   end
 end

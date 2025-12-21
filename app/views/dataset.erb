@@ -6,9 +6,9 @@
 
       <form action="/cbgp/validate-dataset/<%= @database %>" method="post">
         <table id="dataset_validate" width="80%">
-          <tr> <th>Add/Edit <%= @database.capitalize %></th> </tr>
+          <tr> <th>Add/Edit <%= @database.capitalize %> Entry</th> </tr>
           <tr><td>
-            <input type="submit" value="Submit <%= @database.capitalize %>"/>
+            <input type="submit" value="Submit <%= @database.capitalize %> Record"/>
             <input type="hidden" name="primary_id" value="<%= @entry.primary_id %>">
           </td></tr>
           <tr> <td>

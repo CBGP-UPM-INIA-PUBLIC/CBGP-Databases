@@ -82,7 +82,7 @@ module CBGP
 
       dataset.doi = doi
       dataset.authors = authors # make it a list of lists so that only one instance is sent to the widget
-      dataset.affiliations = [affiliations]
+      dataset.affiliations = affiliations
       dataset.title = title
       dataset.journal = journal
       dataset.date = date

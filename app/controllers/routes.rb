@@ -62,7 +62,8 @@ def set_routes
       '/cbgp/login', # Login page
       '/cbgp/stylesheets/cbgp.css', # Login page
       '/logout', # Optional: logout route
-      '/set_language' # Add the new route to public paths
+      '/set_language', # Add the new route to public paths
+      '/user-dashboard' # Add the new route to public paths
     ]
     # Skip authentication check for public paths
     return if public_paths.include?(request.path_info)
@@ -96,20 +97,18 @@ def set_routes
   end
 
   get '/cbgp/dashboard' do
-    @databases = get_databases
+    @databases = get_databases(type: 'Core')
     erb :dashboard
+  end
+
+  get '/cbgp/user-dashboard' do
+    @databases = get_databases(type: 'UserFacing')
+    erb :user_dashboard
   end
 
   post '/cbgp/databases' do
     database = params[:database]
     redirect "/cbgp/dataset/#{database}"
-    # when 'personnel'
-    #   # redirect "/cbgp/mambers_dashboard"
-    #   redirect '/cbgp/members'
-    # when 'projects'
-    #   # redirect "/cbgp/projects_dashboard"
-    #   redirect '/cbgp/projects'
-    # end
     halt 422
   end
 

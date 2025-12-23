@@ -2,9 +2,9 @@ require 'pony'
 require 'open3'
 require 'securerandom'
 
-def get_databases
+def get_databases(type: 'Core', language: $language)
   warn 'getting databases'
-  types = get_questionnaire_types_query # [{:questionnaire_type=>"https://w3id.org/CBGP-App#add-member", :questionnaire_label=>"Add/Edit Member"}, {:questionnaire_type=>"https://w3id.org/CBGP-App#add-project", :questionnaire_label=>"Add/Edit Project"}, {:questionnaire_type=>"https://w3id.org/CBGP-App#add-publication", :questionnaire_label=>"Add/Edit Publication"}]
+  types = get_questionnaire_types_query(type: type, language: language) # [{:questionnaire_type=>"https://w3id.org/CBGP-App#add-member", :questionnaire_label=>"Add/Edit Member"}, {:questionnaire_type=>"https://w3id.org/CBGP-App#add-project", :questionnaire_label=>"Add/Edit Project"}, {:questionnaire_type=>"https://w3id.org/CBGP-App#add-publication", :questionnaire_label=>"Add/Edit Publication"}]
   types = types.map { |hash| [hash[:questionnaire_label], hash[:questionnaire_type].match(/.*#(\S+)/)[1]] }
   warn types
   types
@@ -16,16 +16,13 @@ def generate_questionnaire(questionnaire_type:) # questionnaire_type comes in as
 end
 
 def identifier_type(id: nil)
+  doi_regex = %r{^(?:https://doi\.org/|doi:)?(10\.\d{4,}(?:\.\d+)*/[^/]+)$}
+  return 'doi', match[1] if match = id.match(doi_regex)
 
-  doi_regex = /^(?:https:\/\/doi\.org\/|doi:)?(10\.\d{4,}(?:\.\d+)*\/[^\/]+)$/
-  if match = id.match(doi_regex)
-    return "doi", match[1] # Return the canonical DOI (10.NNNN/identifier)
-  else
-    return 'db_entry', id # Return the original identifier if not a DOI
-  end
+  # Return the canonical DOI (10.NNNN/identifier)
+
+  ['db_entry', id] # Return the original identifier if not a DOI
 end
-
-
 
 require 'set'
 
@@ -75,6 +72,7 @@ def build_transitive_tree(results, abblockid:)
   queue = [abblockid_uri]
   while (current = queue.shift)
     next unless children[current]
+
     children[current].each do |child|
       descendants << child
       queue << child
@@ -97,15 +95,14 @@ def build_transitive_tree(results, abblockid:)
   nodes.each_value { |node| node[:children] = [] }
   nodes.each do |aid, node|
     next if node[:parent] == '#'
+
     parent_node = nodes["https://w3id.org/CBGP-App##{node[:parent]}"]
     parent_node[:children] << node if parent_node
   end
 
-  tree = nodes.values.select { |n| n[:parent] == '#' }.sort_by { |n| n[:sequence] }
+  nodes.values.select { |n| n[:parent] == '#' }.sort_by { |n| n[:sequence] }
   # warn "Tree: #{tree.inspect}"
-  tree
 end
-
 
 def nest_children(node, nodes)
   node[:children] = nodes.values.select { |n| n[:parent] == node[:id] }

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+
+  <%= erb :_head %>
+
+  <body>
+    <%= erb :_logo_head %>
+
+    <div style="clear: both;">
+      <br/><br/>
+      <h1>CBGP - Members Dashboard</h1>
+      <br/>
+    </div>
+
+    <div class="databases" style="text-align: center;">
+      <div style="float: right;">
+        <!-- Optional: Add user info or logout -->
+      </div>
+
+
+      <!-- Form for Adding New Data -->
+      <form action="/cbgp/user-databases" method="POST" style="display: inline-block; margin-right: 20px;">
+        <table id="add_new_data" width="30%">
+          <tr><th>Add Data</th></tr>
+          <tr><td>
+            <select name="database" id="add_database">
+              <% @databases.each do |d| %>
+                <option value="<%= d[1] %>"><%= d[0] %></option>
+              <% end %>
+            </select>
+          </td></tr>
+          <tr><td>
+            <input type="submit" value="Add Data"/>
+          </td></tr>
+        </table>
+      </form>
+
+
+    <div style="clear: both;">
+      <%= erb :_footer %>
+    </div>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <!--[if lt IE 7]>
+      <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.2/CFInstall.min.js"></script>
+      <script>window.attachEvent("onload",function(){CFInstall.check({mode:"overlay"})})</script>
+    <![endif]-->
+  </body>
+</html>

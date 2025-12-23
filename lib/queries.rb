@@ -39,10 +39,11 @@ PREFIX edam: <http://edamontology.org/>
 PREFIX obo: <http://purl.obolibrary.org/obo/>
 PREFIX ncit: <http://purl.obolibrary.org/obo/>
 PREFIX local: <urn:local:>
+PREFIX dcterms: <http://purl.org/dc/terms/>   # NEW: for provenance timestamps
 "
 
-def get_questionnaire_types_query(language: $language)
-  # questionnaire_type = Add/Edit publications (#add-publication) has-fields Publication Questions (#new-publication-questions)
+def get_questionnaire_types_query(type: 'Core', language: $language)
+  # questionnaire_type = Add/Edit publications (#publication) has-fields Publication Questions (#new-publication-questions)
 
   qs = <<GET_QUESTIONNAIRE_TYPES
     #{PREFIXES}
@@ -50,6 +51,7 @@ def get_questionnaire_types_query(language: $language)
     SELECT ?questionnaire_type ?questionnaire_label WHERE {
       ?questionnaire_type rdfs:subClassOf cbgp:forms .
       ?questionnaire_type rdfs:label ?questionnaire_label .
+      ?questionnaire_type local:form-category #{type}.  # is this part of the core database or the user-facing forms
       FILTER (lang(?questionnaire_label) = "#{language}")
     }
 GET_QUESTIONNAIRE_TYPES
@@ -507,86 +509,69 @@ end
 #   - The attribute node has sio:SIO_000300 (has value) with the literal value
 # If `oldid` is provided, a DELETE step for the old graph is prepended.
 # All values are stored as plain string literals (with proper escaping).
+# Updated write_dataset_to_db_query with provenance timestamps
 def write_dataset_to_db_query(dataset:, oldid: nil)
-  database = dataset.form_type # e.g., the specific subtype of dataset  (member, project, etc.)
-  primary_id  = dataset.primary_id # the unique identifier for this dataset instance
+  database = dataset.form_type
+  primary_id = dataset.primary_id
   warn "WRITE DATASET primary_id is #{primary_id}\n\n"
 
-  # If this is an update (oldid present), delete the entire old named graph first
-  if oldid
-    # Old graph URI is constructed directly (no prefix, full URI string
-    delete_dataset_query(oldid: "#{BASE_URI}#{database}/context/#{oldid}") # assumed method that runs DROP GRAPH or DELETE WHERE
-  end
+  delete_dataset_query(oldid: "#{BASE_URI}#{database}/context/#{oldid}") if oldid
 
-  # PREFIX bases:
-  # - dataset:      points to the base URI for dataset nodes (ends with /dataset/uniqid>)
-  # - datasetgraph: points to the base URI for named graphs (ends with /context/uniqid>)
-  datasetPREFIX      = "<#{BASE_URI}#{database}/dataset/>"
-  datasetgraphPREFIX = "<#{BASE_URI}#{database}/context/>"
+  datasetPREFIX         = "<#{BASE_URI}#{database}/dataset/>"
+  datasetgraphPREFIX    = "<#{BASE_URI}#{database}/context/>"
   datasetFragmentPREFIX = "<#{BASE_URI}#{database}/dataset/#{primary_id}#>"
+  graph_uri             = "#{datasetgraphPREFIX}#{primary_id}" # Full named graph URI (used for provenance)
+
+  # Current UTC timestamp in ISO8601 format (xsd:dateTime compatible literal)
+  timestamp = Time.now.utc.iso8601
 
   triples = []
-  # Core typing triples for the dataset node itself
-  # PREFIX dataset: #{datasetPREFIX}
-  # PREFIX datasetfrag: #{datasetFragmentPREFIX}
-  # PREFIX datasetgraph: #{datasetgraphPREFIX}
+  # Core typing triples (unchanged)
   triples << "dataset:#{primary_id} rdf:type sio:SIO_000089 ;"
   triples << "   rdf:type cbgp:#{database} ;"
   triples << '   sio:SIO_000671 datasetfrag:primary_id .'
   triples << "   datasetfrag:primary_id sio:SIO_000300 \"#{primary_id}\" ;"
   triples << '           rdf:type sio:SIO_000115 . # identifier.'
 
-  # Process each field defined in the questionnaire/schema
+  # NEW: Provenance timestamps on the graph itself
+  # Always add dcterms:modified (last write time)
+  triples << "<#{graph_uri}> dcterms:modified \"#{timestamp}\"^^xsd:dateTime ."
+
+  # If this is a new dataset (no oldid), also add dcterms:created
+  triples << "<#{graph_uri}> dcterms:created \"#{timestamp}\"^^xsd:dateTime ." if oldid.nil?
+  # NOTE: On updates (oldid present), we DROP the old graph, so the original created date is lost.
+  # This is intentional and simple – created = first seen write, modified = last write.
+  # If you need persistent created date across updates, we'd need to fetch it first (more complex).
+
+  # [Rest of field processing unchanged...]
   dataset.fields.each do |field|
-    # Skip if the dataset object doesn't have a getter method for this field
     next unless dataset.respond_to?(field[:method])
 
-    value = dataset.public_send(field[:method]) # actual value(s) from the dataset object
-
-    # Skip completely if nil or an empty array
+    value = dataset.public_send(field[:method])
     next if value.nil? || (value.is_a?(Array) && value.empty?)
 
-    questionclass = field[:questionclass] # the specific property/class name for this field
-
-    # Helper to properly escape a value for a SPARQL string literal:
-    # - Always convert to string first (fixes the error when value is Date, Integer, etc.)
-    # - Escape backslashes first, then double quotes (standard order)
-    # - This produces safe "literal" content
+    questionclass = field[:questionclass]
     escape_for_literal = ->(v) { v.to_s.gsub('\\', '\\\\').gsub('"', '\\"') }
 
     if field[:cardinality] == 'Multiple' && value.is_a?(Array)
-      # Multi-valued field: one reified attribute per array item
       value.each_with_index do |val, index|
-        # Skip empty/whitespace-only items (after converting to string)
         next if val.to_s.strip.empty?
 
-        # Build a unique URI for this specific attribute instance
-        # (removes < > from prefix → clean base, then appends ID + field + index)
         this_attribute = "#{datasetPREFIX.gsub(/[<>]/, '')}#{primary_id}/#{questionclass}_#{index + 1}"
-
         triples << "dataset:#{primary_id} sio:SIO_000008 <#{this_attribute}> ."
         triples << "<#{this_attribute}> rdf:type cbgp:#{questionclass} ."
         triples << "<#{this_attribute}> sio:SIO_000300 \"#{escape_for_literal.call(val)}\" ."
       end
     else
-      # Single-valued field
-      # Optional improvement: skip if the string value is blank (consistent with multi-valued)
-      # (Uncomment if you want to avoid inserting empty literals)
-      # next if value.to_s.strip.empty?
-
-      # Build URI for the single attribute
       this_attribute = "#{datasetPREFIX.gsub(/[<>]/, '')}#{primary_id}/#{questionclass}"
-
       triples << "dataset:#{primary_id} sio:SIO_000008 <#{this_attribute}> ."
       triples << "<#{this_attribute}> rdf:type cbgp:#{questionclass} ."
       triples << "<#{this_attribute}> sio:SIO_000300 \"#{escape_for_literal.call(value)}\" ."
     end
   end
 
-  # Join all triples into the GRAPH body
   body = triples.join("\n")
 
-  # Full SPARQL UPDATE query with prefixes and INSERT DATA into the named graph
   <<~WRITE_DATASET
     #{PREFIXES}
     PREFIX dataset: #{datasetPREFIX}

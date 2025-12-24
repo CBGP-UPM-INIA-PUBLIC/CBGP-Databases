@@ -9,7 +9,7 @@ def set_routes
 
   configure do
     set :bind, '0.0.0.0'  # Bind to all interfaces
-    set :port, 4567       # Explicitly set the port (optional, since 4567 is your target)
+    set :port, 4567       # Explicitly set the port
     set :server_settings, timeout: 180
     set :root, File.dirname(__FILE__)
     set :views, proc { File.join(root, '../views') }
@@ -42,9 +42,16 @@ def set_routes
     username = params[:username]
     password = params[:password]
 
-    if USERS[username] == password
+    user_data = USERS[username]
+    if user_data && user_data['password'] == password
       session[:username] = username
-      redirect '/cbgp/dashboard'
+      role = user_data['role'] # 'admin' or 'user'
+      session[:role] = role
+      if role == 'user'
+        redirect '/cbgp/user-dashboard'
+      else
+        redirect '/cbgp/dashboard'
+      end
     else
       @error = 'Invalid username or password.'
       erb :login
@@ -62,13 +69,28 @@ def set_routes
       '/cbgp/login', # Login page
       '/cbgp/stylesheets/cbgp.css', # Login page
       '/logout', # Optional: logout route
-      '/set_language', # Add the new route to public paths
-      '/user-dashboard' # Add the new route to public paths
+      '/set_language' # Add the new route to public paths
+      # '/cbgp/user-dashboard' # Add the new route to public paths
+    ]
+
+    # List of path prefixes that require admin (read/write) privileges
+    admin_required_prefixes = [
+      '/cbgp/dashboard', # Form submission / write
+      '/cbgp/validate-dataset',   # Form submission / write
+      '/cbgp/loaders/load',       # DOI loader (writes data)
+      '/cbgp/publications/bulk'   # Bulk publication load (writes data)
     ]
     # Skip authentication check for public paths
     return if public_paths.include?(request.path_info)
 
-    halt(401, erb(:unauthorized)) unless logged_in?
+    # All other paths require login
+    halt(401, erb(:unauthorized)) unless session[:username]
+
+    # Additional role check: write operations require 'admin' role
+    if admin_required_prefixes.any? { |prefix| request.path_info.start_with?(prefix) } && !(session[:role] == 'admin')
+      halt(403, 'Forbidden: Admin privileges required for this action.')
+    end
+
     cache_control :public, :must_revalidate, max_age: 0
     $language = session[:language] || params[:language] || 'en'
   end
@@ -107,8 +129,13 @@ def set_routes
   end
 
   post '/cbgp/databases' do
-    database = params[:database]
-    redirect "/cbgp/dataset/#{database}"
+    form = params[:form] # database is actually the form name TODO update all cases of this
+    redirect "/cbgp/dataset/#{form}"
+    halt 422
+  end
+  post '/cbgp/user-databases' do
+    form = params[:form]
+    redirect "/cbgp/dataset/user-database/#{form}"
     halt 422
   end
 
@@ -119,20 +146,53 @@ def set_routes
   # ----------------------------------------------------------------------------
   # Let's try to make it fully generic!
 
-  # create the empty form
-  get '/cbgp/dataset/:database' do
-    @database = params[:database]
+  # create the empty form for USERS
+  # USERS
+  # USERS
+  # USERS
+  # USERS
+  # USERS
+  # USERS
+  # USERS
+  # USERS
+  get '/cbgp/dataset/user-database/:form' do
+    @form = params[:form]
+    @database = get_dbname_for_form(form: @form)
     @mode = 'edit'
+    @questionnaire = generate_questionnaire(questionnaire_type: @form) # questionnaire has all fields and possible answers
+    @entry = CBGP::Dataset.new(type: @database) # the object into which the data will be inserted (may have more fields than the form!)
+    halt erb :user_dataset, layout: :database_layout
+  end
 
+  # the form has been filled - now validate it
+  post '/cbgp/validate-user-dataset/:database' do
+    @form = params[:database]
+    @questionnaire = generate_questionnaire(questionnaire_type: @form) # create the fields that will carry the answers provided
+    @mode = 'edit' # the HTML form has a query mode and an edit mode.  Select the edit mode
+    @entry = CBGP::Dataset.load_from_params_and_write(params: params)
+    halt erb :thankyou, layout: :database_layout
+  end
+
+  # # POST route: lookup by identifier submitted in form body
+  # post '/cbgp/dataset/user-database/:database' do
+  #   load_dataset_for_edit(database: params[:database], primary_id: params[:primary_id]) # look to helpers
+  # end
+
+  # ADMINSTRATORS
+  # ADMINSTRATORS
+  # ADMINSTRATORS
+  # ADMINSTRATORS
+  # ADMINSTRATORS
+  # ADMINSTRATORS
+  # ADMINSTRATORS
+  # create the empty form for ADMINSTRATORS
+  get '/cbgp/dataset/:database' do
+    @form = params[:database]
+    @database = get_dbname_for_form(form: @form)
+    @mode = 'edit'
     @questionnaire = generate_questionnaire(questionnaire_type: @database) # questionnaire has all fields and possible answers
-    # if @database == 'publication'
-    if @database == 'publicationxxxx'
-      @entry = CBGP::Publication.new
-      halt erb :publications, layout: :database_layout
-    else
-      @entry = CBGP::Dataset.new(type: @database) # the object into which the data will be inserted
-      halt erb :dataset, layout: :database_layout
-    end
+    @entry = CBGP::Dataset.new(type: @database) # the object into which the data will be inserted
+    halt erb :dataset, layout: :database_layout
   end
 
   # POST route: lookup by identifier submitted in form body
@@ -147,8 +207,9 @@ def set_routes
 
   # the form has been filled - now validate it
   post '/cbgp/validate-dataset/:database' do
-    @database = params[:database]
-    @questionnaire = generate_questionnaire(questionnaire_type: @database) # create the fields that will carry the answers provided
+    @form = params[:database]
+    @database = get_dbname_for_form(form: @form)
+    @questionnaire = generate_questionnaire(questionnaire_type: @form) # create the fields that will carry the answers provided
     @mode = 'edit' # the HTML form has a query mode and an edit mode.  Select the edit mode
     @entry = CBGP::Dataset.load_from_params_and_write(params: params)
     halt erb :dataset, layout: :database_layout
@@ -276,23 +337,23 @@ def set_routes
       idtype, clean_identifier = identifier_type(id: primary_id)
       clean_identifier ||= identifier
 
-      if @database == 'publication'
-        if idtype == 'doi'
-          @entry = CBGP::Publication.load_from_doi(doi: clean_identifier)
-        else
-          abort 'not allowed to load a dataset without a DOI but this should be changed!'
-          # Fallback for publication primary_id (UUID) lookup
-          # TODO: If Publication supports loading by primary_id, use it here.
-          # For now, create new (or implement Publication.load_from_primary_id if needed)
-          # @entry = CBGP::Publication.new
-          # Optional future: @entry = CBGP::Publication.load_from_primary_id(primary_id: clean_identifier)
-        end
-        erb :publications, layout: :database_layout
-      else
-        # Standard datasets: always load by identifier (primary_id or equivalent)
-        @entry = CBGP::Dataset.load_from_primary_id(database: database, primary_id: clean_identifier)
-        erb :dataset, layout: :database_layout
-      end
+      # if @database == 'publication'
+      #   if idtype == 'doi'
+      #     @entry = CBGP::Publication.load_from_doi(doi: clean_identifier)
+      #   else
+      #     abort 'not allowed to load a dataset without a DOI but this should be changed!'
+      #     # Fallback for publication primary_id (UUID) lookup
+      #     # TODO: If Publication supports loading by primary_id, use it here.
+      #     # For now, create new (or implement Publication.load_from_primary_id if needed)
+      #     # @entry = CBGP::Publication.new
+      #     # Optional future: @entry = CBGP::Publication.load_from_primary_id(primary_id: clean_identifier)
+      #   end
+      #   erb :publications, layout: :database_layout
+      # else
+      # Standard datasets: always load by identifier (primary_id or equivalent)
+      @entry = CBGP::Dataset.load_from_primary_id(database: database, primary_id: clean_identifier)
+      erb :dataset, layout: :database_layout
+      # end
     end
   end
 end

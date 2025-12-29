@@ -205,6 +205,46 @@ def set_routes
     load_dataset_for_edit(database: params[:database], primary_id: params[:primary_id]) # look to helpers
   end
 
+  # GET route: direct access by primary_id (UUID) in URL – perfect for links from search results
+  get '/cbgp/dataset/delete/:database/:primary_id' do
+    delete_dataset(database: params[:database], primary_id: params[:primary_id]) # look to helpers
+  end
+
+  post '/cbgp/query-dataset/:database/delete-multiple' do
+    @database = params[:database]
+    selected_ids = params['selected_ids'] || []
+
+    halt 400, 'No records selected' if selected_ids.empty?
+
+    # Perform deletes
+    selected_ids.each do |primary_id|
+      next if primary_id.to_s.strip.empty?
+
+      graphres = retrieve_dataset_graph_query(primary_id: primary_id)
+      next if graphres.empty?
+
+      graphuri = graphres.first[:g].to_s
+      delete_dataset_query(oldid: graphuri)
+    end
+
+    # Refresh results using saved session search (same as single delete)
+    last_search = session[:last_search]
+    if last_search && last_search[:database] == @database
+      search_params = last_search[:params]
+      @fields = CBGP::Dataset.get_questionnaire_fields(questionnaire_type: @database)
+
+      graphuris = execute_search(search_params: search_params, dataset_type: @database)
+
+      @datasets = []
+      graphuris.each do |graphuri|
+        @datasets << CBGP::Dataset.load_from_graph(graph: graphuri, database: @database)
+      end
+
+      erb :search_dataset_resultform, layout: :database_layout
+    else
+      redirect '/cbgp/dashboard' # Fallback if no search context
+    end
+  end
   # the form has been filled - now validate it
   post '/cbgp/validate-dataset/:database' do
     @form = params[:database]
@@ -212,38 +252,6 @@ def set_routes
     @questionnaire = generate_questionnaire(questionnaire_type: @form) # create the fields that will carry the answers provided
     @mode = 'edit' # the HTML form has a query mode and an edit mode.  Select the edit mode
     @entry = CBGP::Dataset.load_from_params_and_write(params: params)
-    halt erb :dataset, layout: :database_layout
-  end
-
-  # LOADERS
-  # LOADERS
-  # LOADERS
-  # LOADERS
-  # LOADERS
-  # LOADERS
-  # LOADERS
-  # LOADERS
-  # LOADERS
-  # LOADERS
-  # LOADERS
-  # LOADERS
-  # LOADERS
-  # LOADERS
-
-  # GET route: direct access by primary_id (UUID) in URL – perfect for links from search results
-  post '/cbgp/loaders' do
-    type = params['loader']
-    halt erb :doi_loader, layout: :database_layout if type.to_s == 'DOI'
-  end
-
-  post '/cbgp/loaders/load' do # this routine presumes it is always a DOI
-    warn 'loading publication'
-    doi = params['doi'] # this routine presumes it is always a DOI
-    @database = params['database'] || 'publication'
-    warn "database type #{@database}"
-    @entry = CBGP::Loaders.load_doi(doi: doi)
-    @questionnaire = generate_questionnaire(questionnaire_type: @database) # create the fields that will carry the answers provided
-    @mode = 'edit' # the HTML form has a query mode and an edit mode.  Select the edit mode
     halt erb :dataset, layout: :database_layout
   end
 
@@ -296,16 +304,52 @@ def set_routes
       warn "LOADING Graph URI: #{graphuri}"
       @datasets << CBGP::Dataset.load_from_graph(graph: graphuri, database: @database)
     end
+
+    # NEW: Save the successful search context to session for post-delete refresh
+    session[:last_search] = {
+      database: @database,
+      params: search_params.deep_dup # deep_dup to avoid any mutable param issues
+    }
     # warn "Dataset details for rendering: #{@datasets.inspect}"
     erb :search_dataset_resultform, layout: :database_layout
   end
 
-  ####################################################
-  ################# LOADERS
-  #
+  # LOADERS
+  # LOADERS
+  # LOADERS
+  # LOADERS
+  # LOADERS
+  # LOADERS
+  # LOADERS
+  # LOADERS
+  # LOADERS
+  # LOADERS
+  # LOADERS
+  # LOADERS
+  # LOADERS
+  # LOADERS
+
+  # GET route: direct access by primary_id (UUID) in URL – perfect for links from search results
+  post '/cbgp/loaders' do
+    type = params['loader']
+    halt erb :doi_loader, layout: :database_layout if type.to_s == 'DOI'
+  end
+
+  post '/cbgp/loaders/load' do # this routine presumes it is always a DOI
+    warn 'loading publication'
+    doi = params['doi'] # this routine presumes it is always a DOI
+    @database = params['database'] || 'publication'
+    warn "database type #{@database}"
+    @entry = CBGP::Loaders.load_doi(doi: doi)
+    @questionnaire = generate_questionnaire(questionnaire_type: @database) # create the fields that will carry the answers provided
+    @mode = 'edit' # the HTML form has a query mode and an edit mode.  Select the edit mode
+    halt erb :dataset, layout: :database_layout
+  end
+
   post '/cbgp/publications/bulk' do
     dois = params[:dois]
-    @messages = (CBGP::Loaders.bulk_load_from_dois(dois: dois) if dois)
+    # creates a shared @messages variable for errors
+    _allpubs, @messages = CBGP::Loaders.bulk_load_from_dois(dois: dois) if dois
     halt erb :bulkpubs
   end
 
@@ -313,6 +357,18 @@ def set_routes
     halt erb :bulkpubs
   end
 
+  ################# HELPERS
+  ################# HELPERS
+  ################# HELPERS
+  ################# HELPERS
+  ################# HELPERS
+  ################# HELPERS
+  ################# HELPERS
+  ################# HELPERS
+  ################# HELPERS
+  ################# HELPERS
+  ################# HELPERS
+  ################# HELPERS
   ################# HELPERS
   #
   ## Merged handling for loading existing datasets (both by direct primary_id via GET and by identifier via POST)
@@ -326,32 +382,54 @@ def set_routes
     def load_dataset_for_edit(database:, primary_id:)
       halt 400, 'primary Identifier required' if primary_id.to_s.strip.empty?
 
-      @database = database
+      @database = database # need instane variable for ERBs
       @mode = 'edit'
       @questionnaire = generate_questionnaire(questionnaire_type: @database)
 
-      # Detect if the identifier is a special type (e.g., DOI) and clean it
+      # for known identifiers, cleanse it (e.g. remove "doi:" from DOIs)
       # If identifier_type returns nil/nothing special, fall back to the raw identifier
-      idtype, clean_identifier = identifier_type(id: primary_id)
+      _idtype, clean_identifier = identifier_type(id: primary_id)
       clean_identifier ||= identifier
-
-      # if @database == 'publication'
-      #   if idtype == 'doi'
-      #     @entry = CBGP::Publication.load_from_doi(doi: clean_identifier)
-      #   else
-      #     abort 'not allowed to load a dataset without a DOI but this should be changed!'
-      #     # Fallback for publication primary_id (UUID) lookup
-      #     # TODO: If Publication supports loading by primary_id, use it here.
-      #     # For now, create new (or implement Publication.load_from_primary_id if needed)
-      #     # @entry = CBGP::Publication.new
-      #     # Optional future: @entry = CBGP::Publication.load_from_primary_id(primary_id: clean_identifier)
-      #   end
-      #   erb :publications, layout: :database_layout
-      # else
-      # Standard datasets: always load by identifier (primary_id or equivalent)
       @entry = CBGP::Dataset.load_from_primary_id(database: database, primary_id: clean_identifier)
       erb :dataset, layout: :database_layout
-      # end
+    end
+
+    def delete_dataset(database:, primary_id:)
+      halt 400, 'primary Identifier required' if primary_id.to_s.strip.empty?
+
+      # Perform the delete
+      graphres = retrieve_dataset_graph_query(primary_id: primary_id)
+      if graphres.empty?
+        # Optional: flash error "Record not found"
+        redirect '/cbgp/dashboard' # or search form
+      end
+      graphuri = graphres.first[:g].to_s
+      delete_dataset_query(oldid: graphuri)
+
+      # NEW: Try to return to the previous search results
+      last_search = session[:last_search]
+      if last_search && last_search[:database] == database
+        # Re-run the saved search
+        search_params = last_search[:params]
+        @database = database
+        @fields = CBGP::Dataset.get_questionnaire_fields(questionnaire_type: @database)
+
+        graphuris = execute_search(search_params: search_params, dataset_type: @database)
+
+        @datasets = []
+        graphuris.each do |graphuri|
+          @datasets << CBGP::Dataset.load_from_graph(graph: graphuri, database: @database)
+        end
+
+        # Optional: Add a flash message (if you have flash enabled)
+        # flash[:notice] = "Record deleted successfully."
+
+        # Render the refreshed results page
+        erb :search_dataset_resultform, layout: :database_layout
+      else
+        # No search context – fall back to dashboard (or search form)
+        redirect '/cbgp/dashboard'
+      end
     end
   end
 end

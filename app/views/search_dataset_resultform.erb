@@ -58,42 +58,109 @@ end
       <p>No results found for your search.</p>
     </div>
   <% else %>
-    <div class="table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>Action</th>
-            <% @fields.each do |field| %>
-              <th><%= field[:label] %></th>
-            <% end %>
-          </tr>
-        </thead>
-        <tbody>
-          <% @datasets.each do |dataset| %>
+    <!-- NEW: Form for multi-select delete -->
+    <form action="/cbgp/query-dataset/<%= @database %>/delete-multiple" method="post" id="multi-delete-form">
+      <div class="table-scroll">
+        <table>
+          <thead>
             <tr>
-              <td class="dataset-id-cell">
-                <% primary_id = dataset.primary_id %>
-                <a href="/cbgp/dataset/<%= @database %>/<%= primary_id %>" class="dataset-link">
-                  EDIT
-                </a>
-              </td>
-              
+              <th>
+                <!-- Select All checkbox -->
+                <input type="checkbox" id="select-all" />
+              </th>
+              <th>Action</th>
               <% @fields.each do |field| %>
-                <td>
-                  <% value = dataset.send(field[:objectmethod]) %>
-                  <% if value.nil? || (value.is_a?(Array) && value.empty?) %>
-                    -
-                  <% elsif value.is_a?(Array) %>
-                    <%= value.join(', ') %>
-                  <% else %>
-                    <%= value %>
-                  <% end %>
-                </td>
+                <th><%= field[:label] %></th>
               <% end %>
             </tr>
-          <% end %>
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            <% @datasets.each do |dataset| %>
+              <tr>
+                <td>
+                  <input type="checkbox" name="selected_ids[]" value="<%= dataset.primary_id %>" class="select-item" />
+                </td>
+                <td class="dataset-id-cell">
+                  <% primary_id = dataset.primary_id %>
+                  <a href="/cbgp/dataset/<%= @database %>/<%= primary_id %>" class="dataset-link">
+                    EDIT
+                  </a>
+                  - - 
+                  <a href="/cbgp/dataset/delete/<%= @database %>/<%= primary_id %>"
+                     class="dataset-link delete-link"
+                     onclick="return confirm('Really delete this record? This cannot be undone.');">
+                    DELETE
+                  </a>
+                </td>
+                
+                <% @fields.each do |field| %>
+                  <td>
+                    <% raw_value = dataset.send(field[:objectmethod]) %>
+                    
+                    <% if raw_value.nil? || (raw_value.is_a?(Array) && raw_value.empty?) %>
+                      -
+                    <% else %>
+                      <% 
+                        # Normalize to string: join arrays, to_s singles
+                        display_value = if raw_value.is_a?(Array)
+                                          raw_value.join(', ')
+                                        else
+                                          raw_value.to_s
+                                        end
+                        
+                        # Truncate to ~100 characters (exact limit: 100)
+                        # Only add "..." if actually truncated
+                        truncated = display_value.length > 100 ? display_value[0...100] + '...' : display_value
+                      %>
+                      
+                      <!-- Full value in title for tooltip on hover -->
+                      <span title="<%= display_value %>">
+                        <%= truncated %>
+                      </span>
+                    <% end %>
+                  </td>
+                <% end %>              
+                </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Bulk delete button (disabled until items selected) -->
+      <div style="margin-top: 20px; text-align: center;">
+        <button type="submit" id="delete-selected-btn" disabled>
+          Delete Selected
+        </button>
+      </div>
+    </form>
   <% end %>
 </div>
+
+<script>
+// Select All checkbox logic
+document.getElementById('select-all').addEventListener('change', function(e) {
+  document.querySelectorAll('.select-item').forEach(cb => {
+    cb.checked = e.target.checked;
+  });
+  updateDeleteButton();
+});
+
+// Enable/disable bulk button based on selections
+document.querySelectorAll('.select-item').forEach(cb => {
+  cb.addEventListener('change', updateDeleteButton);
+});
+
+function updateDeleteButton() {
+  const anyChecked = document.querySelector('.select-item:checked');
+  const btn = document.getElementById('delete-selected-btn');
+  btn.disabled = !anyChecked;
+}
+
+// Confirmation on bulk delete
+document.getElementById('multi-delete-form').addEventListener('submit', function(e) {
+  const checkedCount = document.querySelectorAll('.select-item:checked').length;
+  if (checkedCount === 0 || !confirm(`Really delete ${checkedCount} selected record(s)? This cannot be undone.`)) {
+    e.preventDefault();
+  }
+});
+</script>

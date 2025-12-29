@@ -23,8 +23,8 @@ module CBGP
       pub
     end
 
-    def self.bulk_load_from_dois(dois, database: 'publications':)
-      @messages = []
+    def self.bulk_load_from_dois(dois:, database: 'publications')
+      messages = []
       allpubs = []
       alldois = dois.split(/[, \t\n]+/).map(&:strip).reject(&:empty?) # accept both comma-separated and newline separated
       alldois.each do |doi|
@@ -43,12 +43,12 @@ module CBGP
                 else
                   CBGP::Parsers.openaire_parser(doi: doi)
                 end
-          pub.write_to_db #
+          pub.write_to_db
           allpubs << pub
         end
       end
-      @messages << 'No errors Encountered During Upload' unless messages.first
-      allpubs
+      messages << 'No errors Encountered During Upload' unless messages.first
+      [allpubs, messages]
     end
   end
 end

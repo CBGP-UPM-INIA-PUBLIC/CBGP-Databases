@@ -441,3 +441,38 @@ button {
   color: #0d5704;
   text-decoration: none;
 }
+
+
+.delete-link {
+  color: #c00; /* Red to indicate danger */
+  font-weight: bold;
+}
+
+.delete-link:hover {
+  color: #f00;
+  text-decoration: underline;
+}
+
+#multi-delete-form button#delete-selected-btn {
+  padding: 10px 20px;
+  font-size: 18px;
+  background-color: #c00;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#multi-delete-form button#delete-selected-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+#multi-delete-form button#delete-selected-btn:hover:not(:disabled) {
+  background-color: #f00;
+}
+
+table th:first-child, table td:first-child {
+  text-align: center;
+  width: 50px;
+}

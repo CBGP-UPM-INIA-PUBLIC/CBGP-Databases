@@ -306,7 +306,6 @@ def set_routes
   post '/cbgp/publications/bulk' do
     dois = params[:dois]
     @messages = (CBGP::Loaders.bulk_load_from_dois(dois: dois) if dois)
-
     halt erb :bulkpubs
   end
 

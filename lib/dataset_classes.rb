@@ -16,7 +16,7 @@ module CBGP
       sections.each do |thissection|
         sectionid = thissection[:sec].to_s
         sectionqid = sectionid.gsub(/.*\#/, '')
-        _sectionlabel = thissection[:label]
+        sectionlabel = thissection[:label]
         warn "secid #{sectionid}"
         warn "qid #{sectionqid}"
 
@@ -30,12 +30,12 @@ module CBGP
           cardinality = result[:cardinality].to_s
           answers_uri = result[:answers].to_s
           sequence = result[:sequence].to_s.to_i
-          is_primary = result[:primary].to_s || 'false'
+          is_external_primary = result[:primary].to_s || 'false'
 
           @fields << { q: q, questionclass: questionclass, label: result[:label].to_s,
                        widget: result[:widget].to_s.downcase, method: method_name,
                        class: klass, cardinality: cardinality, answers: answers_uri,
-                       is_primary: is_primary, sequence: sequence }
+                       is_external_primary: is_external_primary, sequence: sequence, sectionid: sectionid, sectionlabel: sectionlabel }
 
           @data[q] = (cardinality == 'Multiple' ? [] : nil)
 
@@ -55,6 +55,7 @@ module CBGP
     end
 
     def coerce_value(value, klass, cardinality)
+      klass.downcase!
       if cardinality == 'Multiple' && value.is_a?(Array)
         value.map { |v| v.to_s.strip }.reject { |v| v.empty? }
       else
@@ -108,7 +109,7 @@ module CBGP
       dataset
     end
 
-    def self.load_from_primary_id(primary_id:, database:)
+    def self.load_from_primary_id(primary_id:, database:) # this is always the INTERNAL primaryid, not an external (e.g. not a DOI)
       dataset = new(type: database)
       abort 'primary id cannot be empty - load from identifier ' if primary_id.empty?
       dataset.primary_id = primary_id
@@ -133,19 +134,17 @@ module CBGP
       # primary_id starts as nil
       dataset = CBGP::Dataset.new(type: params['database'])
 
-      # ensure a primary_id exists
-      # - If params include a primary_id (hidden field from edit form) → reuse it (update existing graph)
-      # - Otherwise (new record) → generate a fresh UUID now
-      primary_id_param = params['primary_id'].to_s.strip
-      dataset.primary_id = if primary_id_param.empty?
-                             SecureRandom.uuid # Fresh ID for new records
-                           else
-                             primary_id_param # Reuse existing ID for updates
-                           end
-
       dataset.fields.each do |field|
-        value = params[field[:questionclass]]
+        value = params[field[:questionclass]] # get the submitted value from incoming FORM parameters
         next unless value
+
+        if field[:is_external_primary] # filter for an existing record that has this external primary identifier
+          # set the current primary_id to the primary_id of that record if it exists.
+          # # this will trigger an overwrite, rather than a duplication of that record
+          dataset.primary_id = get_primary_id(questionclass: fields[:questionclass], questionvalue: value,
+                                              dataset_type: params['database'])
+          # can return nil if there is no existing record, and a new primary_id will be generated later
+        end
 
         coerced_value = dataset.coerce_value(value, field[:class], field[:cardinality])
         if coerced_value && (!coerced_value.is_a?(Array) || !coerced_value.empty?)
@@ -153,8 +152,31 @@ module CBGP
                               coerced_value)
         end
       end
+
+      # ensure a primary_id exists at this point, from any source
+      # - If params include a primary_id (hidden field from edit form) → reuse it (update existing graph)
+      # - If params include an external primary identifier, then the earlier query will have set the dataset.primary_id already
+      # - Otherwise (new record) → generate a fresh UUID now
+      primary_id_param = params['primary_id'].to_s.strip
+      dataset.primary_id = if dataset_primary_id.empty? # if it has already been set, then this takes precedence
+                             if primary_id_param.empty?
+                               SecureRandom.uuid # Fresh ID for new records
+                             else
+                               primary_id_param # Reuse imcoming ID for updates
+                             end
+                           else
+                             dataset.primary_id # just return existing id
+                           end
       dataset.write_to_db
       dataset
+    end
+
+    def get_primary_id(questionclass:, questionvalue:, dataset_type:)
+      graph = execute_search(search_params: { questionclass => questionvalue }, dataset_type: dataset_type) # execute_search(search_params:, dataset_type:)
+      res = retrieve_dataset_id_from_graph_query(graph: graph) # comes back as a sparql query result
+      return res.first[:id].to_s if res&.first
+
+      nil # keeps it empty for the main routine to set it later
     end
 
     def write_to_db

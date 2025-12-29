@@ -423,7 +423,12 @@ def build_search_query(search_params:, dataset_type:)
 
   datasetPREFIX = "<#{BASE_URI}#{dataset_type}/dataset/>"
   datasetgraphPREFIX = "<#{BASE_URI}#{dataset_type}/context/>"
+
   fields = CBGP::Dataset.get_questionnaire_fields(questionnaire_type: dataset_type)
+  # fields << {
+  # fieldid: question.questionid,
+  # label: question.question,
+  # objectmethod: question.objectmethod,
 
   query = <<~SPARQL
     #{PREFIXES}

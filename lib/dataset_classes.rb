@@ -4,7 +4,7 @@ require 'uuidtools'
 
 module CBGP
   class Dataset
-    attr_accessor :fields, :form_type, :primary_id, :id
+    attr_accessor :fields, :form_type, :primary_id
 
     def initialize(type:, primary_id: nil)
       @form_type = type

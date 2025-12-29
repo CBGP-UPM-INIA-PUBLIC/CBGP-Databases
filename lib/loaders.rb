@@ -23,7 +23,7 @@ module CBGP
       pub
     end
 
-    def self.bulk_load_from_dois(dois:)
+    def self.bulk_load_from_dois(dois, database: 'publications':)
       @messages = []
       allpubs = []
       alldois = dois.split(/[, \t\n]+/).map(&:strip).reject(&:empty?) # accept both comma-separated and newline separated

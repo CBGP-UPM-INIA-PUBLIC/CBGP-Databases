@@ -56,8 +56,10 @@ module CBGP
 
     def coerce_value(value, klass, cardinality)
       klass.downcase!
-      if cardinality == 'Multiple' && value.is_a?(Array)
-        value.map { |v| v.to_s.strip }.reject { |v| v.empty? }
+      return '' if value.to_s.strip.empty?
+
+      if cardinality.downcase == 'multiple' && value.is_a?(Array)
+        value.map { |v| v.to_s.strip }.reject(&:empty?)
       else
         case klass
         when 'string'
@@ -95,10 +97,10 @@ module CBGP
 
       # graphuri = res.first[:g].to_s  # comes back as sparql result
       warn "\n\nLOAD FROM GRAPHURI FOUND GRAPH #{graph}\n\n"
-      res = retrieve_dataset_id_from_graph_query(graph: graph) # comes back as a sparql query result
-      abort "lookup of graph #{graph} failed" unless res&.first
-      primary_id = res.first[:id].to_s
-      abort "can't retrieve primary id for graph #{graph}" if primary_id.empty?
+      res = retrieve_dataset_id_from_graph_query(graph: graph) # comes back as a string
+      abort "lookup of graph #{graph} failed" unless res
+      primary_id = res
+      abort "Load From Graph- can't retrieve primary id for graph #{graph}" unless primary_id
       dataset.primary_id = primary_id
       details = fetch_dataset_raw_data(graphuri: graph, database: database)
       dataset.fields.each do |field| # dataset is a CBGP::Dataset object that is empty
@@ -137,12 +139,16 @@ module CBGP
       dataset.fields.each do |field|
         value = params[field[:questionclass]] # get the submitted value from incoming FORM parameters
         next unless value
+        next if value.empty?
 
-        if field[:is_external_primary] # filter for an existing record that has this external primary identifier
+        warn "field #{field[:label]} value #{value}"
+
+        if field[:is_external_primary].downcase == 'true' # filter for an existing record that has this external primary identifier
           # set the current primary_id to the primary_id of that record if it exists.
           # # this will trigger an overwrite, rather than a duplication of that record
           dataset.primary_id = CBGP::Dataset.get_primary_id(questionclass: field[:questionclass], questionvalue: value,
                                                             dataset_type: params['database'])
+          warn "set primaryid to #{dataset.primary_id.inspect}"
           # can return nil if there is no existing record, and a new primary_id will be generated later
         end
 
@@ -158,7 +164,7 @@ module CBGP
       # - If params include an external primary identifier, then the earlier query will have set the dataset.primary_id already
       # - Otherwise (new record) → generate a fresh UUID now
       primary_id_param = params['primary_id'].to_s.strip
-      dataset.primary_id = if dataset_primary_id.empty? # if it has already been set, then this takes precedence
+      dataset.primary_id = if dataset.primary_id && dataset.primary_id.empty? # if it has already been set, then this takes precedence
                              if primary_id_param.empty?
                                SecureRandom.uuid # Fresh ID for new records
                              else
@@ -172,10 +178,12 @@ module CBGP
     end
 
     def self.get_primary_id(questionclass:, questionvalue:, dataset_type:)
-      graph = execute_search(search_params: { questionclass => questionvalue }, dataset_type: dataset_type) # execute_search(search_params:, dataset_type:)
-      res = retrieve_dataset_id_from_graph_query(graph: graph) # comes back as a sparql query result
-      return res.first[:id].to_s if res&.first
-
+      graphuris = execute_search(search_params: { questionclass => questionvalue }, dataset_type: dataset_type) # execute_search(search_params:, dataset_type:)
+      warn "Found GraphURIs #{graphuris.inspect}"
+      unless graphuris.empty?
+        res = retrieve_dataset_id_from_graph_query(graph: graphuris.first) # comes back as a string
+        return res
+      end
       nil # keeps it empty for the main routine to set it later
     end
 
@@ -210,6 +218,29 @@ module CBGP
         end
       end
       fields.sort_by { |f| f[:sequence] }
+    end
+
+    # use labels for display of currently selected hiearrchical tree node
+    def self.find_label_by_id(nodes, target_id)
+      nodes.each do |node|
+        return node['text'] if node['id'] == target_id
+
+        if node['children']&.any?
+          found = find_label_by_id(node['children'], target_id)
+          return found if found
+        end
+      end
+      nil
+    end
+
+    # Flatten tree with paths for search suggestions
+    def self.flatten_with_path(nodes, path = [], result = [])
+      nodes.each do |node|
+        current_path = path + [node['text']]
+        result << { id: node['id'], label: current_path.join(' → ') }
+        flatten_with_path(node['children'] || [], current_path, result) if node['children']
+      end
+      result
     end
   end
 end

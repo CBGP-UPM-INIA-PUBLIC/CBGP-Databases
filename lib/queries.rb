@@ -242,6 +242,7 @@ SELECT_DS
   DATABASE.query(retds)
 end
 
+# returns string
 def retrieve_dataset_id_from_graph_query(graph:)
   retds = <<SELECT_DS
         #{PREFIXES}
@@ -255,7 +256,10 @@ SELECT_DS
 
   warn "retrieve dataset id query is:\n #{retds}"
   # pubexists = SPARQL.parse(retpub)  # validate query or die
-  DATABASE.query(retds)
+  results = DATABASE.query(retds)
+  return results.first[:id].to_s if results
+
+  nil
 end
 
 def delete_dataset_query(oldid:)

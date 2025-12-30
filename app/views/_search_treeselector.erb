@@ -1,8 +1,91 @@
-<div class="inputtype" id="treewidget_<%= @question.questionid %>" style="grid-column: 1 / -1; width: 100%; padding-left: 0 !important; margin-left: 0 !important; border-left: none !important; text-align: left !important;">
-  <input type="text" id="tree-search_<%= @question.questionid %>" placeholder="Search categories..." style="margin-bottom: 10px; width: 100%; padding: 8px;">
-  <ul id="custom-tree_<%= @question.questionid %>" style="min-height: 200px; border: 1px solid #ccc; padding: 10px 10px 10px 0 !important; margin: 0 !important; list-style: none !important; font-family: Arial, sans-serif; text-align: left !important;">
-    <!-- Tree nodes rendered via JS -->
-  </ul>
-  <input type="hidden" name="<%= @question.questionid %>" id="selected-value_<%= @question.questionid %>" value="<%= @thisval %>">
-  <%= erb :_tree_selector_js, locals: { question_id: @question.questionid, hierarchical_data: @hierarchical_data } %>
+<!-- Updated _search_treeselector.erb – true type-ahead with hierarchical paths (Sinatra-safe) -->
+<div class="inputtype" style="position: relative;">
+  <!-- Text input for typing/search -->
+  <input type="text"
+         name="<%= @question.questionid %>[display]" 
+         id="search-input-<%= @question.questionid %>"
+         placeholder="Type to search categories..."
+         value=""
+         autocomplete="off"
+         style="width: 100%; padding: 8px; box-sizing: border-box;" />
+
+  <!-- Hidden input to hold selected ID (submitted with form) -->
+  <input type="hidden"
+         name="<%= @question.questionid %>"
+         id="selected-id-<%= @question.questionid %>"
+         value="<%= @thisval.to_s %>" />
+
+  <!-- Dropdown container (populated/shown on input) -->
+  <div id="suggestions-<%= @question.questionid %>"
+       style="position: absolute; top: 100%; left: 0; right: 0; max-height: 300px; overflow-y: auto; background: white; border: 1px solid #ccc; z-index: 1000; display: none;">
+    <ul style="margin: 0; padding: 0; list-style: none;">
+      <% 
+        options = CBGP::Dataset.flatten_with_path(@hierarchical_data)
+      %>
+      <% options.each do |opt| %>
+        <li data-id="<%= opt[:id] %>"
+            style="padding: 8px; cursor: pointer; border-bottom: 1px solid #eee;">
+          <%= opt[:label] %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
 </div>
+
+<script>
+var $j = jQuery.noConflict();
+$j(function() {
+  var input = $j('#search-input-<%= @question.questionid %>');
+  var hidden = $j('#selected-id-<%= @question.questionid %>');
+  var dropdown = $j('#suggestions-<%= @question.questionid %>');
+  var items = dropdown.find('li');
+
+  // Show dropdown on focus/input
+  input.on('focus input', function() {
+    var val = input.val().toLowerCase().trim();
+    var matched = false;
+
+    items.each(function() {
+      var $item = $j(this);
+      var text = $item.text().toLowerCase();
+      if (val === '' || text.includes(val)) {
+        $item.show();
+        matched = true;
+      } else {
+        $item.hide();
+      }
+    });
+
+    dropdown.toggle(matched || val === '');
+  });
+
+  // Click item: select it
+  items.on('click', function() {
+    var $item = $j(this);
+    input.val($item.text());      // Show full path in input
+    hidden.val($item.data('id')); // Store ID for submit
+    dropdown.hide();
+  });
+
+  // Hide on click outside
+  $j(document).on('click', function(e) {
+    if (!input.is(e.target) && !dropdown.is(e.target) && dropdown.has(e.target).length === 0) {
+      dropdown.hide();
+    }
+  });
+
+  // Pre-highlight current value on load (Sinatra-safe: plain Ruby check)
+  <% if @thisval.to_s.strip != '' %>
+    var currentItem = items.filter('[data-id="<%= @thisval.to_s %>"]');
+    if (currentItem.length) {
+      input.val(currentItem.text());
+    }
+  <% end %>
+});
+</script>
+
+<style>
+#suggestions-<%= @question.questionid %> li:hover {
+  background-color: #f0f0f0 !important;
+}
+</style>

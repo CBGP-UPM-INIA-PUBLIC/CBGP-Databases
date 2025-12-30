@@ -1,0 +1,8 @@
+<div class="inputtype" id="treewidget_<%= @question.questionid %>" style="grid-column: 1 / -1; width: 100%; padding-left: 0 !important; margin-left: 0 !important; border-left: none !important; text-align: left !important;">
+  <input type="text" id="tree-search_<%= @question.questionid %>" placeholder="Search categories..." style="margin-bottom: 10px; width: 100%; padding: 8px;">
+  <ul id="custom-tree_<%= @question.questionid %>" style="min-height: 200px; border: 1px solid #ccc; padding: 10px 10px 10px 0 !important; margin: 0 !important; list-style: none !important; font-family: Arial, sans-serif; text-align: left !important;">
+    <!-- Tree nodes rendered via JS -->
+  </ul>
+  <input type="hidden" name="<%= @question.questionid %>" id="selected-value_<%= @question.questionid %>" value="<%= @thisval %>">
+  <%= erb :_tree_selector_js, locals: { question_id: @question.questionid, hierarchical_data: @hierarchical_data } %>
+</div>

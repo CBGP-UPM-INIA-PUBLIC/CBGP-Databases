@@ -42,3 +42,5 @@ group :development, :test do
   gem 'safe_yaml', '~> 1.0'
   gem 'xml-simple', '~> 1.1.8'
 end
+
+gem "uuidtools", "~> 3.0"

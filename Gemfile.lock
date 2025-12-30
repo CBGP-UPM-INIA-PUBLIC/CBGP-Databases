@@ -398,6 +398,7 @@ GEM
       unicode-emoji (~> 4.0, >= 4.0.4)
     unicode-emoji (4.0.4)
     unicode-types (1.10.0)
+    uuidtools (3.0.0)
     xml-simple (1.1.9)
       rexml
     yaml-ld (0.0.3)
@@ -439,6 +440,7 @@ DEPENDENCIES
   sparql-client (~> 3.3)
   thin
   tux
+  uuidtools (~> 3.0)
   xml-simple (~> 1.1.8)
 
 RUBY VERSION

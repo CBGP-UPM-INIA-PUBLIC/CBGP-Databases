@@ -141,8 +141,8 @@ module CBGP
         if field[:is_external_primary] # filter for an existing record that has this external primary identifier
           # set the current primary_id to the primary_id of that record if it exists.
           # # this will trigger an overwrite, rather than a duplication of that record
-          dataset.primary_id = get_primary_id(questionclass: fields[:questionclass], questionvalue: value,
-                                              dataset_type: params['database'])
+          dataset.primary_id = CBGP::Dataset.get_primary_id(questionclass: field[:questionclass], questionvalue: value,
+                                                            dataset_type: params['database'])
           # can return nil if there is no existing record, and a new primary_id will be generated later
         end
 
@@ -171,7 +171,7 @@ module CBGP
       dataset
     end
 
-    def get_primary_id(questionclass:, questionvalue:, dataset_type:)
+    def self.get_primary_id(questionclass:, questionvalue:, dataset_type:)
       graph = execute_search(search_params: { questionclass => questionvalue }, dataset_type: dataset_type) # execute_search(search_params:, dataset_type:)
       res = retrieve_dataset_id_from_graph_query(graph: graph) # comes back as a sparql query result
       return res.first[:id].to_s if res&.first

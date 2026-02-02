@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 source 'https://rubygems.org'
 
 # Pin Ruby version for consistency/reproducibility
-ruby '3.3.0'
+ruby '3.2.4'
 
 # If this project is itself a gem (with a .gemspec), load dependencies from there
 # (Keep if you have a .gemspec; remove if this is purely an app)
@@ -43,4 +45,4 @@ group :development, :test do
   gem 'xml-simple', '~> 1.1.8'
 end
 
-gem "uuidtools", "~> 3.0"
+gem 'uuidtools', '~> 3.0'

@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description = 'test stuff.'
   spec.homepage = 'https://example.org'
   spec.license = 'MIT'
-  spec.required_ruby_version = '>= 3.3.0'
+  spec.required_ruby_version = '>= 3.2.4'
 
   spec.metadata['allowed_push_host'] = 'https://example.com'
 
@@ -35,4 +35,5 @@ Gem::Specification.new do |spec|
 
   # For more information and examples about making a new gem, checkout our
   # guide at: https://bundler.io/guides/creating_gem.html
+  spec.metadata['rubygems_mfa_required'] = 'true'
 end

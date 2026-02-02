@@ -10,7 +10,7 @@ module CBGP
       @form_type = type
       @primary_id = primary_id #  SecureRandom.uuid
       sections = get_questionnaire_sections_query(questionnaire_type: type)
-      @data = {}
+      @data = {} # this carries the data (answer) for each quesiton, where the key is the GUID of the question from the ontology data[:q] = answer
       @fields = []
 
       sections.each do |thissection|
@@ -23,10 +23,10 @@ module CBGP
         sparql_results = get_section_questions_query(sectionid: sectionqid)
 
         sparql_results.each do |result|
-          q = result[:q].to_s
-          questionclass = result[:q].to_s.match(/.*?#(\S+)$/)[1]
-          method_name = result[:method].to_s.to_sym
-          klass = result[:class].to_s.downcase
+          q = result[:q].to_s # GUID
+          questionclass = result[:q].to_s.match(/.*?#(\S+)$/)[1] # Our Ontology Class Fragmemt
+          method_name = result[:method].to_s.to_sym # methid
+          klass = result[:class].to_s.downcase # e.g. string or date
           cardinality = result[:cardinality].to_s
           answers_uri = result[:answers].to_s
           sequence = result[:sequence].to_s.to_i
@@ -35,7 +35,8 @@ module CBGP
           @fields << { q: q, questionclass: questionclass, label: result[:label].to_s,
                        widget: result[:widget].to_s.downcase, method: method_name,
                        class: klass, cardinality: cardinality, answers: answers_uri,
-                       is_external_primary: is_external_primary, sequence: sequence, sectionid: sectionid, sectionlabel: sectionlabel }
+                       is_external_primary: is_external_primary, sequence: sequence,
+                       sectionid: sectionid, sectionlabel: sectionlabel }
 
           @data[q] = (cardinality == 'Multiple' ? [] : nil)
 
@@ -43,8 +44,9 @@ module CBGP
             @data[q]
           end
 
-          define_singleton_method("#{method_name}=") do |value|
-            coerced_value = coerce_value(value, klass, cardinality)
+          define_singleton_method("#{method_name}=") do |value| # value is going to be a literal, or an answer class fragment
+            coerced_value = coerce_value(value, klass, cardinality) # manages array values also
+            # validation currently never happens, so beware!  (fetch_answers always returns [], so validate_value returns notning)
             validate_value(coerced_value, fetch_answers(answers_uri)) if answers_uri && !answers_uri.end_with?('#FREE')
             @data[q] = coerced_value
           end

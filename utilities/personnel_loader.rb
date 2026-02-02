@@ -1,8 +1,6 @@
-require 'require_all'
-# require_all '../lib'
-require_all 'app'
-
 require 'dotenv/load'
+require 'require_all'
+require_all 'app'
 
 # a dataset has #fields which is a sequence-ordered list of
 # @fields << { q: q, questionclass: questionclass, label: result[:label].to_s,

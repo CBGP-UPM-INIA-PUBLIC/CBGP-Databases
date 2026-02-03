@@ -31,6 +31,7 @@
     <% warn "Question #{@question.questionid}: objectmethod=#{@question.objectmethod}, value=#{@value.inspect}" %>
     <% @answerblock = @question.answerblock %>
     <% @hierarchical_data = @question.answertree %>
+    <% warn "ANSWER TREE for ",@answerblock, @hierarchical_data %>
     <% if @question.cardinality == "Multiple" %>
       <% @thisval = @value %>
       <%= erb "_#{widget}".to_sym %>

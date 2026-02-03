@@ -1,6 +1,7 @@
 require 'pony'
 require 'open3'
 require 'securerandom'
+require 'set'
 
 def get_databases(type: 'Core', language: $language)
   warn 'getting databases'
@@ -23,8 +24,6 @@ def identifier_type(id: nil)
 
   ['db_entry', id] # Return the original identifier if not a DOI
 end
-
-require 'set'
 
 def build_transitive_tree(results, abblockid:)
   abblockid = abblockid.to_s.strip

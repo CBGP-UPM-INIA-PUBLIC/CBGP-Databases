@@ -1,5 +1,5 @@
-require_relative "queries"
-require_relative "core"
+require_relative 'queries'
+require_relative 'core'
 
 class Questionnaire
   attr_accessor :questionnaire_type, :sections, :questionnaireid
@@ -23,7 +23,7 @@ class Questionnaire
 
     results.each do |res| # get general information first
       section = res[:sec].to_s # comes in as full URI  e.g. https://w3id.org/CBGP-App#new-publication-questions
-      sectionid = section.gsub(/.*\#/, "") # remove everything up to the hash in the URL
+      sectionid = section.gsub(/.*\#/, '') # remove everything up to the hash in the URL
       warn "getting section #{section}" # new-publication-questions
       seclabel = res[:label].to_s
       sects << QuestionnaireSection.new(sectionid: sectionid, sectionlabel: seclabel)
@@ -50,10 +50,10 @@ class QuestionnaireSection
     # ?q (str(?qlab) as ?label) ?widget ?class ?method ?cardinality ?answers ?sequence
     results.each do |res|
       qurl = res[:q].to_s # comes in as full URL
-      qid = qurl.gsub(/.*\#/, "") # everything up to the hash in the URL
+      qid = qurl.gsub(/.*\#/, '') # everything up to the hash in the URL
       question = res[:label].to_s
       answerblock = res[:answers].to_s # check that this is a URI an dnot a fr4agtment
-      ablockid = answerblock.gsub(/.*\#/, "") # everything up to the hash in the URL
+      ablockid = answerblock.gsub(/.*\#/, '') # everything up to the hash in the URL
       sequence = res[:sequence].to_i
       widget = res[:widget].to_s
       objectclass = res[:class].to_s
@@ -61,7 +61,7 @@ class QuestionnaireSection
       cardinality = res[:cardinality].to_s
       qs << QuestionnaireQuestion.new(
         questionid: qid, question: question, ablockid: ablockid, sequence: sequence,
-        widget: widget, cardinality: cardinality, objectclass: objectclass, objectmethod: objectmethod,
+        widget: widget, cardinality: cardinality, objectclass: objectclass, objectmethod: objectmethod
       )
     end
     qs
@@ -74,30 +74,29 @@ class QuestionnaireQuestion
 
   def initialize(questionid:, sequence:, objectclass:, objectmethod:, ablockid:, question:, widget:, cardinality:)
     @question = question
-    @questionid = questionid   # this is the ontology class (e.g. cbgp:mem1  becomes questionid = "mem1")
+    @questionid = questionid # this is the ontology class (e.g. cbgp:mem1  becomes questionid = "mem1")
     @sequence = sequence
     @widget = widget.downcase
     @objectclass = objectclass
     @objectmethod = objectmethod
     @cardinality = cardinality
-    @ablockid = ablockid  # This sets the instance variable
+    @ablockid = ablockid # This sets the instance variable
     @selected_answer = nil
     @answertree = nil
     @answerblock = QuestionnaireAnswerBlock.new(ablockid: @ablockid)
     # warn "WIDGET IS #{@widget}"
-    if @widget.match(/TreeSelector/i)
-      @answertree = get_hierarchical_answer_block_query(ablockid: @ablockid)  # Fixed: use @answerblockid
-      @answertree = JSON.parse(@answertree)
-      # Optional: Sanitize curly quotes...
-      @answertree.each do |node|
-        node['text'] = node['text'].gsub(/[“”‘’]/, '"') if node['text']
-        node['children'].each { |child| child['text'] = child['text'].gsub(/[“”‘’]/, '"') if child['text'] } if node['children']
-      end
-      # warn "Hierarchical Data: #{@answertree.inspect}"
+    return unless @widget.match(/TreeSelector/i)
+
+    @answertree = get_hierarchical_answer_block_query(ablockid: @ablockid) # Fixed: use @answerblockid
+    @answertree = JSON.parse(@answertree)
+    # Optional: Sanitize curly quotes...
+    @answertree.each do |node|
+      node['text'] = node['text'].gsub(/[“”‘’]/, '"') if node['text']
+      node['children']&.each { |child| child['text'] = child['text'].gsub(/[“”‘’]/, '"') if child['text'] }
     end
+    warn "Hierarchical Data: #{@answertree.inspect}"
   end
 end
-
 
 class QuestionnaireAnswerBlock
   attr_accessor :ablockid, :answers, :type
@@ -106,14 +105,14 @@ class QuestionnaireAnswerBlock
     @ablockid = ablockid
     @answers = []
 
-    if @ablockid == "FREE" # a text box or text field
-      @type = "FREE"
-    elsif @ablockid == "NUM" # text field numerical
-      @type = "NUM"
-    elsif @ablockid == "DATE" # text field numerical
-      @type = "DATE"
-    elsif @ablockid == "HIDDEN" # text field numerical
-      @type = "HIDDEN"
+    if @ablockid == 'FREE' # a text box or text field
+      @type = 'FREE'
+    elsif @ablockid == 'NUM' # text field numerical
+      @type = 'NUM'
+    elsif @ablockid == 'DATE' # text field numerical
+      @type = 'DATE'
+    elsif @ablockid == 'HIDDEN' # text field numerical
+      @type = 'HIDDEN'
     else
       results = get_answer_block_query(ablockid: @ablockid) #    SELECT DISTINCT ?aid ?label ?order
       results.each do |result|
@@ -129,14 +128,15 @@ class QuestionnaireAnswer
 
   def initialize(answerid:, answer:, sequence:)
     @answerid = answerid
-    @answerid = @answerid.gsub(/.*\#/, "") # everything up to the hash in the URL
+    @answerid = @answerid.gsub(/.*\#/, '') # everything up to the hash in the URL
     @sequence = sequence
     @answer = answer
   end
 end
 
 class QuestionnaireField
-  attr_accessor :fieldid, :label, :answerblock, :answertree, :objectclass, :objectmethod, :questionorder, :cardinality, :widgettype
+  attr_accessor :fieldid, :label, :answerblock, :answertree, :objectclass, :objectmethod, :questionorder, :cardinality,
+                :widgettype
 
   def initialize
   end
@@ -145,8 +145,8 @@ class QuestionnaireField
     field = QuestionnaireField.new
     res = field_query(fieldid: fieldid).first # should only be one
     return nil unless res
-    
-    field.fieldid = fieldid.to_s  # this is the class name of that question in teh ontlogy.  e.g. cbgp:mem1  the fieldid is "mem1"
+
+    field.fieldid = fieldid.to_s # this is the class name of that question in teh ontlogy.  e.g. cbgp:mem1  the fieldid is "mem1"
 
     field.label = res[:label].to_s
     field.objectclass = res[:objectclass].to_s
@@ -158,11 +158,15 @@ class QuestionnaireField
     field.answerblock = res[:answerblock].to_s
     if field.widgettype.match(/TreeSelector/i)
       field.answertree = get_hierarchical_answer_block_query(ablockid: field.answerblock)
-      field.answertree = JSON.parse(field.answertree)  # Now it's an array of hashes
+      field.answertree = JSON.parse(field.answertree) # Now it's an array of hashes
       # Optional: Sanitize curly quotes if visuals glitch (JS handles unicode fine, but for safety)
       field.answertree.each do |node|
-        node['text'] = node['text'].gsub(/[“”‘’]/, '"') if node['text']  # Straight quotes
-        node['children'].each { |child| child['text'] = child['text'].gsub(/[“”‘’]/, '"') if child['text'] } if node['children']
+        node['text'] = node['text'].gsub(/[“”‘’]/, '"') if node['text'] # Straight quotes
+        next unless node['children']
+
+        node['children'].each do |child|
+          child['text'] = child['text'].gsub(/[“”‘’]/, '"') if child['text']
+        end
       end
       warn "Hierarchical Data: #{field.answertree.inspect}"
     end

@@ -1,258 +1,189 @@
-<div id="Category" class="field-row" style="clear: both;">
-  <h4 class="question-label">Category</h4>
-  <!-- Tree spans full grid row, flushing left -->
-  <div id="treewidget" style="grid-column: 1 / -1; width: 100%; padding-left: 0 !important; margin-left: 0 !important; border-left: none !important; text-align: left !important;">
+<% unique_id = @question.questionid.to_s.gsub(/[^\w-]/, '_') %>
 
+<!-- Current selection display (if editing) -->
+<% if @thisval.to_s.strip != '' %>
+  <% current_label = CBGP::Dataset.find_label_by_id(@hierarchical_data, @thisval.to_s) %>
+  <% if current_label %>
+    <div style="margin-bottom: 10px; padding: 8px; background-color: #f0f0f0; border-left: 4px solid #7b1fa2; font-weight: bold; color: #114203;">
+      Current selection: <%= current_label %>
+    </div>
+  <% else %>
+    <div style="margin-bottom: 10px; padding: 8px; background-color: #fff0f0; color: #c00;">
+      Current selection ID: <%= @thisval %> (label not found in tree – possible data inconsistency)
+    </div>
+  <% end %>
+<% end %>
 
- <!-- NEW: Display current value (if editing an existing record) -->
-    <% if @thisval.to_s.strip != '' %>
-      <%         
-        current_label = CBGP::Dataset.find_label_by_id(@hierarchical_data, @thisval.to_s)
-      %>
-      <% if current_label %>
-        <div style="margin-bottom: 10px; padding: 8px; background-color: #f0f0f0; border-left: 4px solid #7b1fa2; font-weight: bold; color: #114203;">
-          Current selection: <%= current_label %>
-        </div>
-      <% else %>
-        <div style="margin-bottom: 10px; padding: 8px; background-color: #fff0f0; color: #c00;">
-          Current selection ID: <%= @thisval %> (label not found in tree – possible data inconsistency)
-        </div>
-      <% end %>
-    <% end %>
+<div id="treewidget-<%= unique_id %>" style="grid-column: 1 / -1; width: 100%; padding-left: 0 !important; margin-left: 0 !important; border-left: none !important; text-align: left !important;">
+  <input type="text" id="tree-search-<%= unique_id %>" placeholder="Search categories..." style="margin-bottom: 10px; width: 100%; padding: 8px;">
+  <ul id="custom-tree-<%= unique_id %>" style="min-height: 200px; border: 1px solid #ccc; padding: 10px 10px 10px 0 !important; margin: 0 !important; list-style: none !important; font-family: Arial, sans-serif; text-align: left !important;">
+    <!-- Tree nodes rendered here -->
+  </ul>
+  <input type="hidden" name="<%= @question.questionid %>" id="selected-value-<%= unique_id %>" value="<%= @thisval %>">
 
+  <style>
+    /* Critical: scoped hidden rule (this was missing before) */
+    #custom-tree-<%= unique_id %> .hidden { display: none !important; }
 
+    /* Background reset for all li (prevents inherited backgrounds from bleeding) */
+    #custom-tree-<%= unique_id %> li {
+      background-color: transparent !important;
+      border-left: none !important;
+      box-shadow: none !important;
+    }
 
+    #treewidget-<%= unique_id %> { background-color: transparent !important; }
+    #custom-tree-<%= unique_id %>, #custom-tree-<%= unique_id %> li, #custom-tree-<%= unique_id %> .node-text {
+      text-align: left !important; font-weight: normal !important; margin-left: 0 !important; padding-left: 0 !important;
+    }
+    #custom-tree-<%= unique_id %> li {
+      cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: all 0.2s; position: relative;
+    }
+    #custom-tree-<%= unique_id %> li:hover { background: #f0f0f0 !important; box-shadow: none !important; }
+    #custom-tree-<%= unique_id %> li.open { background: transparent !important; box-shadow: none !important; }
+    #custom-tree-<%= unique_id %> .selected-check { box-shadow: 0 2px 8px rgba(123, 31, 162, 0.5) !important; z-index: 10 !important; margin: 1px !important; border: none !important; }
+    #custom-tree-<%= unique_id %> li.search-match { background: yellow !important; color: black !important; box-shadow: none !important; }
+    #custom-tree-<%= unique_id %> .expander { display: inline-block; width: 12px; margin-right: 5px; font-weight: bold; color: #666; user-select: none; }
+    #custom-tree-<%= unique_id %> .expander:after { content: '▸'; }
+    #custom-tree-<%= unique_id %> li.open .expander:after { content: '▽'; }
+    #custom-tree-<%= unique_id %> ul { padding-left: 20px; border-left: 1px dashed #ddd; margin: 0; }
+    #custom-tree-<%= unique_id %> .check-icon { color: #e1bee7 !important; font-weight: bold !important; margin-right: 4px !important; font-size: 1.2em !important; }
+    #custom-tree-<%= unique_id %> li.single-selected {
+      background-color: #d4e157 !important; border-left: 4px solid #7b1fa2 !important; box-shadow: 0 2px 4px rgba(123, 31, 162, 0.5) !important;
+      color: #114203 !important; font-weight: bold !important; transition: all 0.2s !important;
+    }
+    #custom-tree-<%= unique_id %> li.single-selected:before { content: "✓ "; color: #7b1fa2 !important; font-weight: bold !important; margin-right: 5px !important; }
+    #custom-tree-<%= unique_id %> li:hover { background-color: #f0f0f0 !important; }
+    #custom-tree-<%= unique_id %> li.single-selected:hover { background-color: #d4e157 !important; }
+  </style>
 
+  <script>
+    var $j = jQuery.noConflict();
+    $j(function() {
+      var treeData = <%= @hierarchical_data.to_json %>;
+      var $tree = $j('#custom-tree-<%= unique_id %>');
+      var $search = $j('#tree-search-<%= unique_id %>');
+      var $selected = $j('#selected-value-<%= unique_id %>');
 
-    <input type="text" id="tree-search" placeholder="Search categories..." style="margin-bottom: 10px; width: 100%; padding: 8px;">
-    <ul id="custom-tree" style="min-height: 200px; border: 1px solid #ccc; padding: 10px 10px 10px 0 !important; margin: 0 !important; list-style: none !important; font-family: Arial, sans-serif; text-align: left !important;">
-      <!-- Tree nodes rendered here -->
-    </ul>
-    <input type="hidden" name="<%= @question.questionid %>" id="selected-value" value="">
-    <style>
-      .hidden { display: none !important; }
-      #custom-tree, #custom-tree li, #custom-tree .node-text { 
-        text-align: left !important; 
-        font-weight: normal !important;  /* Un-bold inherited */
-        margin-left: 0 !important; 
-        padding-left: 0 !important; 
-      }
-      #custom-tree li { 
-        cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: all 0.2s; position: relative; 
-      }
-      #custom-tree li:hover { background: #f0f0f0 !important; box-shadow: none !important; }  /* Hover neutral */
-      #custom-tree li.open { background: transparent !important; box-shadow: none !important; }  /* Open neutral */
-      #custom-tree .selected-check { 
-        box-shadow: 0 2px 8px rgba(123, 31, 162, 0.5) !important;  /* Shadow lift */
-        z-index: 10 !important;             /* Above all siblings */
-        margin: 1px !important;             /* Space for shadow */
-        border: none !important;            /* No bleed */
-      }
-      #custom-tree li.search-match { background: yellow !important; color: black !important; box-shadow: none !important; }  /* Search overrides */
-      #custom-tree .expander { display: inline-block; width: 12px; margin-right: 5px; font-weight: bold; color: #666; user-select: none; }
-      #custom-tree .expander:after { content: '▸'; }
-      #custom-tree li.open .expander:after { content: '▽'; }
-      #custom-tree ul { padding-left: 20px; border-left: 1px dashed #ddd; margin: 0; }
-      #custom-tree .check-icon { 
-        color: #e1bee7 !important; 
-        font-weight: bold !important; 
-        margin-right: 4px !important; 
-        font-size: 1.2em !important;
-      }
-
-/* Existing styles remain, refining the selected node style */
-#custom-tree li.single-selected {
-  background-color: #d4e157 !important; /* Bright lime green for highlight */
-  border-left: 4px solid #7b1fa2 !important; /* Purple left border */
-  box-shadow: 0 2px 4px rgba(123, 31, 162, 0.5) !important; /* Subtle shadow */
-  color: #114203 !important; /* Dark text for contrast */
-  font-weight: bold !important; /* Bold text */
-  transition: all 0.2s !important; /* Smooth transition */
-  /* Ensure this style applies only to the selected li, not its parents */
-  display: inline-block !important; /* Prevent parent background override */
-  width: auto !important; /* Allow natural width */
-}
-
-/* Reset parent li styles to avoid inheritance */
-#custom-tree li {
-  background-color: transparent !important; /* Default to transparent */
-  border-left: none !important; /* Remove inherited border */
-  box-shadow: none !important; /* Remove inherited shadow */
-}
-
-/* Ensure hover and selected states are independent */
-#custom-tree li:hover {
-  background-color: #f0f0f0 !important; /* Neutral hover */
-}
-
-#custom-tree li.single-selected:hover {
-  background-color: #d4e157 !important; /* Keep selected color */
-}
-
-/* Optional checkmark */
-#custom-tree li.single-selected:before {
-  content: "✓ "; /* Checkmark */
-  color: #7b1fa2 !important;
-  font-weight: bold !important;
-  margin-right: 5px !important;
-}    
-#treewidget {
-  background-color: transparent !important; /* Override .field-row background */
-}
-</style>
-    <script>
-      var $j = jQuery.noConflict();
-      console.log('jQuery:', typeof $j !== 'undefined');
-      $j(function() {
-        var treeData = <%= @hierarchical_data.to_json %>;
-        console.log('treeData loaded:', treeData.length + ' root nodes');
-        // Log sorted roots for debug (check console for order)
-        treeData.sort(function(a, b) { 
-          var seqDiff = (a.sequence || 0) - (b.sequence || 0);
-          return seqDiff !== 0 ? seqDiff : a.text.localeCompare(b.text);
-        });
-        console.log('Sorted roots:', treeData.map(n => n.text));
-
-        // Validate nodes recursively (keep for safety)
-        function validateNode(node, index, parentPath) {
-          if (!node.id || typeof node.id !== 'string' || !node.text) {
-            console.error('Invalid node at ' + parentPath + '[' + index + ']:', node);
-            throw new Error('Node missing id or text');
-          }
-          if (node.children) {
-            node.children.forEach(function(child, childIndex) {
-              validateNode(child, childIndex, parentPath + '[' + index + '].children');
-            });
-          }
-        }
-        treeData.forEach(function(node, index) {
-          validateNode(node, index, 'treeData');
-        });
-        console.log('Validation passed');
-
-        // Render tree recursively (sort children too)
-        function renderNode(node, parentUl, depth = 0) {
-          // Sort children by sequence, then text
-          if (node.children) {
-            node.children.sort(function(a, b) { 
-              var seqDiff = (a.sequence || 0) - (b.sequence || 0);
-              return seqDiff !== 0 ? seqDiff : a.text.localeCompare(b.text);
-            });
-          }
-          var li = $j('<li>').attr('data-id', node.id);
-          if (depth > 0) li.addClass('hidden');
-          if (depth === 0) li.addClass('root');
-          var expander = node.children && node.children.length > 0 ? '<span class="expander"></span>' : '';
-          li.html(expander + '<span class="node-text">' + $j('<div>').text(node.text).html() + '</span>');  // Escape HTML
-          parentUl.append(li);
-          if (node.children) {
-            var childUl = $j('<ul>').addClass('hidden');
-            li.append(childUl);
-            node.children.forEach(function(child) {
-              renderNode(child, childUl, depth + 1);
-            });
-            li.addClass('has-children');
-          }
-          return li;
-        }
-
-        // Build tree
-        var $tree = $j('#custom-tree');
-        treeData.forEach(function(node) {
-          renderNode(node, $tree);
-        });
-
-        // FORCE initial collapse: Hide all non-roots + all ul's
-        $tree.find('ul').addClass('hidden');
-        $tree.find('li:not(.root)').addClass('hidden');
-        $tree.find('li.root').removeClass('hidden open');
-
-        // Clear selection on expand (double-safety)
-        $tree.on('click', '.expander', function(e) {
-          e.stopPropagation();
-          e.preventDefault();
-          $tree.find('li').removeClass('single-selected');  // Clear on expand
-          var $li = $j(this).closest('li');
-          var $childUl = $li.children('ul');
-          if ($li.hasClass('open')) {
-            // Collapse: Hide ul + all descendant li's
-            $childUl.addClass('hidden').find('li').addClass('hidden');
-            $li.removeClass('open');
-          } else {
-            // Expand: Show ul + all descendant li's (recursive for deep nests)
-            function showDescendants($ul) {
-              $ul.removeClass('hidden').find('> li').removeClass('hidden');
-              $ul.find('> li.has-children > ul').each(function() {
-                showDescendants($j(this));  // Recurse if more levels
-              });
-            }
-            showDescendants($childUl);
-            $li.addClass('open');
-          }
-        });
-
-        // Selection click (with logs for debug)
-$tree.on('click', 'li', function(e) {
-  if ($j(e.target).hasClass('expander')) return; // Skip expander clicks
-  console.log('Click on:', $j(this).data('id')); // Log clicked ID
-  // Remove single-selected from all li elements
-  $tree.find('li').removeClass('single-selected');
-  console.log('Cleared all selections');
-  // Add single-selected only to the clicked li
-  $j(this).addClass('single-selected');
-  console.log('Added single-selected to:', $j(this).data('id'));
-  var nodeId = $j(this).data('id');
-  $j('#selected-value').val(nodeId);
-  console.log('Hidden input set to:', nodeId);
-  // Prevent event bubbling to parent li
-  e.stopPropagation();
-});
-
-        // Search (debounced, recursive filter)
-        var searchTimeout;
-        $j('#tree-search').on('keyup', function() {
-          clearTimeout(searchTimeout);
-          searchTimeout = setTimeout(function() {
-            var query = $j.trim($j('#tree-search').val().toLowerCase());
-            console.log('Searching:', query || 'clear');
-            // Reset: Collapse all, hide non-roots, clear selection
-            $tree.find('li').removeClass('search-match open single-selected');
-            $tree.find('ul').addClass('hidden');
-            $tree.find('li:not(.root)').addClass('hidden');
-            $tree.find('li.root').removeClass('hidden');
-            if (!query) return;
-            function searchNodes(nodes, $parentLi) {
-              var found = false;
-              nodes.forEach(function(node) {
-                var $li = $parentLi.find('li[data-id="' + node.id + '"]');
-                var text = node.text.toLowerCase();
-                if (text.includes(query)) {
-                  // Show this li + expand all ancestors
-                  $li.removeClass('hidden').addClass('search-match');
-                  var $currentParent = $parentLi;
-                  while ($currentParent.length) {
-                    $currentParent.removeClass('hidden').addClass('open');
-                    $currentParent.children('ul').removeClass('hidden');
-                    $currentParent = $currentParent.parent().closest('li');
-                  }
-                  found = true;
-                  $li[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-                if (node.children) {
-                  var childFound = searchNodes(node.children, $li);
-                  if (childFound) {
-                    $li.removeClass('hidden').addClass('open');
-                    $li.children('ul').removeClass('hidden');
-                    found = true;
-                  }
-                }
-              });
-              return found;
-            }
-            searchNodes(treeData, $j('#custom-tree'));  // Start from root ul
-          }, 300);
-        });
+      // Sorting and validation (exactly as original)
+      treeData.sort(function(a, b) {
+        var seqDiff = (a.sequence || 0) - (b.sequence || 0);
+        return seqDiff !== 0 ? seqDiff : a.text.localeCompare(b.text);
       });
-    </script>
-  </div>
+      console.log('Sorted roots:', treeData.map(n => n.text)); // optional debug
+
+      function validateNode(node, index, parentPath) {
+        if (!node.id || typeof node.id !== 'string' || !node.text) {
+          console.error('Invalid node at ' + parentPath + '[' + index + ']:', node);
+          throw new Error('Node missing id or text');
+        }
+        if (node.children) {
+          node.children.forEach(function(child, childIndex) {
+            validateNode(child, childIndex, parentPath + '[' + index + '].children');
+          });
+        }
+      }
+      treeData.forEach(function(node, index) { validateNode(node, index, 'treeData'); });
+
+      // Render tree recursively
+      function renderNode(node, parentUl, depth = 0) {
+        if (node.children) {
+          node.children.sort(function(a, b) {
+            var seqDiff = (a.sequence || 0) - (b.sequence || 0);
+            return seqDiff !== 0 ? seqDiff : a.text.localeCompare(b.text);
+          });
+        }
+        var li = $j('<li>').attr('data-id', node.id);
+        if (depth > 0) li.addClass('hidden');
+        if (depth === 0) li.addClass('root');
+        var expander = node.children && node.children.length > 0 ? '<span class="expander"></span>' : '';
+        li.html(expander + '<span class="node-text">' + $j('<div>').text(node.text).html() + '</span>');
+        parentUl.append(li);
+        if (node.children) {
+          var childUl = $j('<ul>').addClass('hidden');
+          li.append(childUl);
+          node.children.forEach(function(child) { renderNode(child, childUl, depth + 1); });
+          li.addClass('has-children');
+        }
+        return li;
+      }
+
+      // Build tree
+      treeData.forEach(function(node) { renderNode(node, $tree); });
+
+      // FORCE initial collapse – exactly your original lines
+      $tree.find('ul').addClass('hidden');
+      $tree.find('li:not(.root)').addClass('hidden');
+      $tree.find('li.root').removeClass('hidden open');
+
+      // Expander click
+      $tree.on('click', '.expander', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        $tree.find('li').removeClass('single-selected');
+        var $li = $j(this).closest('li');
+        var $childUl = $li.children('ul');
+        if ($li.hasClass('open')) {
+          $childUl.addClass('hidden').find('li').addClass('hidden');
+          $li.removeClass('open');
+        } else {
+          function showDescendants($ul) {
+            $ul.removeClass('hidden').find('> li').removeClass('hidden');
+            $ul.find('> li.has-children > ul').each(function() { showDescendants($j(this)); });
+          }
+          showDescendants($childUl);
+          $li.addClass('open');
+        }
+      });
+
+      // Node selection
+      $tree.on('click', 'li', function(e) {
+        if ($j(e.target).hasClass('expander')) return;
+        $tree.find('li').removeClass('single-selected');
+        $j(this).addClass('single-selected');
+        var nodeId = $j(this).data('id');
+        $selected.val(nodeId);
+        e.stopPropagation();
+      });
+
+      // Search (debounced)
+      var searchTimeout;
+      $search.on('keyup', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(function() {
+          var query = $j.trim($search.val().toLowerCase());
+          $tree.find('li').removeClass('search-match open single-selected');
+          $tree.find('ul').addClass('hidden');
+          $tree.find('li:not(.root)').addClass('hidden');
+          $tree.find('li.root').removeClass('hidden');
+          if (!query) return;
+
+          function searchNodes(nodes, $parentLi) {
+            var found = false;
+            nodes.forEach(function(node) {
+              var $li = $parentLi.find('li[data-id="' + node.id + '"]');
+              var text = node.text.toLowerCase();
+              if (text.includes(query)) {
+                $li.removeClass('hidden').addClass('search-match');
+                var $current = $parentLi;
+                while ($current.length) {
+                  $current.removeClass('hidden').addClass('open');
+                  $current.children('ul').removeClass('hidden');
+                  $current = $current.parent().closest('li');
+                }
+                $li[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                found = true;
+              }
+              if (node.children) {
+                var childFound = searchNodes(node.children, $li);
+                if (childFound) { $li.removeClass('hidden').addClass('open'); $li.children('ul').removeClass('hidden'); found = true; }
+              }
+            });
+            return found;
+          }
+          searchNodes(treeData, $tree);
+        }, 300);
+      });
+    });
+  </script>
 </div>

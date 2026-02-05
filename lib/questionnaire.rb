@@ -4,6 +4,12 @@ require_relative 'core'
 class Questionnaire
   attr_accessor :questionnaire_type, :sections, :questionnaireid
 
+  @@cache = {} # OPTIMIZATION: Class-level cache hash, keyed by questionnaire_type (e.g., "publication")
+
+  def self.get_cached(questionnaire_type:)
+    @@cache[questionnaire_type] ||= new(questionnaire_type: questionnaire_type) # OPTIMIZATION: Build once, reuse forever
+  end
+
   def initialize(questionnaire_type:) # questionnaire_type  "add-publications", "add-project" "add-member"
     # GET THE LABELS HERE
     # @lang = lang.upcase

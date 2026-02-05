@@ -288,28 +288,32 @@ def set_routes
     halt erb :search_dataset_inputform, layout: :database_layout
   end
 
-  post '/cbgp/query-dataset/:database' do # genereates the results page
+  post '/cbgp/query-dataset/:database' do
     @database = params[:database]
+
+    # OPTIMIZATION: Uses cache (no rebuild)
     @questionnaire = generate_questionnaire(questionnaire_type: @database)
+
+    # OPTIMIZATION: Uses cache (no rebuild)
     @fields = CBGP::Dataset.get_questionnaire_fields(questionnaire_type: @database)
 
-    search_params = params.reject { |k, _| k == 'database' }
-    # warn "Search params: #{search_params.inspect}"
-    graphuris = execute_search(search_params: search_params, dataset_type: @database) # returns strings
-    # warn "Graph URIs: #{graphuris.inspect}"
-    # warn "Fields: #{@fields.inspect}"
+    search_params = params.except('database')
+
+    graphuris = execute_search(search_params: search_params, dataset_type: @database)
+
+    # OPTIMIZATION: Batch fetch all details first
+    all_details = fetch_datasets_raw_data(graph_uris: graphuris, database: @database)
+
     @datasets = []
-    graphuris.each do |graphuri| # these are sparql results!
-      warn "LOADING Graph URI: #{graphuri}"
-      @datasets << CBGP::Dataset.load_from_graph(graph: graphuri, database: @database)
+    graphuris.zip(all_details).each do |graphuri, details| # Zip to match order
+      @datasets << CBGP::Dataset.load_from_graph(graph: graphuri, database: @database, pre_fetched_details: details)
     end
 
-    # NEW: Save the successful search context to session for post-delete refresh
     session[:last_search] = {
       database: @database,
-      params: search_params.deep_dup # deep_dup to avoid any mutable param issues
+      params: search_params.deep_dup
     }
-    # warn "Dataset details for rendering: #{@datasets.inspect}"
+
     erb :search_dataset_resultform, layout: :database_layout
   end
 

@@ -6,54 +6,40 @@ module CBGP
   class Dataset
     attr_accessor :fields, :form_type, :primary_id
 
+    @@fields_cache = {} # OPTIMIZATION: Class-level cache for fields per type
+    @@methods_defined = {} # OPTIMIZATION: Track if getters/setters are defined per type to avoid re-definition
+
     def initialize(type:, primary_id: nil)
       @form_type = type
-      @primary_id = primary_id #  SecureRandom.uuid
-      sections = get_questionnaire_sections_query(questionnaire_type: type)
-      @data = {} # this carries the data (answer) for each quesiton, where the key is the GUID of the question from the ontology data[:q] = answer
-      @fields = []
+      @primary_id = primary_id
+      @data = {}
 
-      sections.each do |thissection|
-        sectionid = thissection[:sec].to_s
-        sectionqid = sectionid.gsub(/.*\#/, '')
-        sectionlabel = thissection[:label]
-        warn "secid #{sectionid}"
-        warn "qid #{sectionqid}"
+      # OPTIMIZATION: Use cached fields instead of re-querying sections/questions
+      @fields = self.class.get_questionnaire_fields(questionnaire_type: type)
 
-        sparql_results = get_section_questions_query(sectionid: sectionqid)
+      # OPTIMIZATION: Define methods only once per type (class-level, shared across instances)
+      return if @@methods_defined[type]
 
-        sparql_results.each do |result|
-          q = result[:q].to_s # GUID
-          questionclass = result[:q].to_s.match(/.*?#(\S+)$/)[1] # Our Ontology Class Fragmemt
-          method_name = result[:method].to_s.to_sym # methid
-          klass = result[:class].to_s.downcase # e.g. string or date
-          cardinality = result[:cardinality].to_s
-          answers_uri = result[:answers].to_s
-          sequence = result[:sequence].to_s.to_i
-          is_external_primary = result[:primary].to_s || 'false'
+      @fields.each do |field|
+        q = field[:q] || "field_#{field[:fieldid]}" # Fallback if :q missing; adjust if needed
+        method_name = field[:method]
+        klass = field[:class]
+        cardinality = field[:cardinality]
+        answers_uri = field[:answers]
 
-          @fields << { q: q, questionclass: questionclass, label: result[:label].to_s,
-                       widget: result[:widget].to_s.downcase, method: method_name,
-                       class: klass, cardinality: cardinality, answers: answers_uri,
-                       is_external_primary: is_external_primary, sequence: sequence,
-                       sectionid: sectionid, sectionlabel: sectionlabel }
+        @data[q] = (cardinality == 'Multiple' ? [] : nil)
 
-          @data[q] = (cardinality == 'Multiple' ? [] : nil)
+        define_singleton_method(method_name) do
+          @data[q]
+        end
 
-          define_singleton_method(method_name) do
-            @data[q]
-          end
-
-          define_singleton_method("#{method_name}=") do |value| # value is going to be a literal, or an answer class fragment
-            coerced_value = coerce_value(value, klass, cardinality) # manages array values also
-            # validation currently never happens, so beware!  (fetch_answers always returns [], so validate_value returns notning)
-            validate_value(coerced_value, fetch_answers(answers_uri)) if answers_uri && !answers_uri.end_with?('#FREE')
-            @data[q] = coerced_value
-          end
+        define_singleton_method("#{method_name}=") do |value|
+          coerced_value = coerce_value(value, klass, cardinality)
+          validate_value(coerced_value, fetch_answers(answers_uri)) if answers_uri && !answers_uri.end_with?('#FREE')
+          @data[q] = coerced_value
         end
       end
-
-      @fields.sort_by! { |f| f[:sequence] }
+      @@methods_defined[type] = true
     end
 
     def coerce_value(value, klass, cardinality)
@@ -94,22 +80,21 @@ module CBGP
       end
     end
 
-    def self.load_from_graph(graph:, database:)
+    def self.load_from_graph(graph:, database:, pre_fetched_details: nil)
       dataset = new(type: database)
 
-      # graphuri = res.first[:g].to_s  # comes back as sparql result
-      warn "\n\nLOAD FROM GRAPHURI FOUND GRAPH #{graph}\n\n"
-      res = retrieve_dataset_id_from_graph_query(graph: graph) # comes back as a string
-      abort "lookup of graph #{graph} failed" unless res
-      primary_id = res
+      # OPTIMIZATION: Use batched details if provided, else fallback to single fetch
+      details = pre_fetched_details || fetch_dataset_raw_data(graphuri: graph, database: database)
+
+      primary_id = retrieve_dataset_id_from_graph_query(graph: graph)
       abort "Load From Graph- can't retrieve primary id for graph #{graph}" unless primary_id
       dataset.primary_id = primary_id
-      details = fetch_dataset_raw_data(graphuri: graph, database: database)
-      dataset.fields.each do |field| # dataset is a CBGP::Dataset object that is empty
-        value = details[field[:questionclass].to_sym] # get the value for this field
-        # metaprogramming set value for the associated object method
-        dataset.public_send("#{field[:method]}=", value) if value # Load up the Dataset object
+
+      dataset.fields.each do |field|
+        value = details[field[:questionclass].to_sym]
+        dataset.public_send("#{field[:method]}=", value) if value
       end
+
       dataset
     end
 
@@ -203,23 +188,25 @@ module CBGP
     end
 
     def self.get_questionnaire_fields(questionnaire_type:)
-      questionnaire = generate_questionnaire(questionnaire_type: questionnaire_type)
-      fields = []
-      questionnaire.sections.each do |section|
-        section.questions.each do |question|
-          fields << {
-            fieldid: question.questionid,
-            label: question.question,
-            objectmethod: question.objectmethod,
-            objectclass: question.objectclass,
-            widget: question.widget,
-            answerblockid: question.ablockid,
-            cardinality: question.cardinality,
-            sequence: question.sequence
-          }
+      @@fields_cache[questionnaire_type] ||= begin # OPTIMIZATION: Compute once from cached Questionnaire
+        questionnaire = Questionnaire.get_cached(questionnaire_type: questionnaire_type)
+        fields = []
+        questionnaire.sections.each do |section|
+          section.questions.each do |question|
+            fields << {
+              fieldid: question.questionid,
+              label: question.question,
+              objectmethod: question.objectmethod,
+              objectclass: question.objectclass,
+              widget: question.widget,
+              answerblockid: question.ablockid,
+              cardinality: question.cardinality,
+              sequence: question.sequence
+            }
+          end
         end
+        fields.sort_by { |f| f[:sequence] }
       end
-      fields.sort_by { |f| f[:sequence] }
     end
 
     # use labels for display of currently selected hiearrchical tree node

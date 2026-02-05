@@ -522,64 +522,63 @@ end
 # for the given dataset_type (e.g., specific attributes like title, description, etc.).
 # Returns an array of hashes, one hash per dataset URI, containing only the fields that
 # actually have values.
-def fetch_dataset_raw_data(graphuri:, database:)
-  # Get the list of fields (metadata properties) that we care about for this dataset_type.
-  # Each field is a hash with keys like :fieldid (the property name), :cardinality ('Multiple' or single), etc.
+def fetch_datasets_raw_data(graph_uris:, database:)
+  return [] if graph_uris.empty?
+
+  # OPTIMIZATION: Use cached fields (no rebuild)
   fields = CBGP::Dataset.get_questionnaire_fields(questionnaire_type: database)
 
-  # Build the SELECT clause: ?field1 ?field2 ?field3 ...
-  select_clause = fields.map { |f| "?#{f[:fieldid]}" }.join(' ')
+  # Build SELECT: ?graph + all ?field1 ?field2 ...
+  select_clause = '?graph ' + fields.map { |f| "?#{f[:fieldid]}" }.join(' ')
 
-  # Build the WHERE clause: for each field, an OPTIONAL block that looks for
-  #   ?dataset sio:SIO_000008 ?attributeXXX .
-  #   ?attributeXXX sio:SIO_000300 ?XXX .          # the actual literal value
-  #   ?attributeXXX rdf:type cbgp:XXX .            # typed as the specific property
-  # This pattern is common in RDF data models that use reified attributes.
+  # Build VALUES for graphs
+  values_clause = "VALUES ?graph { #{graph_uris.map { |g| "<#{g}>" }.join(' ')} }"
+
+  # Build WHERE: for each field, OPTIONAL { GRAPH ?graph { ... } }
   where_clause = fields.map do |f|
     <<~SPARQL
       OPTIONAL {
-        ?dataset sio:SIO_000008 ?attribute#{f[:fieldid]} .
-        ?attribute#{f[:fieldid]} sio:SIO_000300 ?#{f[:fieldid]} .
-        ?attribute#{f[:fieldid]} rdf:type cbgp:#{f[:fieldid]} .
+        GRAPH ?graph {
+          ?dataset sio:SIO_000008 ?attribute#{f[:fieldid]} .
+          ?attribute#{f[:fieldid]} sio:SIO_000300 ?#{f[:fieldid]} .
+          ?attribute#{f[:fieldid]} rdf:type cbgp:#{f[:fieldid]} .
+        }
       }
     SPARQL
   end.join("\n")
 
-  # Full SPARQL query: prefixes + SELECT + WHERE { GRAPH <uri> { ... } }
+  # Full query
   query = <<~SPARQL
     #{PREFIXES}
     SELECT #{select_clause}
     WHERE {
-      GRAPH <#{graphuri}> {
+      #{values_clause}
+      GRAPH ?graph {
         #{where_clause}
       }
     }
   SPARQL
 
-  # Execute the query against the RDF/SPARQL database (DATABASE is a configured RDF::Repository or similar)
+  warn "Batched fetch query:\n#{query}\n\n"
+
   result_set = DATABASE.query(query)
 
-  # Start building a hash for this dataset's details, with the URI itself included
-  details = { dataset: graphuri }
+  # Group results by ?graph (each graph may produce multiple rows if multi-valued, but we handle in processing)
+  grouped = result_set.group_by { |r| r[:graph].to_s }
 
-  # Now extract values from the query results for each field
-  fields.each do |f|
-    field_sym = f[:fieldid].to_sym # e.g., :title, :description
-
-    if f[:cardinality] == 'Multiple'
-      # For multi-valued fields: collect the value from EVERY solution (row),
-      # convert to string (if present), remove nil, remove duplicates
-      values = result_set.map { |r| r[field_sym]&.to_s }.compact.uniq
-      # Only store the array if we actually found values
-      details[field_sym] = values unless values.empty?
-    else
-      # For single-valued fields: take the value from the FIRST solution only
-      # ---------------------------------------------------------
-      details[field_sym] = result_set.first[field_sym]&.to_s # FIXED VERSION
+  # For each group, build details hash (mimicking fetch_dataset_raw_data)
+  grouped.map do |graph_uri, rows|
+    details = { dataset: graph_uri }
+    fields.each do |f|
+      field_sym = f[:fieldid].to_sym
+      if f[:cardinality] == 'Multiple'
+        values = rows.flat_map { |r| r[field_sym]&.to_s }.compact.uniq
+        details[field_sym] = values unless values.empty?
+      elsif rows.first&.bound?(field_sym)
+        details[field_sym] = rows.first[field_sym]&.to_s
+      end
     end
+    warn "Batched details for #{graph_uri}: #{details.inspect}"
+    details
   end
-
-  warn "Dataset details: #{details.inspect}"
-  details
-end
-# this is the end of the world as we know it
+end # this is the end of the world as we know it

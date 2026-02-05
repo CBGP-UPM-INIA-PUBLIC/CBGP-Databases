@@ -21,4 +21,9 @@ module MyHelpers
       '' # Default to empty if no valid date
     end
   end
+
+  # helper
+  def generate_questionnaire(questionnaire_type:)
+    Questionnaire.get_cached(questionnaire_type: questionnaire_type) # OPTIMIZATION: Use cache instead of new()
+  end
 end

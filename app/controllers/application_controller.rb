@@ -10,7 +10,6 @@ require 'cgi'
 # App specific requires
 require_relative 'configuration'
 require_relative 'routes'
-require_relative 'helpers'
 
 require_rel '../../lib'
 require_rel '../views'

@@ -415,7 +415,6 @@ def accent_insensitive_pattern(term)
 end
 
 def build_search_query(search_params:, dataset_type:)
-  # [Unchanged early-exit guard]
   return nil unless search_params.is_a?(Hash) &&
                     search_params.any? do |k, v|
                       !v.nil? &&
@@ -425,14 +424,11 @@ def build_search_query(search_params:, dataset_type:)
                       )
                     end
 
+  # OPTIMIZATION: Use the exact cached fields (with :questionclass, :label, etc.)
+  fields = CBGP::Dataset.fields_for(dataset_type)
+
   datasetPREFIX = "<#{BASE_URI}#{dataset_type}/dataset/>"
   datasetgraphPREFIX = "<#{BASE_URI}#{dataset_type}/context/>"
-
-  fields = CBGP::Dataset.get_questionnaire_fields(questionnaire_type: dataset_type)
-  # fields << {
-  # fieldid: question.questionid,
-  # label: question.question,
-  # objectmethod: question.objectmethod,
 
   query = <<~SPARQL
     #{PREFIXES}
@@ -444,11 +440,16 @@ def build_search_query(search_params:, dataset_type:)
   SPARQL
 
   conditions = []
-  search_params.each do |questionclass, value|
-    field = fields.find { |f| f[:fieldid] == questionclass }
-    next unless field
 
-    if value.is_a?(Hash) # Date range – unchanged
+  search_params.each do |questionclass, value|
+    field = fields.find { |f| f[:questionclass] == questionclass }
+
+    if field.nil?
+      warn "WARNING: No field found for questionclass '#{questionclass}' in #{dataset_type} – skipping this search term"
+      next
+    end
+
+    if value.is_a?(Hash) # Date range
       start_date = value['start']&.strip
       end_date = value['end']&.strip
       next if start_date.to_s.empty? && end_date.to_s.empty?
@@ -468,12 +469,11 @@ def build_search_query(search_params:, dataset_type:)
         ?attribute rdf:type cbgp:#{questionclass} .
         #{filter}
       CONDITION
-    else # Text search – UPDATED: use unaccent in pattern building
+    else # Text / dropdown value
       value_str = value.to_s.strip
       next if value_str.empty?
 
       if ACCENT_SENSITIVE_LABELS.include?(field[:label].downcase)
-        # Accent-insensitive: build pattern from unaccented term
         pattern = accent_insensitive_pattern(value_str)
         next if pattern.empty?
 
@@ -484,7 +484,6 @@ def build_search_query(search_params:, dataset_type:)
           FILTER regex(STR(?value), "#{pattern}", "i")
         CONDITION
       else
-        # Standard – unchanged, but with downcase
         escaped_value = value_str.gsub('"', '\\"')
         conditions << <<-CONDITION
           ?dataset sio:SIO_000008 ?attribute .
@@ -496,7 +495,10 @@ def build_search_query(search_params:, dataset_type:)
     end
   end
 
-  return nil if conditions.empty?
+  if conditions.empty?
+    warn 'WARNING: No valid search conditions generated – returning empty results'
+    return nil
+  end
 
   query += conditions.join("\n")
   query += <<~SPARQL
@@ -523,54 +525,54 @@ end
 # Returns an array of hashes, one hash per dataset URI, containing only the fields that
 # actually have values.
 def fetch_datasets_raw_data(graph_uris:, database:)
+  graph_uris = [graph_uris] unless graph_uris.is_a? Array
   return [] if graph_uris.empty?
 
-  # OPTIMIZATION: Use cached fields (no rebuild)
-  fields = CBGP::Dataset.get_questionnaire_fields(questionnaire_type: database)
+  # OPTIMIZATION: Use cached exact fields
+  fields = CBGP::Dataset.fields_for(database)
 
-  # Build SELECT: ?graph + all ?field1 ?field2 ...
-  select_clause = '?graph ' + fields.map { |f| "?#{f[:fieldid]}" }.join(' ')
+  # Build SELECT: ?graph + all ?questionclass vars
+  select_clause = '?graph ' + fields.map { |f| "?#{f[:questionclass]}" }.join(' ')
 
-  # Build VALUES for graphs
+  # Build VALUES clause for all graphs
   values_clause = "VALUES ?graph { #{graph_uris.map { |g| "<#{g}>" }.join(' ')} }"
 
-  # Build WHERE: for each field, OPTIONAL { GRAPH ?graph { ... } }
+  # Build WHERE: OPTIONAL blocks per field
   where_clause = fields.map do |f|
     <<~SPARQL
       OPTIONAL {
         GRAPH ?graph {
-          ?dataset sio:SIO_000008 ?attribute#{f[:fieldid]} .
-          ?attribute#{f[:fieldid]} sio:SIO_000300 ?#{f[:fieldid]} .
-          ?attribute#{f[:fieldid]} rdf:type cbgp:#{f[:fieldid]} .
+          ?dataset sio:SIO_000008 ?attribute#{f[:questionclass]} .
+          ?attribute#{f[:questionclass]} sio:SIO_000300 ?#{f[:questionclass]} .
+          ?attribute#{f[:questionclass]} rdf:type cbgp:#{f[:questionclass]} .
         }
       }
     SPARQL
   end.join("\n")
 
-  # Full query
+  # Full batched query
   query = <<~SPARQL
     #{PREFIXES}
     SELECT #{select_clause}
     WHERE {
       #{values_clause}
-      GRAPH ?graph {
-        #{where_clause}
-      }
+      #{where_clause}
     }
   SPARQL
 
-  warn "Batched fetch query:\n#{query}\n\n"
+  warn "BATCHED FETCH QUERY:\n#{query}\n\n"
 
   result_set = DATABASE.query(query)
 
-  # Group results by ?graph (each graph may produce multiple rows if multi-valued, but we handle in processing)
+  # Group results by graph (handles multi-row per graph for multi-valued fields)
   grouped = result_set.group_by { |r| r[:graph].to_s }
 
-  # For each group, build details hash (mimicking fetch_dataset_raw_data)
   grouped.map do |graph_uri, rows|
     details = { dataset: graph_uri }
+
     fields.each do |f|
-      field_sym = f[:fieldid].to_sym
+      field_sym = f[:questionclass].to_sym
+
       if f[:cardinality] == 'Multiple'
         values = rows.flat_map { |r| r[field_sym]&.to_s }.compact.uniq
         details[field_sym] = values unless values.empty?
@@ -578,7 +580,39 @@ def fetch_datasets_raw_data(graph_uris:, database:)
         details[field_sym] = rows.first[field_sym]&.to_s
       end
     end
-    warn "Batched details for #{graph_uri}: #{details.inspect}"
+
+    warn "BATCHED DETAILS FOR #{graph_uri}: #{details.inspect}"
     details
   end
-end # this is the end of the world as we know it
+end
+
+def batch_retrieve_dataset_ids(graph_uris:)
+  return {} if graph_uris.empty?
+
+  # Build VALUES for all graphs
+  values_clause = "VALUES ?graph { #{graph_uris.map { |g| "<#{g}>" }.join(' ')} }"
+
+  query = <<~SPARQL
+    #{PREFIXES}
+    SELECT ?graph ?id
+    WHERE {
+      #{values_clause}
+      GRAPH ?graph {
+        ?dataset sio:SIO_000671 ?idnode .
+        ?idnode sio:SIO_000300 ?id ;
+          rdf:type sio:SIO_000115 .  # identifier
+      }
+    }
+  SPARQL
+
+  warn "BATCHED PRIMARY_ID QUERY:\n#{query}\n\n"
+
+  results = DATABASE.query(query)
+
+  # Build hash: graph_uri => primary_id (string)
+  results.each_with_object({}) do |row, hash|
+    graph = row[:graph].to_s
+    id = row[:id]&.to_s
+    hash[graph] = id if id
+  end
+end

@@ -290,29 +290,33 @@ def set_routes
 
   post '/cbgp/query-dataset/:database' do
     @database = params[:database]
-
-    # OPTIMIZATION: Uses cache (no rebuild)
     @questionnaire = generate_questionnaire(questionnaire_type: @database)
-
-    # OPTIMIZATION: Uses cache (no rebuild)
-    @fields = CBGP::Dataset.get_questionnaire_fields(questionnaire_type: @database)
+    @fields = CBGP::Dataset.fields_for(@database) # Cached
 
     search_params = params.except('database')
-
     graphuris = execute_search(search_params: search_params, dataset_type: @database)
 
-    # OPTIMIZATION: Batch fetch all details first
+    # BATCH 1: All primary_ids
+    primary_ids_by_graph = batch_retrieve_dataset_ids(graph_uris: graphuris)
+
+    # BATCH 2: All details (already batched)
     all_details = fetch_datasets_raw_data(graph_uris: graphuris, database: @database)
 
-    @datasets = []
-    graphuris.zip(all_details).each do |graphuri, details| # Zip to match order
-      @datasets << CBGP::Dataset.load_from_graph(graph: graphuri, database: @database, pre_fetched_details: details)
+    # Match details to graphs (preserve order)
+    details_by_graph = all_details.each_with_object({}) do |detail_hash, hash|
+      hash[detail_hash[:dataset]] = detail_hash
     end
 
-    session[:last_search] = {
-      database: @database,
-      params: search_params.deep_dup
-    }
+    @datasets = graphuris.map do |graphuri|
+      CBGP::Dataset.load_from_graph(
+        graph: graphuri,
+        database: @database,
+        pre_fetched_details: details_by_graph[graphuri],
+        pre_fetched_primary_id: primary_ids_by_graph[graphuri]
+      )
+    end
+
+    session[:last_search] = { database: @database, params: search_params.deep_dup }
 
     erb :search_dataset_resultform, layout: :database_layout
   end

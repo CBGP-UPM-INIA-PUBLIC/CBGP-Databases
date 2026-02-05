@@ -1,44 +1,40 @@
-<% 
+<%
 # Compute TSV download data at the TOP of the template
 # Generates tab-separated values for perfect Excel compatibility (avoids comma/locale issues)
-require 'csv' 
+require 'csv'
 require 'base64'
-
 csv_data_uri = nil
 csv_filename = nil
-
 unless @datasets.empty?
   tsv_content = CSV.generate(col_sep: "\t", force_quotes: true) do |tsv|
     # Header: Dataset ID first, then all field labels
     tsv << ["Dataset ID"] + @fields.map { |f| f[:label] }
-    
+
     # Rows
     @datasets.each do |dataset|
       row = [dataset.primary_id]
-      
       @fields.each do |field|
-        value = dataset.send(field[:objectmethod])
-        
-        cell = if value.nil? || (value.is_a?(Array) && value.empty?)
-                 ''
-               elsif value.is_a?(Array)
-                 value.join(', ')  # Multi-valued still comma-separated inside the cell
-               else
-                 value.to_s
-               end
-        
-        row << cell
+        if field[:method]
+          value = dataset.send(field[:method])
+          cell = if value.nil? || (value.is_a?(Array) && value.empty?)
+                   ''
+                 elsif value.is_a?(Array)
+                   value.join(', ')
+                 else
+                   value.to_s
+                 end
+          row << cell
+        else
+          row << ''  # Skip if no method defined (shouldn't happen, but safe)
+        end
       end
-      
       tsv << row
     end
   end
-  
+
   # Base64 for reliable data URI
   tsv_base64 = Base64.strict_encode64(tsv_content)
   csv_data_uri = "data:text/tab-separated-values;base64,#{tsv_base64}"
-  
-  # .tsv extension – Excel opens tabs perfectly with this
   csv_filename = "cbgp-search-results-#{@database}-#{Time.now.strftime('%Y-%m-%d')}.tsv"
 end
 %>
@@ -52,7 +48,7 @@ end
       </a>
     <% end %>
   </h3>
-  
+
   <% if @datasets.empty? %>
     <div class="error-messages">
       <p>No results found for your search.</p>
@@ -85,42 +81,34 @@ end
                   <a href="/cbgp/dataset/<%= @database %>/<%= primary_id %>" class="dataset-link">
                     EDIT
                   </a>
-                  - - 
+                  - -
                   <a href="/cbgp/dataset/delete/<%= @database %>/<%= primary_id %>"
                      class="dataset-link delete-link"
                      onclick="return confirm('Really delete this record? This cannot be undone.');">
                     DELETE
                   </a>
                 </td>
-                
                 <% @fields.each do |field| %>
                   <td>
-                    <% raw_value = dataset.send(field[:objectmethod]) %>
-                    
-                    <% if raw_value.nil? || (raw_value.is_a?(Array) && raw_value.empty?) %>
-                      -
+                    <% if field[:method] %>
+                      <% raw_value = dataset.send(field[:method]) %>
+                      <% if raw_value.nil? || (raw_value.is_a?(Array) && raw_value.empty?) %>
+                        -
+                      <% else %>
+                        <%
+                          display_value = raw_value.is_a?(Array) ? raw_value.join(', ') : raw_value.to_s
+                          truncated = display_value.length > 100 ? display_value[0...100] + '...' : display_value
+                        %>
+                        <span title="<%= display_value %>">
+                          <%= truncated %>
+                        </span>
+                      <% end %>
                     <% else %>
-                      <% 
-                        # Normalize to string: join arrays, to_s singles
-                        display_value = if raw_value.is_a?(Array)
-                                          raw_value.join(', ')
-                                        else
-                                          raw_value.to_s
-                                        end
-                        
-                        # Truncate to ~100 characters (exact limit: 100)
-                        # Only add "..." if actually truncated
-                        truncated = display_value.length > 100 ? display_value[0...100] + '...' : display_value
-                      %>
-                      
-                      <!-- Full value in title for tooltip on hover -->
-                      <span title="<%= display_value %>">
-                        <%= truncated %>
-                      </span>
+                      -  <!-- No method defined for this field -->
                     <% end %>
                   </td>
-                <% end %>              
-                </tr>
+                <% end %>
+              </tr>
             <% end %>
           </tbody>
         </table>

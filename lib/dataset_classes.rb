@@ -10,7 +10,9 @@ module CBGP
     @@methods_defined = {} # OPTIMIZATION: Track if dynamic methods defined per type
 
     def self.fields_for(type)
-      @@fields_cache[type] ||= begin
+      lang = current_language # Resolve here (called in request context)
+      key = "#{type}_#{lang}"
+      @@fields_cache[key] ||= begin
         fields = []
         sections = get_questionnaire_sections_query(questionnaire_type: type)
         sections.each do |thissection|

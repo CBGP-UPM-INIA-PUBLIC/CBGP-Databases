@@ -96,8 +96,15 @@ def set_routes
   end
 
   post '/set_language' do
-    session[:language] = params[:language] if %w[en es].include?(params[:language])
-    status 200
+    new_lang = params['language']&.strip&.downcase
+    if %w[en es].include?(new_lang)
+      session[:language] = new_lang
+      warn "Language set to '#{new_lang}' for session #{session.object_id}"
+    else
+      session[:language] = 'en' # Fallback
+    end
+
+    status 204 # No Content – clean for fetch() + reload
   end
 
   get '/cbgp/refresh' do # when the ontology is updated...
@@ -385,7 +392,15 @@ def set_routes
   # - GET remains for direct linkability from search results (using the internal primary_id UUID)
   # The helper automatically detects special identifier types (e.g., DOI for publications) and routes accordingly.
 
+  before do
+    Thread.current[:language] = session[:language] || 'en'
+  end
+
   helpers do
+    def current_language
+      Thread.current[:language] || 'en'
+    end
+
     def load_dataset_for_edit(database:, primary_id:)
       halt 400, 'primary Identifier required' if primary_id.to_s.strip.empty?
 

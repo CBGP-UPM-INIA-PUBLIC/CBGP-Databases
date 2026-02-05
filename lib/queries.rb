@@ -60,7 +60,7 @@ GET_DBNAME
   results.first[:dbname].to_s
 end
 
-def get_questionnaire_types_query(type: 'Core', language: $language) # rubocop:disable Metrics/MethodLength
+def get_questionnaire_types_query(type: 'Core', language: current_language) # rubocop:disable Metrics/MethodLength
   # questionnaire_type = Add/Edit publications (#publication) has-fields Publication Questions (#new-publication-questions)
 
   qs = <<GET_QUESTIONNAIRE_TYPES
@@ -78,7 +78,7 @@ GET_QUESTIONNAIRE_TYPES
   results.map { |r| r.to_h.transform_values(&:to_s) } # https://w3id.org/CBGP-App#add-member => "Add/Edit Member"
 end
 
-def get_questionnaire_sections_query(questionnaire_type:, language: $language)
+def get_questionnaire_sections_query(questionnaire_type:, language: current_language)
   return [] unless questionnaire_type
 
   # questionnaire_type = Add/Edit publications (#add-publication) has-fields Publication Questions (#new-publication-questions)
@@ -97,7 +97,7 @@ GET_QUESTIONNAIRE_SECTIONS
   qs.execute($ontology)
 end
 
-def get_section_questions_query(sectionid:, language: $language)
+def get_section_questions_query(sectionid:, language: current_language)
   qs = <<GET_SECTION_QUESTIONS
     #{PREFIXES}
 
@@ -119,7 +119,7 @@ GET_SECTION_QUESTIONS
   qs.execute($ontology)
 end
 
-def get_answer_block_query(ablockid:, language: $language)
+def get_answer_block_query(ablockid:, language: current_language)
   a = <<GET_ANSWER_BLOCK
     #{PREFIXES}
 
@@ -136,7 +136,7 @@ GET_ANSWER_BLOCK
   a.execute($ontology)
 end
 
-def get_hierarchical_answer_block_query(ablockid:, language: $language)
+def get_hierarchical_answer_block_query(ablockid:, language: current_language)
   query = <<~GET_HIERARCHICAL_ANSWERS
     #{PREFIXES}
     SELECT DISTINCT ?aid ?label ?parent ?sequence WHERE {
@@ -153,7 +153,7 @@ def get_hierarchical_answer_block_query(ablockid:, language: $language)
   JSON.generate(tree) # Use JSON.generate for explicit control
 end
 
-def get_label_for_questionnaire_type(id:, language: $language)
+def get_label_for_questionnaire_type(id:, language: current_language)
   lab = SPARQL.parse("
     #{PREFIXES}
 
@@ -195,7 +195,7 @@ def get_label_for_id(id:)
   end
 end
 
-def field_query(fieldid:, language: $language)
+def field_query(fieldid:, language: current_language)
   query = <<~FIELDQ
     #{PREFIXES}
     SELECT ?label ?answerblock ?objectclass ?objectmethod ?questionorder ?cardinality ?widgettype

@@ -15,12 +15,14 @@ require_rel '../../lib'
 require_rel '../views'
 
 module CBGP
-  $language = 'en'
-
   class DatabasesApp < Sinatra::Base
     helpers MyHelpers
     set_routes
   end
+end
+
+def current_language
+  Thread.current[:language] || 'en'
 end
 
 CBGP::DatabasesApp.run! if __FILE__ == $0

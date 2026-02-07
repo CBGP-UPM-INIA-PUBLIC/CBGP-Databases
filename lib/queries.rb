@@ -51,7 +51,7 @@ def get_dbname_for_form(form:) # form is e.g. publication or userproject
 
     SELECT ?dbname WHERE {
       #{classname} rdfs:subClassOf cbgp:forms ;
-        local:dbname ?dbname .  # this is just the strong, like "project"
+        local:dbname ?dbname .  # this is just the string, like "project"
     }
 GET_DBNAME
   warn "database name query\n\n#{qs}\n\n"
@@ -81,6 +81,8 @@ end
 def get_questionnaire_sections_query(questionnaire_type:, language: current_language)
   return [] unless questionnaire_type
 
+  warn "\n\nIn get_questionnaire_sections with #{questionnaire_type} and #{language}\n\n\n"
+
   # questionnaire_type = Add/Edit publications (#add-publication) has-fields Publication Questions (#new-publication-questions)
 
   qs = <<GET_QUESTIONNAIRE_SECTIONS
@@ -92,9 +94,11 @@ def get_questionnaire_sections_query(questionnaire_type:, language: current_lang
       FILTER (lang(?seclab) = "#{language}")
     }
 GET_QUESTIONNAIRE_SECTIONS
-  # warn "QUERY IS #{qs}"
+  warn "QUERY IS #{qs} on ontology #{$ontology} #{$ontology.size}"
   qs = SPARQL.parse(qs)
-  qs.execute($ontology)
+  result = qs.execute($ontology)
+  warn "questionnaire_sections_query result: #{result.inspect}"
+  result
 end
 
 def get_section_questions_query(sectionid:, language: current_language)
@@ -426,7 +430,7 @@ def build_search_query(search_params:, dataset_type:)
 
   # OPTIMIZATION: Use the exact cached fields (with :questionclass, :label, etc.)
   fields = CBGP::Dataset.fields_for(dataset_type)
-
+  warn "\n\n\nFIELDS #{fields}\n\n\n"
   datasetPREFIX = "<#{BASE_URI}#{dataset_type}/dataset/>"
   datasetgraphPREFIX = "<#{BASE_URI}#{dataset_type}/context/>"
 
@@ -512,6 +516,7 @@ end
 
 def execute_search(search_params:, dataset_type:)
   query = build_search_query(search_params: search_params, dataset_type: dataset_type)
+  warn "\n\n\nSEARCH QUERY IS #{query}\n\n\n"
   return [] unless query
 
   results = DATABASE.query(query)

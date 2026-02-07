@@ -26,4 +26,15 @@ module MyHelpers
   def generate_questionnaire(questionnaire_type:)
     Questionnaire.get_cached(questionnaire_type: questionnaire_type) # OPTIMIZATION: Use cache instead of new()
   end
+
+  def to_plain_hash(obj) # used to rerun seearches with the same parameters
+    case obj
+    when Hash
+      obj.transform_values { |v| to_plain_hash(v) }
+    when Array
+      obj.map { |v| to_plain_hash(v) }
+    else
+      obj
+    end
+  end
 end

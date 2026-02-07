@@ -2,6 +2,7 @@
 
 require 'compass' # gives us sass/scss
 require 'json'
+require 'sinatra/flash'
 require_relative '../../lib/core'
 
 def set_routes
@@ -234,11 +235,13 @@ def set_routes
     end
 
     # Refresh results using saved session search (same as single delete)
+
     last_search = session[:last_search]
     if last_search && last_search[:database] == @database
-      search_params = last_search[:params]
-      @fields = CBGP::Dataset.get_questionnaire_fields(questionnaire_type: @database)
+      search_params = last_search[:params] # Now it's plain Hash
+      warn "Re-running search with params: #{search_params.inspect}" # debug
 
+      @fields = CBGP::Dataset.fields_for(@database) # or .get_questionnaire_fields if still using old name
       graphuris = execute_search(search_params: search_params, dataset_type: @database)
 
       @datasets = []
@@ -323,7 +326,11 @@ def set_routes
       )
     end
 
-    session[:last_search] = { database: @database, params: search_params.deep_dup }
+    plain_params = to_plain_hash(search_params.to_h) # Sinatra params object doesn't clone easily, so this makes it a hash
+    session[:last_search] = {
+      database: @database,
+      params: plain_params
+    }
 
     erb :search_dataset_resultform, layout: :database_layout
   end
@@ -418,6 +425,7 @@ def set_routes
 
     def delete_dataset(database:, primary_id:)
       halt 400, 'primary Identifier required' if primary_id.to_s.strip.empty?
+      @database = database # needs to be shared
 
       # Perform the delete
       graphres = retrieve_dataset_graph_query(primary_id: primary_id)
@@ -425,26 +433,27 @@ def set_routes
         # Optional: flash error "Record not found"
         redirect '/cbgp/dashboard' # or search form
       end
+      warn "Deleting #{graphres.inspect}"
       graphuri = graphres.first[:g].to_s
+      warn "Deleting id #{graphres.inspect}"
+
       delete_dataset_query(oldid: graphuri)
 
       # NEW: Try to return to the previous search results
       last_search = session[:last_search]
-      if last_search && last_search[:database] == database
-        # Re-run the saved search
-        search_params = last_search[:params]
-        @database = database
-        @fields = CBGP::Dataset.get_questionnaire_fields(questionnaire_type: @database)
+      if last_search && last_search[:database] == @database
+        search_params = last_search[:params] # Now it's plain Hash
+        warn "Re-running search with params: #{search_params.inspect}" # debug
 
+        @fields = CBGP::Dataset.fields_for(@database) # or .get_questionnaire_fields if still using old name
         graphuris = execute_search(search_params: search_params, dataset_type: @database)
-
         @datasets = []
         graphuris.each do |graphuri|
           @datasets << CBGP::Dataset.load_from_graph(graph: graphuri, database: @database)
         end
 
         # Optional: Add a flash message (if you have flash enabled)
-        # flash[:notice] = "Record deleted successfully."
+        flash[:notice] = 'Record deleted successfully.'
 
         # Render the refreshed results page
         erb :search_dataset_resultform, layout: :database_layout

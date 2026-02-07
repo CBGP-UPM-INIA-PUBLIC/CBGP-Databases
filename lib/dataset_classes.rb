@@ -10,8 +10,17 @@ module CBGP
     @@methods_defined = {} # OPTIMIZATION: Track if dynamic methods defined per type
 
     def self.fields_for(type)
-      lang = current_language # Resolve here (called in request context)
+      lang = current_language
       key = "#{type}_#{lang}"
+      warn "[CACHE] Checking fields_for(#{type.inspect}) → key=#{key.inspect}, current lang=#{lang.inspect}, thread=#{Thread.current.object_id}"
+
+      if @@fields_cache[key]
+        warn "[CACHE] HIT for #{key}"
+        warn "[CACHE] HIT value #{@@fields_cache[key]}"
+        return @@fields_cache[key]
+      end
+
+      warn "[CACHE] MISS → building for #{key}"
       @@fields_cache[key] ||= begin
         fields = []
         sections = get_questionnaire_sections_query(questionnaire_type: type)
@@ -50,6 +59,7 @@ module CBGP
         fields.sort_by! { |f| f[:sequence] }
         fields
       end
+      @@fields_cache[key]
     end
 
     def initialize(type:, primary_id: nil)

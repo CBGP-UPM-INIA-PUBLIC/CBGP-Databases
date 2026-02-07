@@ -17,6 +17,7 @@ require_rel '../views'
 module CBGP
   class DatabasesApp < Sinatra::Base
     helpers MyHelpers
+    register Sinatra::Flash
     set_routes
   end
 end
@@ -25,4 +26,4 @@ def current_language
   Thread.current[:language] || 'en'
 end
 
-CBGP::DatabasesApp.run! if __FILE__ == $0
+# CBGP::DatabasesApp.run! if __FILE__ == $0

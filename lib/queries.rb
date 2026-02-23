@@ -174,7 +174,7 @@ def get_label_for_questionnaire_type(id:, language: current_language)
   [res.first[:plabel].to_s, res.first[:label].to_s]
 end
 
-def get_label_for_id(id:)
+def get_label_for_id(id:, language: current_language)
   return nil if id.nil? || id.empty?
 
   # Strip the document fragment from the URI if it includes a '#'
@@ -184,7 +184,7 @@ def get_label_for_id(id:)
     #{PREFIXES}
     SELECT ?label WHERE {
     cbgp:#{id} rdfs:label ?label .
-    FILTER (lang(?label) = "en")
+    FILTER (lang(?label) = '#{language}')
     }
     LIMIT 1
   LABEL_QUERY

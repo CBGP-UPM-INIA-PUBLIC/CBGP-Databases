@@ -1,0 +1,19 @@
+<Root>
+ 
+<% @datasets.each do |d| %>
+    <intermedia>
+        <id><%= d.primary_id  %></id>
+        <nombre><%= d.name  %></nombre>
+        <apellidos><%= d.surname  %></apellidos>
+        <email1><%= d.institutional_mail  %></email1>
+        <laboratorio><%= d.lab  %></laboratorio>
+        <tlf_lab><%= d.lab_phone_number  %></tlf_lab>
+        <despacho><%= d.office  %></despacho>
+        <tlf_despacho><%= d.office  %></tlf_despacho>
+        <subcategoria><%= get_label_for_id(id: d.category).strip %></subcategoria>
+        <jefe_grupo><%= get_label_for_id(id: d.pi).strip  %></jefe_grupo>
+        <sublinea><%= get_label_for_id(id: d.research_area).strip  %></sublinea>
+        <institucion><%= get_label_for_id(id: d.institution).strip  %></institucion>
+    </intermedia>
+<% end %>
+</Root>

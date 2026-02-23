@@ -378,6 +378,92 @@ def set_routes
     halt erb :bulkpubs
   end
 
+  ################# DUMPERS
+  ################# DUMPERS
+  ################# DUMPERS
+  ################# DUMPERS
+  ################# DUMPERS
+  ################# DUMPERS
+  ################# DUMPERS
+  ################# DUMPERS
+  ################# DUMPERS
+  ################# DUMPERS
+  ################# DUMPERS
+  ################# DUMPERS
+  ################# DUMPERS
+  ################# DUMPERS
+  ################# DUMPERS
+
+  get '/cbgp/active-members' do # creates the search page iwth database in the POST body
+    $language = 'en' # rubocop:disable Style/GlobalVars
+    @database = 'member'
+    @questionnaire = generate_questionnaire(questionnaire_type: @database)
+    @entry = CBGP::Dataset.new(type: @database)
+    memberstatus = 'mem17' # status of  members
+    statusresponse = 'active'
+    params = { memberstatus => statusresponse }
+
+    graphuris = execute_search(search_params: params, dataset_type: @database)
+
+    $language = 'es' # switch to spanish for Gonzalo's pipeline # rubocop:disable Style/GlobalVars
+    # BATCH 1: All primary_ids
+    primary_ids_by_graph = batch_retrieve_dataset_ids(graph_uris: graphuris)
+    # BATCH 2: All details (already batched)
+    all_details = fetch_datasets_raw_data(graph_uris: graphuris, database: @database)
+
+    # Match details to graphs (preserve order)
+    details_by_graph = all_details.each_with_object({}) do |detail_hash, hash|
+      hash[detail_hash[:dataset]] = detail_hash
+    end
+
+    @datasets = graphuris.map do |graphuri|
+      CBGP::Dataset.load_from_graph(
+        graph: graphuri,
+        database: @database,
+        pre_fetched_details: details_by_graph[graphuri],
+        pre_fetched_primary_id: primary_ids_by_graph[graphuri]
+      )
+    end
+    content_type 'application/xml', charset: 'utf-8'
+    #    content_type 'text/plain', charset: 'utf-8'
+    halt erb :xmlmembers
+  end
+
+  get '/cbgp/active-emails' do # creates the search page iwth database in the POST body
+    $language = 'en' # rubocop:disable Style/GlobalVars
+    @database = 'member'
+    @questionnaire = generate_questionnaire(questionnaire_type: @database)
+    @entry = CBGP::Dataset.new(type: @database)
+    memberstatus = 'mem17' # status of  members
+    statusresponse = 'active'
+    params = { memberstatus => statusresponse }
+
+    graphuris = execute_search(search_params: params, dataset_type: @database)
+
+    $language = 'es' # switch to spanish for Gonzalo's pipeline # rubocop:disable Style/GlobalVars
+    # BATCH 1: All primary_ids
+    primary_ids_by_graph = batch_retrieve_dataset_ids(graph_uris: graphuris)
+    # BATCH 2: All details (already batched)
+    all_details = fetch_datasets_raw_data(graph_uris: graphuris, database: @database)
+
+    # Match details to graphs (preserve order)
+    details_by_graph = all_details.each_with_object({}) do |detail_hash, hash|
+      hash[detail_hash[:dataset]] = detail_hash
+    end
+
+    @datasets = graphuris.map do |graphuri|
+      CBGP::Dataset.load_from_graph(
+        graph: graphuri,
+        database: @database,
+        pre_fetched_details: details_by_graph[graphuri],
+        pre_fetched_primary_id: primary_ids_by_graph[graphuri]
+      )
+    end
+    content_type 'application/xml', charset: 'utf-8'
+    #    content_type 'text/plain', charset: 'utf-8'
+    halt erb :xmlemail
+  end
+
   ################# HELPERS
   ################# HELPERS
   ################# HELPERS
@@ -403,12 +489,12 @@ def set_routes
     Thread.current[:language] = session[:language] || 'en'
   end
 
-  helpers do
-    def current_language
+  helpers do # rubocop:disable Metrics/BlockLength
+    def current_language # rubocop:disable Lint/NestedMethodDefinition
       Thread.current[:language] || 'en'
     end
 
-    def load_dataset_for_edit(database:, primary_id:)
+    def load_dataset_for_edit(database:, primary_id:) # rubocop:disable Lint/NestedMethodDefinition
       halt 400, 'primary Identifier required' if primary_id.to_s.strip.empty?
 
       @database = database # need instane variable for ERBs
@@ -423,7 +509,7 @@ def set_routes
       erb :dataset, layout: :database_layout
     end
 
-    def delete_dataset(database:, primary_id:)
+    def delete_dataset(database:, primary_id:) # rubocop:disable Lint/NestedMethodDefinition
       halt 400, 'primary Identifier required' if primary_id.to_s.strip.empty?
       @database = database # needs to be shared
 

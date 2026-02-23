@@ -70,7 +70,9 @@ def set_routes
       '/cbgp/login', # Login page
       '/cbgp/stylesheets/cbgp.css', # Login page
       '/logout', # Optional: logout route
-      '/set_language' # Add the new route to public paths
+      '/set_language', # Add the new route to public paths
+      '/cbgp/active-emails', # emails
+      '/cbgp/active-members' # Amembers
       # '/cbgp/user-dashboard' # Add the new route to public paths
     ]
 

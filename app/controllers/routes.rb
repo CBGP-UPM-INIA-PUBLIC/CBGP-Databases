@@ -2,6 +2,7 @@
 
 require 'compass' # gives us sass/scss
 require 'json'
+require 'sinatra/flash'
 require_relative '../../lib/core'
 
 def set_routes
@@ -69,7 +70,9 @@ def set_routes
       '/cbgp/login', # Login page
       '/cbgp/stylesheets/cbgp.css', # Login page
       '/logout', # Optional: logout route
-      '/set_language' # Add the new route to public paths
+      '/set_language', # Add the new route to public paths
+      '/cbgp/active-emails', # emails
+      '/cbgp/active-members' # Amembers
       # '/cbgp/user-dashboard' # Add the new route to public paths
     ]
 
@@ -96,8 +99,15 @@ def set_routes
   end
 
   post '/set_language' do
-    session[:language] = params[:language] if %w[en es].include?(params[:language])
-    status 200
+    new_lang = params['language']&.strip&.downcase
+    if %w[en es].include?(new_lang)
+      session[:language] = new_lang
+      warn "Language set to '#{new_lang}' for session #{session.object_id}"
+    else
+      session[:language] = 'en' # Fallback
+    end
+
+    status 204 # No Content – clean for fetch() + reload
   end
 
   get '/cbgp/refresh' do # when the ontology is updated...
@@ -227,11 +237,13 @@ def set_routes
     end
 
     # Refresh results using saved session search (same as single delete)
+
     last_search = session[:last_search]
     if last_search && last_search[:database] == @database
-      search_params = last_search[:params]
-      @fields = CBGP::Dataset.get_questionnaire_fields(questionnaire_type: @database)
+      search_params = last_search[:params] # Now it's plain Hash
+      warn "Re-running search with params: #{search_params.inspect}" # debug
 
+      @fields = CBGP::Dataset.fields_for(@database) # or .get_questionnaire_fields if still using old name
       graphuris = execute_search(search_params: search_params, dataset_type: @database)
 
       @datasets = []
@@ -290,28 +302,36 @@ def set_routes
 
   post '/cbgp/query-dataset/:database' do
     @database = params[:database]
-
-    # OPTIMIZATION: Uses cache (no rebuild)
     @questionnaire = generate_questionnaire(questionnaire_type: @database)
-
-    # OPTIMIZATION: Uses cache (no rebuild)
-    @fields = CBGP::Dataset.get_questionnaire_fields(questionnaire_type: @database)
+    @fields = CBGP::Dataset.fields_for(@database) # Cached
 
     search_params = params.except('database')
-
     graphuris = execute_search(search_params: search_params, dataset_type: @database)
 
-    # OPTIMIZATION: Batch fetch all details first
+    # BATCH 1: All primary_ids
+    primary_ids_by_graph = batch_retrieve_dataset_ids(graph_uris: graphuris)
+
+    # BATCH 2: All details (already batched)
     all_details = fetch_datasets_raw_data(graph_uris: graphuris, database: @database)
 
-    @datasets = []
-    graphuris.zip(all_details).each do |graphuri, details| # Zip to match order
-      @datasets << CBGP::Dataset.load_from_graph(graph: graphuri, database: @database, pre_fetched_details: details)
+    # Match details to graphs (preserve order)
+    details_by_graph = all_details.each_with_object({}) do |detail_hash, hash|
+      hash[detail_hash[:dataset]] = detail_hash
     end
 
+    @datasets = graphuris.map do |graphuri|
+      CBGP::Dataset.load_from_graph(
+        graph: graphuri,
+        database: @database,
+        pre_fetched_details: details_by_graph[graphuri],
+        pre_fetched_primary_id: primary_ids_by_graph[graphuri]
+      )
+    end
+
+    plain_params = to_plain_hash(search_params.to_h) # Sinatra params object doesn't clone easily, so this makes it a hash
     session[:last_search] = {
       database: @database,
-      params: search_params.deep_dup
+      params: plain_params
     }
 
     erb :search_dataset_resultform, layout: :database_layout
@@ -360,6 +380,92 @@ def set_routes
     halt erb :bulkpubs
   end
 
+  ################# DUMPERS
+  ################# DUMPERS
+  ################# DUMPERS
+  ################# DUMPERS
+  ################# DUMPERS
+  ################# DUMPERS
+  ################# DUMPERS
+  ################# DUMPERS
+  ################# DUMPERS
+  ################# DUMPERS
+  ################# DUMPERS
+  ################# DUMPERS
+  ################# DUMPERS
+  ################# DUMPERS
+  ################# DUMPERS
+
+  get '/cbgp/active-members' do # creates the search page iwth database in the POST body
+    $language = 'en' # rubocop:disable Style/GlobalVars
+    @database = 'member'
+    @questionnaire = generate_questionnaire(questionnaire_type: @database)
+    @entry = CBGP::Dataset.new(type: @database)
+    memberstatus = 'mem17' # status of  members
+    statusresponse = 'active'
+    params = { memberstatus => statusresponse }
+
+    graphuris = execute_search(search_params: params, dataset_type: @database)
+
+    $language = 'es' # switch to spanish for Gonzalo's pipeline # rubocop:disable Style/GlobalVars
+    # BATCH 1: All primary_ids
+    primary_ids_by_graph = batch_retrieve_dataset_ids(graph_uris: graphuris)
+    # BATCH 2: All details (already batched)
+    all_details = fetch_datasets_raw_data(graph_uris: graphuris, database: @database)
+
+    # Match details to graphs (preserve order)
+    details_by_graph = all_details.each_with_object({}) do |detail_hash, hash|
+      hash[detail_hash[:dataset]] = detail_hash
+    end
+
+    @datasets = graphuris.map do |graphuri|
+      CBGP::Dataset.load_from_graph(
+        graph: graphuri,
+        database: @database,
+        pre_fetched_details: details_by_graph[graphuri],
+        pre_fetched_primary_id: primary_ids_by_graph[graphuri]
+      )
+    end
+    content_type 'application/xml', charset: 'utf-8'
+    #    content_type 'text/plain', charset: 'utf-8'
+    halt erb :xmlmembers
+  end
+
+  get '/cbgp/active-emails' do # creates the search page iwth database in the POST body
+    $language = 'en' # rubocop:disable Style/GlobalVars
+    @database = 'member'
+    @questionnaire = generate_questionnaire(questionnaire_type: @database)
+    @entry = CBGP::Dataset.new(type: @database)
+    memberstatus = 'mem17' # status of  members
+    statusresponse = 'active'
+    params = { memberstatus => statusresponse }
+
+    graphuris = execute_search(search_params: params, dataset_type: @database)
+
+    $language = 'es' # switch to spanish for Gonzalo's pipeline # rubocop:disable Style/GlobalVars
+    # BATCH 1: All primary_ids
+    primary_ids_by_graph = batch_retrieve_dataset_ids(graph_uris: graphuris)
+    # BATCH 2: All details (already batched)
+    all_details = fetch_datasets_raw_data(graph_uris: graphuris, database: @database)
+
+    # Match details to graphs (preserve order)
+    details_by_graph = all_details.each_with_object({}) do |detail_hash, hash|
+      hash[detail_hash[:dataset]] = detail_hash
+    end
+
+    @datasets = graphuris.map do |graphuri|
+      CBGP::Dataset.load_from_graph(
+        graph: graphuri,
+        database: @database,
+        pre_fetched_details: details_by_graph[graphuri],
+        pre_fetched_primary_id: primary_ids_by_graph[graphuri]
+      )
+    end
+    content_type 'application/xml', charset: 'utf-8'
+    #    content_type 'text/plain', charset: 'utf-8'
+    halt erb :xmlemail
+  end
+
   ################# HELPERS
   ################# HELPERS
   ################# HELPERS
@@ -381,8 +487,16 @@ def set_routes
   # - GET remains for direct linkability from search results (using the internal primary_id UUID)
   # The helper automatically detects special identifier types (e.g., DOI for publications) and routes accordingly.
 
-  helpers do
-    def load_dataset_for_edit(database:, primary_id:)
+  before do
+    Thread.current[:language] = session[:language] || 'en'
+  end
+
+  helpers do # rubocop:disable Metrics/BlockLength
+    def current_language # rubocop:disable Lint/NestedMethodDefinition
+      Thread.current[:language] || 'en'
+    end
+
+    def load_dataset_for_edit(database:, primary_id:) # rubocop:disable Lint/NestedMethodDefinition
       halt 400, 'primary Identifier required' if primary_id.to_s.strip.empty?
 
       @database = database # need instane variable for ERBs
@@ -397,8 +511,9 @@ def set_routes
       erb :dataset, layout: :database_layout
     end
 
-    def delete_dataset(database:, primary_id:)
+    def delete_dataset(database:, primary_id:) # rubocop:disable Lint/NestedMethodDefinition
       halt 400, 'primary Identifier required' if primary_id.to_s.strip.empty?
+      @database = database # needs to be shared
 
       # Perform the delete
       graphres = retrieve_dataset_graph_query(primary_id: primary_id)
@@ -406,26 +521,27 @@ def set_routes
         # Optional: flash error "Record not found"
         redirect '/cbgp/dashboard' # or search form
       end
+      warn "Deleting #{graphres.inspect}"
       graphuri = graphres.first[:g].to_s
+      warn "Deleting id #{graphres.inspect}"
+
       delete_dataset_query(oldid: graphuri)
 
       # NEW: Try to return to the previous search results
       last_search = session[:last_search]
-      if last_search && last_search[:database] == database
-        # Re-run the saved search
-        search_params = last_search[:params]
-        @database = database
-        @fields = CBGP::Dataset.get_questionnaire_fields(questionnaire_type: @database)
+      if last_search && last_search[:database] == @database
+        search_params = last_search[:params] # Now it's plain Hash
+        warn "Re-running search with params: #{search_params.inspect}" # debug
 
+        @fields = CBGP::Dataset.fields_for(@database) # or .get_questionnaire_fields if still using old name
         graphuris = execute_search(search_params: search_params, dataset_type: @database)
-
         @datasets = []
         graphuris.each do |graphuri|
           @datasets << CBGP::Dataset.load_from_graph(graph: graphuri, database: @database)
         end
 
         # Optional: Add a flash message (if you have flash enabled)
-        # flash[:notice] = "Record deleted successfully."
+        flash[:notice] = 'Record deleted successfully.'
 
         # Render the refreshed results page
         erb :search_dataset_resultform, layout: :database_layout

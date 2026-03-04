@@ -7,7 +7,7 @@ module CBGP
         json = RestClient.get("https://api.openaire.eu/search/publications?doi=#{doi}&format=json")
         oaire = JSON.parse(json)
       rescue StandardError => e
-        warn "error #{e.inspect}"
+        warn "openaire error #{e.inspect}"
         return false
       end
 

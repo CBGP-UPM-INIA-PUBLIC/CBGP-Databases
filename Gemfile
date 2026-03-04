@@ -46,3 +46,5 @@ group :development, :test do
 end
 
 gem 'uuidtools', '~> 3.0'
+
+gem "sinatra-flash", "~> 0.3.0"

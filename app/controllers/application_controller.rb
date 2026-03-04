@@ -10,18 +10,20 @@ require 'cgi'
 # App specific requires
 require_relative 'configuration'
 require_relative 'routes'
-require_relative 'helpers'
 
 require_rel '../../lib'
 require_rel '../views'
 
 module CBGP
-  $language = 'en'
-
   class DatabasesApp < Sinatra::Base
     helpers MyHelpers
+    register Sinatra::Flash
     set_routes
   end
 end
 
-CBGP::DatabasesApp.run! if __FILE__ == $0
+def current_language
+  Thread.current[:language] || 'en'
+end
+
+# CBGP::DatabasesApp.run! if __FILE__ == $0

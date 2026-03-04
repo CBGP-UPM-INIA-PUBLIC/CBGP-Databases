@@ -6,28 +6,86 @@ module CBGP
   class Dataset
     attr_accessor :fields, :form_type, :primary_id
 
-    @@fields_cache = {} # OPTIMIZATION: Class-level cache for fields per type
-    @@methods_defined = {} # OPTIMIZATION: Track if getters/setters are defined per type to avoid re-definition
+    @@fields_cache = {} # OPTIMIZATION: Cache exact original @fields per type
+    @@methods_defined = {} # OPTIMIZATION: Track if dynamic methods defined per type
+
+    def self.fields_for(type)
+      lang = current_language
+      key = "#{type}_#{lang}"
+      warn "[CACHE] Checking fields_for(#{type.inspect}) → key=#{key.inspect}, current lang=#{lang.inspect}, thread=#{Thread.current.object_id}"
+
+      if @@fields_cache[key]
+        warn "[CACHE] HIT for #{key}"
+        warn "[CACHE] HIT value #{@@fields_cache[key]}"
+        return @@fields_cache[key]
+      end
+
+      warn "[CACHE] MISS → building for #{key}"
+      @@fields_cache[key] ||= begin
+        fields = []
+        sections = get_questionnaire_sections_query(questionnaire_type: type)
+        sections.each do |thissection|
+          sectionid = thissection[:sec].to_s
+          sectionqid = sectionid.gsub(/.*\#/, '')
+          sectionlabel = thissection[:label]
+
+          sparql_results = get_section_questions_query(sectionid: sectionqid)
+          sparql_results.each do |result|
+            q = result[:q].to_s # full URI
+            questionclass = q.match(/.*?#(\S+)$/)[1] # fragment
+            method_name = result[:method]&.to_s&.to_sym # symbol, safe if nil
+            klass = result[:class]&.to_s&.downcase || 'string' # fallback
+            cardinality = result[:cardinality].to_s
+            answers_uri = result[:answers].to_s
+            sequence = result[:sequence].to_i
+            is_external_primary = result[:primary]&.to_s || 'false'
+
+            fields << {
+              q: q,
+              questionclass: questionclass,
+              label: result[:label].to_s,
+              widget: result[:widget].to_s.downcase,
+              method: method_name,
+              class: klass,
+              cardinality: cardinality,
+              answers: answers_uri,
+              is_external_primary: is_external_primary,
+              sequence: sequence,
+              sectionid: sectionid,
+              sectionlabel: sectionlabel
+            }
+          end
+        end
+        fields.sort_by! { |f| f[:sequence] }
+        fields
+      end
+      @@fields_cache[key]
+    end
 
     def initialize(type:, primary_id: nil)
       @form_type = type
       @primary_id = primary_id
       @data = {}
 
-      # OPTIMIZATION: Use cached fields instead of re-querying sections/questions
-      @fields = self.class.get_questionnaire_fields(questionnaire_type: type)
+      # Use cached exact fields (heavy lifting done once per type)
+      @fields = self.class.fields_for(type)
 
-      # OPTIMIZATION: Define methods only once per type (class-level, shared across instances)
-      return if @@methods_defined[type]
-
+      # Initialize storage hash
       @fields.each do |field|
-        q = field[:q] || "field_#{field[:fieldid]}" # Fallback if :q missing; adjust if needed
+        @data[field[:q]] = (field[:cardinality] == 'Multiple' ? [] : nil)
+      end
+
+      # Define getters/setters per-instance (fast, reliable)
+      @fields.each do |field|
         method_name = field[:method]
+        next if method_name.nil? || method_name.to_s.empty? # Guard (with optional debug warn below)
+
+        # Optional debug: warn "Skipping method definition for #{field[:questionclass]} (no :method)" if method_name.nil?
+
+        q = field[:q]
         klass = field[:class]
         cardinality = field[:cardinality]
         answers_uri = field[:answers]
-
-        @data[q] = (cardinality == 'Multiple' ? [] : nil)
 
         define_singleton_method(method_name) do
           @data[q]
@@ -35,11 +93,13 @@ module CBGP
 
         define_singleton_method("#{method_name}=") do |value|
           coerced_value = coerce_value(value, klass, cardinality)
-          validate_value(coerced_value, fetch_answers(answers_uri)) if answers_uri && !answers_uri.end_with?('#FREE')
+          if answers_uri && !answers_uri.end_with?('#FREE')
+            validate_value(coerced_value,
+                           fetch_answers(answers_uri))
+          end
           @data[q] = coerced_value
         end
       end
-      @@methods_defined[type] = true
     end
 
     def coerce_value(value, klass, cardinality)
@@ -80,17 +140,23 @@ module CBGP
       end
     end
 
-    def self.load_from_graph(graph:, database:, pre_fetched_details: nil)
+    def self.load_from_primary_id(primary_id:, database:)
       dataset = new(type: database)
-
-      # OPTIMIZATION: Use batched details if provided, else fallback to single fetch
-      details = pre_fetched_details || fetch_dataset_raw_data(graphuri: graph, database: database)
-
-      primary_id = retrieve_dataset_id_from_graph_query(graph: graph)
-      abort "Load From Graph- can't retrieve primary id for graph #{graph}" unless primary_id
+      abort 'primary id cannot be empty - load from identifier ' if primary_id.empty?
       dataset.primary_id = primary_id
 
+      graphuri_results = retrieve_dataset_graph_query(primary_id: primary_id)
+      abort "can't load record with primary id #{primary_id}" unless graphuri_results && graphuri_results.any?
+
+      graphuri = graphuri_results.first[:g].to_s
+
+      # FIX: Handle new array return from fetch_datasets_raw_data
+      details_array = fetch_datasets_raw_data(graph_uris: [graphuri], database: database)
+      details = details_array.first || { dataset: graphuri }
+
       dataset.fields.each do |field|
+        next unless field[:method]
+
         value = details[field[:questionclass].to_sym]
         dataset.public_send("#{field[:method]}=", value) if value
       end
@@ -98,21 +164,29 @@ module CBGP
       dataset
     end
 
-    def self.load_from_primary_id(primary_id:, database:) # this is always the INTERNAL primaryid, not an external (e.g. not a DOI)
+    # If you have a similar single fallback in load_from_graph (the pre_fetched_details nil case)
+    def self.load_from_graph(graph:, database:, pre_fetched_details: nil, pre_fetched_primary_id: nil)
       dataset = new(type: database)
-      abort 'primary id cannot be empty - load from identifier ' if primary_id.empty?
-      dataset.primary_id = primary_id
-      graphuri = retrieve_dataset_graph_query(primary_id: primary_id) # returns sparql results
-      abort "can't load record with primary id #{primary_id}" unless graphuri
-      graphuri = graphuri.first[:g].to_s # it's a sparql result
 
-      warn "\n\nLOAD FROM GRAPHURI FOUND GRAPH #{graphuri}\n\n"
-      details = fetch_dataset_raw_data(graphuri: graphuri, database: database)
-      dataset.fields.each do |field| # dataset is a CBGP::Dataset object that is empty
-        value = details[field[:questionclass].to_sym] # get the value for this field
-        # metaprogramming set value for the associated object method
-        dataset.public_send("#{field[:method]}=", value) if value # Load up the Dataset object
+      primary_id = pre_fetched_primary_id || retrieve_dataset_id_from_graph_query(graph: graph)
+      abort "Can't retrieve primary id for graph #{graph}" unless primary_id
+      dataset.primary_id = primary_id
+
+      # FIX: Handle new array return
+      if pre_fetched_details
+        details = pre_fetched_details # Already single hash from batch
+      else
+        details_array = fetch_datasets_raw_data(graph_uris: [graph], database: database)
+        details = details_array.first || { dataset: graph }
       end
+
+      dataset.fields.each do |field|
+        next unless field[:method]
+
+        value = details[field[:questionclass].to_sym]
+        dataset.public_send("#{field[:method]}=", value) if value
+      end
+
       dataset
     end
 

@@ -363,6 +363,8 @@ GEM
       rack-protection (= 3.0.6)
       tilt (~> 2.0)
     sinatra-cross_origin (0.4.0)
+    sinatra-flash (0.3.0)
+      sinatra (>= 1.0.0)
     sparql (3.3.0)
       builder (~> 3.2, >= 3.2.4)
       ebnf (~> 2.4)
@@ -436,6 +438,7 @@ DEPENDENCIES
   sanitize (~> 7.0)
   sinatra (~> 3.0.6)
   sinatra-cross_origin
+  sinatra-flash (~> 0.3.0)
   sparql (~> 3.3)
   sparql-client (~> 3.3)
   thin

@@ -7,7 +7,9 @@ class Questionnaire
   @@cache = {} # OPTIMIZATION: Class-level cache hash, keyed by questionnaire_type (e.g., "publication")
 
   def self.get_cached(questionnaire_type:)
-    @@cache[questionnaire_type] ||= new(questionnaire_type: questionnaire_type) # OPTIMIZATION: Build once, reuse forever
+    lang = current_language
+    key = "#{questionnaire_type}_#{lang}"
+    @@cache[key] ||= new(questionnaire_type: questionnaire_type) # new() triggers queries with current_language
   end
 
   def initialize(questionnaire_type:) # questionnaire_type  "add-publications", "add-project" "add-member"

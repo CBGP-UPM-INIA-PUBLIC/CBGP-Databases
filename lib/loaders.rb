@@ -1,54 +1,86 @@
 module CBGP
   class Loaders
-    def self.load_doi(doi:, database: 'publications')
-      # hard code DOI field... ugh!   TODO stop this!
-      res = execute_search(search_params: { 'newpub4' => doi }, dataset_type: database) # Return array of graph URIs
-      # warn "found record from doi", res.inspect
-      # abort "graph query failed" unless res.first
-      graph = res.first if res
-      # record = CBGP::Dataset.new(type: database )
+    # Public: Load a single DOI (existing behavior preserved)
+    def self.load_doi(doi:, database: 'publication')
+      messages = []
+      # allpubs  = []
 
-      if graph
-        warn "\n \nretrieving from database\n\n"
-        pub = CBGP::Dataset.load_from_graph(graph: graph, database: database)
+      warn "\n\n\nFETCHING DOI #{doi}\n\n\n"
+      result = load_or_fetch_doi(doi: doi, database: database)
+
+      if result[:existing]
+        warn "DOI #{doi} already exists in database"
+        messages << "DOI:#{doi} was already in database"
+
+      elsif result[:pub]
+        warn "Loaded and saved new publication for DOI #{doi}"
+        messages << "DOI:#{doi} loaded and saved successfully"
       else
-        pub = CBGP::Parsers.datacite_parser(doi: doi)
-        pub = if pub
-                CBGP::Parsers.openaire_affiliations(pub: pub, doi: doi) # fill-in affiliations only
-              else
-                CBGP::Parsers.openaire_parser(doi: doi)
-              end
-        pub.write_to_db #
+        warn "Failed to load DOI #{doi}"
+        messages << "Failed to load DOI:#{doi}"
       end
-      pub
+
+      result[:pub] # Return the Dataset object (or nil)
     end
 
-    def self.bulk_load_from_dois(dois:, database: 'publications')
+    # Public: Bulk load multiple DOIs
+    def self.bulk_load_from_dois(dois:, database: 'publication')
       messages = []
-      allpubs = []
-      alldois = dois.split(/[, \t\n]+/).map(&:strip).reject(&:empty?) # accept both comma-separated and newline separated
-      alldois.each do |doi|
-        res = execute_search(search_params: { 'newpub4' => doi }, dataset_type: database) # Return array of graph URIs
-        # warn "found record from doi", res.inspect
-        # abort "graph query failed" unless res.first
-        graph = res.first if res
-        # record = CBGP::Dataset.new(type: database )
+      allpubs  = []
 
-        if graph
-          messages << "DOI:#{doi} was already in database\n"
+      normalized_dois = dois.to_s.split(/[, \t\n]+/).map(&:strip).reject(&:empty?).uniq
+
+      normalized_dois.each do |doi|
+        warn "\n\n\nFETCHING DOI #{doi}\n\n\n"
+        result = load_or_fetch_doi(doi: doi, database: database)
+
+        if result[:existing]
+          messages << "DOI:#{doi} was already in database"
+        elsif result[:pub]
+          allpubs << result[:pub]
+          messages << "DOI:#{doi} loaded and saved successfully"
         else
-          pub = CBGP::Parsers.datacite_parser(doi: doi)
-          pub = if pub
-                  CBGP::Parsers.openaire_affiliations(pub: pub, doi: doi) # fill-in affiliations only
-                else
-                  CBGP::Parsers.openaire_parser(doi: doi)
-                end
-          pub.write_to_db
-          allpubs << pub
+          messages << "Failed to load DOI:#{doi}"
         end
       end
-      messages << 'No errors Encountered During Upload' unless messages.first
+
+      messages << 'No errors encountered during upload' if messages.none? { |m| m.include?('Failed') }
+
       [allpubs, messages]
+    end
+
+    private
+
+    # Shared core logic: check existence → parse if new → write
+    def self.load_or_fetch_doi(doi:, database:)
+      # 1. Check if already exists
+      graphs = execute_search(search_params: { 'newpub4' => doi }, dataset_type: database)
+
+      if graphs&.any?
+        graph = graphs.first
+        warn "Found existing graph for DOI #{doi}: #{graph}"
+        pub = CBGP::Dataset.load_from_graph(graph: graph, database: database)
+        return { pub: pub, existing: true }
+      end
+
+      # 2. Not found → try to parse
+      pub = CBGP::Parsers.datacite_parser(doi: doi) # returns false on fail
+
+      if pub
+        # enrich affiliations
+        CBGP::Parsers.openaire_affiliations(pub: pub, doi: doi)
+      else
+        # Fallback to openaire full parse
+        pub = CBGP::Parsers.openaire_parser(doi: doi)
+      end
+
+      # 3. If we got something, save it
+      if pub
+        pub.write_to_db
+        { pub: pub, existing: false }
+      else
+        { pub: nil, existing: false }
+      end
     end
   end
 end

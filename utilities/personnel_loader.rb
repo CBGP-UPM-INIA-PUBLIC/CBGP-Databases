@@ -22,5 +22,6 @@ CSV.foreach(ARGV[0], headers: true) do |row|
     warn "#{field}=#{row[field]}\n"
     ds.public_send("#{field}=", row[field]) # invoke the setter
   end
+  puts "writing #{ds.primary_id}"
   ds.write_to_db
 end

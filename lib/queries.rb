@@ -541,9 +541,6 @@ def search_all_graphs_query(dataset_type:)
 
   query = <<~SPARQL
     #{PREFIXES}
-    PREFIX dataset: #{datasetPREFIX}
-    PREFIX datasetgraph: #{datasetgraphPREFIX}
-    PREFIX cbgp: <https://w3id.org/CBGP-App#>
     SELECT DISTINCT ?datasetgraph
     WHERE {
       GRAPH ?datasetgraph {

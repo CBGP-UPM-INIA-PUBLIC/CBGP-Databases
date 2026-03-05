@@ -105,17 +105,19 @@ def get_section_questions_query(sectionid:, language: current_language)
   qs = <<GET_SECTION_QUESTIONS
     #{PREFIXES}
 
-    SELECT ?q (str(?qlab) as ?label) ?widget ?class ?method ?cardinality ?answers ?primary ?sequence WHERE {
+    SELECT ?q (str(?qlab) as ?label) ?widget ?class ?method ?cardinality ?answers ?primary ?sequence ?references ?references_via WHERE {
     ?q rdfs:subClassOf cbgp:#{sectionid} .
     ?q rdfs:label ?qlab .
     FILTER (lang(?qlab) = "#{language}")
     ?q local:widget-type ?widget .
     ?q local:widget-cardinality ?cardinality .
     ?q local:answer-block ?answers .
-    OPTIONAL {?q local:object-class ?class }.
     ?q local:method ?method .
-    OPTIONAL {?q local:is-primary-id ?primary }.
     ?q local:question-order ?sequence .
+    OPTIONAL {?q local:object-class ?class }.
+    OPTIONAL {?q local:is-primary-id ?primary }.
+    OPTIONAL { ?q local:references ?references . }
+    OPTIONAL { ?q local:references-via ?references_via . }
   } ORDER BY ?sequence
 
 GET_SECTION_QUESTIONS

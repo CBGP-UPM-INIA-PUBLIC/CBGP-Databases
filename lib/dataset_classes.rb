@@ -39,6 +39,10 @@ module CBGP
             answers_uri = result[:answers].to_s
             sequence = result[:sequence].to_i
             is_external_primary = result[:primary]&.to_s || 'false'
+            references = result[:references]&.to_s # full URI if present
+            references_target = result[:references] ? result[:references].to_s.split('#').last : nil # e.g. "member"
+            references_via = result[:references_via]&.to_s # e.g. "orcid"   (method name in target)
+            references_via_method = result[:references_via] ? result[:references_via].to_s.split('#').last : nil # e.g. "orcid"
 
             fields << {
               q: q,
@@ -52,7 +56,11 @@ module CBGP
               is_external_primary: is_external_primary,
               sequence: sequence,
               sectionid: sectionid,
-              sectionlabel: sectionlabel
+              sectionlabel: sectionlabel,
+              references: references, # full URI of the FOrm (e.g. w3id.org/CBGP-App#member)
+              references_target: references_target, # just #form
+              references_via: references_via,
+              references_via_method: references_via_method
             }
           end
         end
@@ -72,7 +80,7 @@ module CBGP
 
       # Initialize storage hash
       @fields.each do |field|
-        @data[field[:q]] = (field[:cardinality] == 'Multiple' ? [] : nil)
+        @data[field[:q]] = (field[:cardinality].downcase == 'multiple' ? [] : nil)
       end
 
       # Define getters/setters per-instance (fast, reliable)
@@ -93,10 +101,25 @@ module CBGP
 
         define_singleton_method("#{method_name}=") do |value|
           coerced_value = coerce_value(value, klass, cardinality)
+          validate_references(field, coerced) if field[:references_target]
           if answers_uri && !answers_uri.end_with?('#FREE')
             validate_value(coerced_value,
                            fetch_answers(answers_uri))
           end
+          #  NEW CODE UNTESTED
+          #  NEW CODE UNTESTED
+          #  NEW CODE UNTESTED
+          #  NEW CODE UNTESTED
+          #  NEW CODE UNTESTED
+          #  NEW CODE UNTESTED
+          #  NEW CODE UNTESTED
+          if field[:references_target]
+            define_singleton_method("#{method_name}_references") { field[:references_target] } # helper
+            define_singleton_method("#{method_name}_key_field")  do
+              field[:references_via] || :primary_id # not sure that this will work, but... better than nothing!
+            end
+          end
+          #############################################
           @data[q] = coerced_value
         end
       end
@@ -122,6 +145,67 @@ module CBGP
       end
     rescue StandardError => e
       raise ArgumentError, "Invalid value #{value} for type #{klass}: #{e.message}"
+    end
+
+    #  THIS DOESN"T KNOW WHAT THE DB IS YET... right??
+    #  THIS DOESN"T KNOW WHAT THE DB IS YET... right??
+    #  THIS DOESN"T KNOW WHAT THE DB IS YET... right??
+    #  THIS DOESN"T KNOW WHAT THE DB IS YET... right??
+    #  THIS DOESN"T KNOW WHAT THE DB IS YET... right??
+    def validate_references(field, value)
+      return unless field[:references_target]
+
+      target = field[:references_target]
+      ###
+      key_field = field[:references_via] || 'primary_id'
+
+      Array(value).each do |v|
+        next if v.to_s.strip.empty?
+
+        found = CBGP::Dataset.get_primary_id(
+          questionclass: key_field.to_s,
+          questionvalue: v.to_s.strip,
+          dataset_type: target
+        )
+
+        next if found
+
+        warn "[REF] No matching #{target} found for #{v} (via #{key_field})"
+        # or raise if you want strict mode
+        # raise ArgumentError, "..."
+      end
+    end
+
+    def fetch_suggestions_for(target:, limit: 100, query: nil) # called from _reference_typeahead.erb with target = field[:references_target]
+      # Reuse your search machinery – here a simple broad fetch
+      # In real: add fuzzy search on name, surname, orcid, mail
+      graphs = execute_search(
+        search_params: {}, # empty = all, or { "name" => query } if query present
+        dataset_type: target
+      ).first(limit)
+
+      graphs.map do |graph_uri|
+        ds = CBGP::Dataset.load_from_graph(graph: graph_uri, database: target)
+
+        value = case target
+                when 'member' then ds.orcid.to_s.strip
+                else begin
+                  ds.public_send(ds.class.default_key_method_for(target))
+                rescue StandardError
+                  ds.primary_id
+                end
+                end
+
+        label_parts = []
+        label_parts << ds.surname if ds.respond_to?(:surname)
+        label_parts << ds.name if ds.respond_to?(:name)
+        label_parts << "(ORCID: #{ds.orcid})" if ds.respond_to?(:orcid) && ds.orcid
+        label_parts << ds.institutional_mail if ds.respond_to?(:institutional_mail)
+
+        label = label_parts.join(', ').presence || "ID: #{ds.primary_id}"
+
+        { value: value, label: label }
+      end.compact
     end
 
     def fetch_answers(answers_uri)
@@ -305,5 +389,17 @@ module CBGP
       end
       result
     end
+
+    # TO BE GENERALIZED
+    # TO BE GENERALIZED
+    # TO BE GENERALIZED
+    # TO BE GENERALIZED
+    # TO BE GENERALIZED
+    # TO BE GENERALIZED
+    # TO BE GENERALIZED
+    # TO BE GENERALIZED
+    # TO BE GENERALIZED
+
+    # In CBGP::Dataset or a new module CBGP::References
   end
 end

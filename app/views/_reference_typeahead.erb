@@ -1,0 +1,57 @@
+<!-- _reference_typeahead.erb -->
+<!-- Expects locals: question, value (current @thisval), target (e.g. "member") -->
+
+<div class="reference-input-wrapper">
+  <label for="<%= question.questionid %>_ANSWER">
+    <%= question.question %> 
+    <small>(type to search existing <%= target.pluralize %>)</small>
+  </label>
+
+  <% 
+    # Fetch suggestions server-side (or via AJAX later)
+    # For now: simple server-side list – limit to e.g. 200 to avoid huge pages
+    suggestions = fetch_suggestions_for(target: target, limit: 200)
+    # Implement fetch_suggestions_for below or in helper
+  %>
+
+  <input 
+    type="text"
+    name="<%= question.questionid %><%= '[]' if question.cardinality == 'Multiple' %>"
+    id="<%= question.questionid %>_ANSWER"
+    value="<%= value.to_s.strip %>"
+    list="<%= question.questionid %>_suggestions"
+    placeholder="Start typing name, ORCID, email..."
+    size="60"
+    autocomplete="off"   <!-- helps datalist behave -->
+    <%= 'required' if question.required? %>   <!-- if you add required in ontology -->
+  />
+
+  <datalist id="<%= question.questionid %>_suggestions">
+    <% suggestions.each do |sugg| %>
+      <!-- value= is what gets submitted (the foreign key value) -->
+      <!-- label= is what user sees in dropdown -->
+      <option value="<%= sugg[:value] %>">
+        <%= sugg[:label] %>
+      </option>
+    <% end %>
+  </datalist>
+
+  <% if question.cardinality == 'Multiple' %>
+    <button type="button" class="add-reference-btn" data-question-id="<%= question.questionid %>">+ Add another</button>
+  <% end %>
+</div>
+
+<!-- Optional: JS for multiple (reuse your existing add/remove logic) -->
+<script>
+  // If multiple, clone the input row on +
+  document.querySelectorAll('.add-reference-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const qid = btn.dataset.questionId;
+      const container = document.getElementById(qid + '_container') || btn.parentElement;
+      const newRow = container.querySelector('input').parentElement.cloneNode(true);
+      newRow.querySelector('input').value = '';
+      container.insertBefore(newRow, btn);
+      // Add remove button if needed (like your text multiple widget)
+    });
+  });
+</script>

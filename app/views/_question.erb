@@ -32,14 +32,27 @@
     <% @answerblock = @question.answerblock %>
     <% @hierarchical_data = @question.answertree %>
     <% warn "ANSWER TREE for ",@answerblock, @hierarchical_data %>
+
+
+
     <% if @question.cardinality == "Multiple" %>
       <% @thisval = @value %>
-      <%= erb "_#{widget}".to_sym %>
+      <% if @question.references_target %>   <!-- new field in @question from questionnaire -->
+        <%# Render enhanced widget %>
+        <%= erb :_reference_typeahead, locals: { question: @question, value: @thisval, target: @question.references_target } %>
+      <% else %>
+        <%= erb "_#{widget}".to_sym %>
+      <% end %>
     <% else %>
       <% @value = [@value] unless @value.is_a?(Array) %>
       <% @value.each do |val| %>
         <% @thisval = val %>
-        <%= erb "_#{widget}".to_sym %>
+        <% if @question.references_target %>   <!-- new field in @question from questionnaire -->
+          <%# Render enhanced widget %>
+          <%= erb :_reference_typeahead, locals: { question: @question, value: @thisval, target: @question.references_target } %>
+        <% else %>
+          <%= erb "_#{widget}".to_sym %>
+        <% end %>
       <% end %>
     <% end %>
   <% end %>

@@ -526,6 +526,35 @@ def execute_search(search_params:, dataset_type:)
   results.map { |result| result[:datasetgraph].to_s } # Return array of graph URIs
 end
 
+def search_for_all_graphs(dataset_type:)
+  query = search_all_graphs_query(dataset_type: dataset_type)
+  return [] unless query
+
+  results = DATABASE.query(query)
+  warn "Search results: #{results.map { |r| r.to_h }.inspect}"
+  results.map { |result| result[:datasetgraph].to_s } # Return array of graph URIs
+end
+
+def search_all_graphs_query(dataset_type:)
+  # [Unchanged early-exit guard]
+
+  datasetPREFIX = "<#{BASE_URI}#{dataset_type}/dataset/>"
+  datasetgraphPREFIX = "<#{BASE_URI}#{dataset_type}/context/>"
+
+  query = <<~SPARQL
+    #{PREFIXES}
+    SELECT DISTINCT ?datasetgraph
+    WHERE {
+      GRAPH ?datasetgraph {
+      ?s a cbgp:#{dataset_type}
+      }
+    }
+  SPARQL
+
+  warn "Generated search query:\n#{query}\n\n\n"
+  query
+end
+
 # Fetches metadata/details for a dataset graphs identified by their URIs.
 # The details are pulled from a SPARQL endpoint using fields defined in a "questionnaire"
 # for the given dataset_type (e.g., specific attributes like title, description, etc.).

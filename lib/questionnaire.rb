@@ -67,9 +67,24 @@ class QuestionnaireSection
       objectclass = res[:class].to_s
       objectmethod = res[:method].to_s
       cardinality = res[:cardinality].to_s
+
+      references_uri = res[:references]&.to_s
+      references_target = references_uri ? references_uri.gsub(/.*\#/, '') : nil # e.g. "member"
+      references_via_uri = res[:references_via]&.to_s
+      references_via_class = references_via_uri ? references_via_uri.gsub(/.*\#/, '') : nil # e.g. "orcid"
+
       qs << QuestionnaireQuestion.new(
-        questionid: qid, question: question, ablockid: ablockid, sequence: sequence,
-        widget: widget, cardinality: cardinality, objectclass: objectclass, objectmethod: objectmethod
+        questionid: qid,
+        question: question,
+        ablockid: ablockid,
+        sequence: sequence,
+        widget: widget,
+        cardinality: cardinality,
+        objectclass: objectclass,
+        objectmethod: objectmethod,
+        # NEW params:
+        references_target: references_target,
+        references_via_class: references_via_class
       )
     end
     qs
@@ -78,9 +93,11 @@ end
 
 class QuestionnaireQuestion
   attr_accessor :questionid, :sequence, :objectclass, :objectmethod, :ablockid, :answertree, :question, :selected_answer,
-                :widget, :cardinality, :answerblock
+                :widget, :cardinality, :answerblock,
+                :references_target, :references_via_class
 
-  def initialize(questionid:, sequence:, objectclass:, objectmethod:, ablockid:, question:, widget:, cardinality:)
+  def initialize(questionid:, sequence:, objectclass:, objectmethod:, ablockid:, question:,
+                 widget:, cardinality:, references_target: nil, references_via_class: nil)
     @question = question
     @questionid = questionid # this is the ontology class (e.g. cbgp:mem1  becomes questionid = "mem1")
     @sequence = sequence
@@ -92,6 +109,10 @@ class QuestionnaireQuestion
     @selected_answer = nil
     @answertree = nil
     @answerblock = QuestionnaireAnswerBlock.new(ablockid: @ablockid)
+
+    # NEW: store reference info
+    @references_target = references_target # e.g. "member"
+    @references_via_class = references_via_class # e.g. "orcid"
     # warn "WIDGET IS #{@widget}"
     return unless @widget.match(/TreeSelector/i)
 

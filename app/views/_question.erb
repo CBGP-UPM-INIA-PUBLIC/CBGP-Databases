@@ -37,7 +37,7 @@
 
     <% if @question.cardinality == "Multiple" %>
       <% @thisval = @value %>
-      <% if @question.references_target %>   <!-- new field in @question from questionnaire -->
+      <% if @question.respond_to?(:references_target) && @question.references_target %>   <!-- new field in @question from questionnaire -->
         <%# Render enhanced widget %>
         <%= erb :_reference_typeahead, locals: { question: @question, value: @thisval, target: @question.references_target } %>
       <% else %>
@@ -47,7 +47,7 @@
       <% @value = [@value] unless @value.is_a?(Array) %>
       <% @value.each do |val| %>
         <% @thisval = val %>
-        <% if @question.references_target %>   <!-- new field in @question from questionnaire -->
+        <% if @question.respond_to?(:references_target) && @question.references_target %>   <!-- new field in @question from questionnaire -->
           <%# Render enhanced widget %>
           <%= erb :_reference_typeahead, locals: { question: @question, value: @thisval, target: @question.references_target } %>
         <% else %>

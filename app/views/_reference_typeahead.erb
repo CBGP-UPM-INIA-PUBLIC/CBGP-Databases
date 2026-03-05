@@ -4,37 +4,69 @@
 <div class="reference-input-wrapper">
   <label for="<%= question.questionid %>_ANSWER">
     <%= question.question %> 
-    <small>(type to search existing <%= target.pluralize %>)</small>
+    <small><br/>(type to search existing <%= target %>)</small>
   </label>
-
-  <% 
-    # Fetch suggestions server-side (or via AJAX later)
-    # For now: simple server-side list – limit to e.g. 200 to avoid huge pages
-    suggestions = fetch_suggestions_for(target: target, limit: 200)
-    # Implement fetch_suggestions_for below or in helper
-  %>
+<% warn "Rendering typeahead for #{@question.questionid} with target: #{@question.references_target.inspect}" %>
+  <% suggestions = CBGP::Dataset.fetch_reference_suggestions(
+    target_form: target,
+    limit: 150,
+    search_query: nil,
+    via_class: question.references_via_class   # pass if available
+  ) %>
+  <% if suggestions.empty? %>
+    <small style="color: #888;">(No existing records found in <%= target %> database yet – feel free to enter new value)</small>
+  <% end %>
 
   <input 
     type="text"
     name="<%= question.questionid %><%= '[]' if question.cardinality == 'Multiple' %>"
     id="<%= question.questionid %>_ANSWER"
-    value="<%= value.to_s.strip %>"
+    value="<%= Array(value).first.to_s.strip %>"
     list="<%= question.questionid %>_suggestions"
     placeholder="Start typing name, ORCID, email..."
     size="60"
-    autocomplete="off"   <!-- helps datalist behave -->
-    <%= 'required' if question.required? %>   <!-- if you add required in ontology -->
+    autocomplete="off" 
+    <%= question.respond_to?(:required?) && question.required? ? 'required' : '' %>
   />
 
-  <datalist id="<%= question.questionid %>_suggestions">
-    <% suggestions.each do |sugg| %>
-      <!-- value= is what gets submitted (the foreign key value) -->
-      <!-- label= is what user sees in dropdown -->
-      <option value="<%= sugg[:value] %>">
-        <%= sugg[:label] %>
-      </option>
-    <% end %>
-  </datalist>
+
+  <datalist id="<%= question.questionid %>_suggestions"></datalist>  <!-- empty at first -->
+
+  <script>
+    (function() {
+      const input = document.getElementById('<%= question.questionid %>_ANSWER');
+      const datalist = document.getElementById('<%= question.questionid %>_suggestions');
+      const targetForm = '<%= target %>';  // directly embedded from ERB
+
+      let timeout;
+      input.addEventListener('input', function() {
+        clearTimeout(timeout);
+        const query = this.value.trim();
+
+        // Only fetch if user typed at least 2 chars (adjust threshold)
+        if (query.length < 2) {
+          datalist.innerHTML = '';  // clear old suggestions
+          return;
+        }
+
+        timeout = setTimeout(() => {
+          fetch(`/cbgp/reference/suggest/${encodeURIComponent(targetForm)}?q=${encodeURIComponent(query)}`)
+            .then(r => r.json())
+            .then(data => {
+              datalist.innerHTML = '';  // clear previous
+              data.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.value;
+                option.textContent = item.label;
+                datalist.appendChild(option);
+              });
+            })
+            .catch(err => console.error('Suggest failed:', err));
+        }, 250);  // debounce 250ms
+      });
+    })();
+  </script>
+
 
   <% if question.cardinality == 'Multiple' %>
     <button type="button" class="add-reference-btn" data-question-id="<%= question.questionid %>">+ Add another</button>

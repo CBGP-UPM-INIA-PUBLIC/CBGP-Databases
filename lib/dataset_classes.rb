@@ -8,6 +8,7 @@ module CBGP
 
     @@fields_cache = {} # OPTIMIZATION: Cache exact original @fields per type
     @@methods_defined = {} # OPTIMIZATION: Track if dynamic methods defined per type
+    @@primary_key_cache = {}
 
     def self.fields_for(type)
       lang = current_language
@@ -101,26 +102,32 @@ module CBGP
 
         define_singleton_method("#{method_name}=") do |value|
           coerced_value = coerce_value(value, klass, cardinality)
-          validate_references(field, coerced) if field[:references_target]
-          if answers_uri && !answers_uri.end_with?('#FREE')
-            validate_value(coerced_value,
-                           fetch_answers(answers_uri))
-          end
-          #  NEW CODE UNTESTED
-          #  NEW CODE UNTESTED
-          #  NEW CODE UNTESTED
-          #  NEW CODE UNTESTED
-          #  NEW CODE UNTESTED
-          #  NEW CODE UNTESTED
-          #  NEW CODE UNTESTED
-          if field[:references_target]
-            define_singleton_method("#{method_name}_references") { field[:references_target] } # helper
-            define_singleton_method("#{method_name}_key_field")  do
-              field[:references_via] || :primary_id # not sure that this will work, but... better than nothing!
-            end
-          end
-          #############################################
+
+          # Standard controlled-vocabulary validation (unchanged)
+          validate_value(coerced_value, fetch_answers(answers_uri)) if answers_uri && !answers_uri.end_with?('#FREE')
+
+          # New: generic reference validation
+          validate_references(field, coerced_value) if field[:references_target_form]
+
           @data[q] = coerced_value
+        end
+
+        # Optional helpers — only define if it's a reference field (once per field, not per setter call!)
+        next unless field[:references_target_form]
+
+        # Helper: returns target form name e.g. "member"
+        define_singleton_method("#{method_name}_target_form") do
+          field[:references_target_form]
+        end
+
+        # Helper: returns the resolved key method name in the target form (computed once)
+        define_singleton_method("#{method_name}_key_method") do
+          via_class = field[:references_via_class]
+          if via_class
+            self.class.resolve_key_method(field[:references_target_form], via_class)
+          else
+            self.class.key_method_for_form(field[:references_target_form])
+          end
         end
       end
     end
@@ -147,65 +154,33 @@ module CBGP
       raise ArgumentError, "Invalid value #{value} for type #{klass}: #{e.message}"
     end
 
-    #  THIS DOESN"T KNOW WHAT THE DB IS YET... right??
-    #  THIS DOESN"T KNOW WHAT THE DB IS YET... right??
-    #  THIS DOESN"T KNOW WHAT THE DB IS YET... right??
-    #  THIS DOESN"T KNOW WHAT THE DB IS YET... right??
-    #  THIS DOESN"T KNOW WHAT THE DB IS YET... right??
     def validate_references(field, value)
-      return unless field[:references_target]
+      target_form = field[:references_target_form]
+      return unless target_form # clearer guard
 
-      target = field[:references_target]
-      ###
-      key_field = field[:references_via] || 'primary_id'
+      # Prefer via_class → method resolution; fallback to primary field of target form
+      key_method = if field[:references_via_class]
+                     self.class.resolve_key_method(target_form, field[:references_via_class])
+                   else
+                     self.class.key_method_for_form(target_form)
+                   end
+
+      return unless key_method # silent skip if no key found (or raise/warn)
 
       Array(value).each do |v|
         next if v.to_s.strip.empty?
 
-        found = CBGP::Dataset.get_primary_id(
-          questionclass: key_field.to_s,
-          questionvalue: v.to_s.strip,
-          dataset_type: target
+        found_primary_id = CBGP::Dataset.get_primary_id(
+          questionclass: key_method,
+          questionvalue: v.strip,
+          dataset_type: target_form
         )
 
-        next if found
-
-        warn "[REF] No matching #{target} found for #{v} (via #{key_field})"
-        # or raise if you want strict mode
-        # raise ArgumentError, "..."
+        unless found_primary_id
+          warn "[FOREIGN-KEY] No #{target_form} found matching #{key_method} = '#{v}'"
+          # raise ArgumentError, "..." if you later want strict enforcement
+        end
       end
-    end
-
-    def fetch_suggestions_for(target:, limit: 100, query: nil) # called from _reference_typeahead.erb with target = field[:references_target]
-      # Reuse your search machinery – here a simple broad fetch
-      # In real: add fuzzy search on name, surname, orcid, mail
-      graphs = execute_search(
-        search_params: {}, # empty = all, or { "name" => query } if query present
-        dataset_type: target
-      ).first(limit)
-
-      graphs.map do |graph_uri|
-        ds = CBGP::Dataset.load_from_graph(graph: graph_uri, database: target)
-
-        value = case target
-                when 'member' then ds.orcid.to_s.strip
-                else begin
-                  ds.public_send(ds.class.default_key_method_for(target))
-                rescue StandardError
-                  ds.primary_id
-                end
-                end
-
-        label_parts = []
-        label_parts << ds.surname if ds.respond_to?(:surname)
-        label_parts << ds.name if ds.respond_to?(:name)
-        label_parts << "(ORCID: #{ds.orcid})" if ds.respond_to?(:orcid) && ds.orcid
-        label_parts << ds.institutional_mail if ds.respond_to?(:institutional_mail)
-
-        label = label_parts.join(', ').presence || "ID: #{ds.primary_id}"
-
-        { value: value, label: label }
-      end.compact
     end
 
     def fetch_answers(answers_uri)
@@ -221,6 +196,96 @@ module CBGP
         end
       else
         raise ArgumentError, "Value #{value} must be one of #{allowed_answers}" unless allowed_answers.include?(value)
+      end
+    end
+
+    def self.fetch_reference_suggestions(target_form:, limit: 100, search_query: nil, via_class: nil)
+      return [] unless target_form
+
+      # 1. Find fields to use for label building (dynamic: prefer name-like fields)
+      # For simplicity: query ontology for fields in this form that look useful for display
+      # e.g. fields with method =~ /name|surname|mail|orcid/i and widget text/radio
+      label_fields = [] # implement ontology query to get e.g. ["surname", "name", "orcid", "institutional_mail"]
+      # Fallback: just use the key_method + primary_id
+
+      key_method = if via_class && !via_class.to_s.strip.empty?
+                     resolve_key_method(target_form, via_class)
+                   else
+                     key_method_for_form(target_form)
+                   end
+
+      if key_method.to_s.strip.empty?
+        warn "[WARN] No valid key_method resolved for #{target_form} – cannot search properly"
+        return [] # or fallback to primary_id search if you have a way
+      end
+
+      warn "[SUGGEST] Using key_method '#{key_method}' for #{target_form}"
+      # Then proceed
+      broad = search_query.nil? || search_query.to_s.strip.empty?
+
+      graphs = execute_search(
+        search_params: broad ? {} : { key_method => search_query.to_s.strip },
+        dataset_type: target_form,
+        broad: broad
+      ).first(limit)
+
+      graphs.map do |graph_uri|
+        ds = CBGP::Dataset.load_from_graph(graph: graph_uri, database: target_form)
+        next unless ds
+
+        value = begin
+          ds.public_send(key_method).to_s.strip
+        rescue StandardError
+          ds.primary_id.to_s.strip
+        end
+
+        next if value.empty?
+
+        # Dynamic label building (your existing code, Rails-free)
+        label_parts = ds.fields.select do |f|
+          f[:class].downcase == 'string' &&
+            !ds.public_send(f[:method].to_sym).to_s.strip.empty?
+        end
+        .sort_by { |f| f[:sequence] }
+                        .first(3)
+                        .map { |f| ds.public_send(f[:method].to_sym).to_s.strip }
+
+        joined = label_parts.join(' | ')
+        label = joined.empty? ? "ID: #{ds.primary_id}" : joined
+
+        { value: value, label: label }
+      end.compact
+    end
+
+    # TODO: put this query into the queries.rb file
+    def self.resolve_key_method(target_form_fragment, via_class_fragment)
+      # Query for the method of that specific via_class
+      query = <<~SPARQL
+        #{PREFIXES}
+        SELECT ?method
+        WHERE {
+          cbgp:#{via_class_fragment} local:method ?method .
+          # Optionally: FILTER EXISTS { cbgp:#{via_class_fragment} rdfs:subClassOf cbgp:new-#{target_form_fragment}-questions }
+        }
+      SPARQL
+      results = SPARQL.parse(query).execute($ontology)
+      method_name = results.first[:method]&.to_s
+      warn "[RESOLVE KEY] For #{target_form_fragment} via #{via_class_fragment} → #{method_name.inspect}"
+      method_name
+    end
+
+    def self.key_method_for_form(form_type)
+      @@primary_key_cache[form_type] ||= begin
+        # Query ontology for the question class in this form with local:is-primary-id true
+        # Reuse your existing SPARQL pattern from fields_for
+        sections = get_questionnaire_sections_query(questionnaire_type: form_type)
+        sections.each do |sec|
+          results = get_section_questions_query(sectionid: sec[:sec].fragment)
+          results.each do |res|
+            return res[:method].to_s if res[:primary].to_s.downcase == 'true'
+          end
+        end
+        nil # or raise / warn "No primary key field defined for #{form_type}"
       end
     end
 
@@ -389,17 +454,5 @@ module CBGP
       end
       result
     end
-
-    # TO BE GENERALIZED
-    # TO BE GENERALIZED
-    # TO BE GENERALIZED
-    # TO BE GENERALIZED
-    # TO BE GENERALIZED
-    # TO BE GENERALIZED
-    # TO BE GENERALIZED
-    # TO BE GENERALIZED
-    # TO BE GENERALIZED
-
-    # In CBGP::Dataset or a new module CBGP::References
   end
 end

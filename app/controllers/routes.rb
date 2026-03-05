@@ -344,19 +344,22 @@ def set_routes
   #   GROK CODE FOR SUGGESTION ENDPOINT
   #   GROK CODE FOR SUGGESTION ENDPOINT
   # Used for the typeahead widget for foreign keys
-  get '/cbgp/suggest/:target' do
-    q = params[:query].to_s.strip
-    return json([]) if q.size < 2
+
+  get '/cbgp/reference/suggest/:target' do
+    content_type :json
 
     target = params[:target]
-    # Reuse your search machinery
-    hits = execute_search(search_params: { field_to_search => q }, dataset_type: target) # fuzzy on name/orcid/whatever
-    suggestions = hits.map do |graph|
-      ds = CBGP::Dataset.load_from_graph(graph: graph, database: target)
-      { value: ds.public_send(field_to_use_as_value), # e.g. ds.orcid
-        label: "#{ds.surname}, #{ds.name} (#{ds.orcid})" }
-    end
-    json(suggestions)
+    q = params[:q].to_s.strip
+
+    halt 400, { error: 'Missing params' }.to_json if target.empty? || q.empty?
+
+    suggestions = CBGP::Dataset.fetch_reference_suggestions(
+      target_form: target,
+      limit: 20, # smaller limit now, since it's filtered
+      search_query: q
+    )
+
+    suggestions.map { |s| { value: s[:value], label: s[:label] } }.to_json
   end
 
   # LOADERS

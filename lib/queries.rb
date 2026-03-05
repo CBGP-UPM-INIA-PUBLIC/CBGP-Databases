@@ -516,18 +516,25 @@ def build_search_query(search_params:, dataset_type:)
   query
 end
 
-def execute_search(search_params:, dataset_type:)
+def execute_search(dataset_type:, search_params: {}, broad: false)
+  if broad || search_params.empty? # Treat empty params as broad request
+    warn "[BROAD SEARCH] Fetching all graphs for #{dataset_type}"
+    return search_for_all_graphs(dataset_type: dataset_type)
+  end
+
   query = build_search_query(search_params: search_params, dataset_type: dataset_type)
-  warn "\n\n\nSEARCH QUERY IS #{query}\n\n\n"
+  warn "Generated search query:\n#{query || 'NIL QUERY'}"
   return [] unless query
 
   results = DATABASE.query(query)
-  warn "Search results: #{results.map { |r| r.to_h }.inspect}"
-  results.map { |result| result[:datasetgraph].to_s } # Return array of graph URIs
+  warn "Search results count: #{results.count}"
+  results.map { |r| r[:datasetgraph].to_s }
 end
 
 def search_for_all_graphs(dataset_type:)
   query = search_all_graphs_query(dataset_type: dataset_type)
+  warn "\n\n\nBROAD SEARCH QUERY IS #{query}\n\n\n"
+
   return [] unless query
 
   results = DATABASE.query(query)

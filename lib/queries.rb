@@ -105,7 +105,7 @@ def get_section_questions_query(sectionid:, language: current_language)
   qs = <<GET_SECTION_QUESTIONS
     #{PREFIXES}
 
-    SELECT ?q (str(?qlab) as ?label) ?widget ?class ?method ?cardinality ?answers ?primary ?sequence ?references ?references_via WHERE {
+    SELECT ?q (str(?qlab) as ?label) ?widget ?class ?method ?cardinality ?answers ?primary ?sequence ?references ?references_via ?references_label WHERE {
     ?q rdfs:subClassOf cbgp:#{sectionid} .
     ?q rdfs:label ?qlab .
     FILTER (lang(?qlab) = "#{language}")
@@ -118,6 +118,7 @@ def get_section_questions_query(sectionid:, language: current_language)
     OPTIONAL {?q local:is-primary-id ?primary }.
     OPTIONAL { ?q local:references ?references . }
     OPTIONAL { ?q local:references-via ?references_via . }
+    OPTIONAL { ?q local:references-label ?references_label . }
   } ORDER BY ?sequence
 
 GET_SECTION_QUESTIONS
@@ -221,16 +222,34 @@ def field_query(fieldid:, language: current_language)
   field.execute($ontology)
 end
 
-###################### DATASET ##################
-###################### DATASET ##################
-###################### DATASET ##################
-###################### DATASET ##################
-###################### DATASET ##################
-###################### DATASET ##################
-###################### DATASET ##################
-###################### DATASET ##################
+##############################################################################
+# Dataset persistence — SPARQL queries for reading, writing, and deleting
+# records stored as named graphs.
+#
+# Each record lives in its own named graph whose URI follows the pattern:
+#   #{BASE_URI}<form_type>/context/<primary_id>
+#
+# Inside the graph, fields are encoded using the SIO reified-attribute pattern:
+#   <dataset_node> sio:SIO_000008 <attribute_node> .
+#   <attribute_node> rdf:type cbgp:<questionclass> ;
+#                    sio:SIO_000300 "<literal_value>" .
+#
+# Provenance triples (dcterms:created / dcterms:modified) are written into the
+# DEFAULT graph (outside the named graph) so they survive graph-level queries.
+# Consequently, delete_dataset_query must remove them explicitly before dropping
+# the named graph.
+##############################################################################
 
-def retrieve_dataset_graph_query(primary_id:) # this is prone to collisions, but... one day...
+# Finds the named graph URI that contains a record with the given primary_id.
+# Searches across all graphs for a node whose sio:SIO_000115 (identifier) has
+# the given string value.  Returns a SPARQL result set; the caller reads +[:g]+.
+#
+# @note Prone to collisions if two records share the same primary_id string
+#   across different form types.  Scoping by graph prefix would eliminate this.
+#
+# @param primary_id [String] the record's primary identifier value
+# @return [SPARQL::Client::Solutions] result rows with +?g+ bound to the graph URI
+def retrieve_dataset_graph_query(primary_id:)
   retds = <<SELECT_DS
         #{PREFIXES}
   select ?g where {
@@ -244,11 +263,15 @@ def retrieve_dataset_graph_query(primary_id:) # this is prone to collisions, but
 SELECT_DS
 
   warn "retrieve dataset graph query is:\n #{retds}"
-  # pubexists = SPARQL.parse(retpub)  # validate query or die
   DATABASE.query(retds)
 end
 
-# returns string
+# Returns the primary_id string stored inside a known named graph.
+# Useful when you have a graph URI (e.g. from a search result) and need to
+# recover the human-facing identifier without loading the full record.
+#
+# @param graph [String] the full named graph URI
+# @return [String, nil] the primary_id value, or +nil+ if the graph has none
 def retrieve_dataset_id_from_graph_query(graph:)
   retds = <<SELECT_DS
         #{PREFIXES}
@@ -261,49 +284,68 @@ def retrieve_dataset_id_from_graph_query(graph:)
 SELECT_DS
 
   warn "retrieve dataset id query is:\n #{retds}"
-  # pubexists = SPARQL.parse(retpub)  # validate query or die
   results = DATABASE.query(retds)
   return results.first[:id].to_s if results
 
   nil
 end
 
+# Removes a named graph and its associated provenance annotations.
+#
+# Two-step SPARQL UPDATE executed in a single request:
+#   1. DELETE WHERE { <oldid> ?p ?o } — removes any triples in the *default*
+#      graph whose subject is the graph URI (i.e. dcterms:created /
+#      dcterms:modified written by write_dataset_to_db_query).
+#   2. DROP GRAPH <oldid> — removes the named graph and all its contents.
+#
+# Step 1 is necessary because provenance triples are written outside the named
+# graph block in INSERT DATA, so DROP GRAPH alone leaves them orphaned.
+#
+# @param oldid [String] the full named graph URI to delete
+# @return [Object] raw response from the SPARQL update endpoint
 def delete_dataset_query(oldid:)
-  delete = <<DELETE_DATASET
-  DROP GRAPH <#{oldid}>
-
-DELETE_DATASET
+  delete = <<~DELETE_DATASET
+    #{PREFIXES}
+    DELETE WHERE { <#{oldid}> ?p ?o } ;
+    DROP GRAPH <#{oldid}>
+  DELETE_DATASET
   DATABASE_UPDATE.update(delete)
 end
 
-# Executes a SPARQL UPDATE query to write (insert) a dataset's RDF data into the database.
-# If an `oldid` is provided (e.g., when updating an existing dataset), it first deletes
-# the old graph containing the previous version of the data.
-# Returns the raw response from the database update operation.
+# Executes the SPARQL UPDATE that persists a dataset to the triple store.
+# When +oldid+ is supplied the old graph is deleted first, so this method
+# serves both INSERT (new record) and REPLACE (edit) semantics.
+#
+# @param dataset [CBGP::Dataset] the populated dataset object to write
+# @param oldid [String, nil] primary_id of the graph to delete before writing;
+#   pass the same value as +dataset.primary_id+ to replace an existing record
+#   while preserving its URI
+# @return [Object] raw response from the SPARQL update endpoint
 def write_dataset_to_db(dataset:, oldid: nil)
-  # Build the full INSERT DATA query (with optional preceding DELETE)
   writequery = write_dataset_to_db_query(dataset: dataset, oldid: oldid)
-
-  # Debug: print the query being sent
   warn "WRITE DATASET QUERY\n#{writequery}\n\n\n"
-
-  # Execute the update query against the update-capable endpoint/database
   resp = DATABASE_UPDATE.update(writequery)
-
-  # Debug: print the database response (useful for spotting errors)
   warn "write dataset response #{resp.inspect}"
-
   resp
 end
 
-# Builds the full SPARQL UPDATE query string for inserting a dataset's data.
-# The data uses a reified attribute pattern (common in SIO/RDF modelling):
-#   - The dataset node has sio:SIO_000008 (has attribute) pointing to a blank-ish node
-#   - That attribute node is typed with rdf:type cbgp:<questionclass>
-#   - The attribute node has sio:SIO_000300 (has value) with the literal value
-# If `oldid` is provided, a DELETE step for the old graph is prepended.
-# All values are stored as plain string literals (with proper escaping).
-# Updated write_dataset_to_db_query with provenance timestamps
+# Builds the SPARQL UPDATE string that inserts a dataset's triples.
+#
+# If +oldid+ is given, +delete_dataset_query+ is called first (side-effect),
+# then an INSERT DATA block is constructed containing:
+#   - Core typing triples (rdf:type sio:SIO_000089, cbgp:<form_type>)
+#   - An sio:SIO_000115 identifier node carrying the primary_id string
+#   - One attribute node per field value, using the SIO reified-attribute pattern
+#   - Provenance triples in the DEFAULT graph:
+#       * dcterms:modified  — always written (timestamp of this write)
+#       * dcterms:created   — written only for new records (oldid is nil)
+#
+# Multiple-cardinality fields produce one numbered attribute node per value:
+#   <dataset>/<questionclass>_1, <dataset>/<questionclass>_2, …
+#
+# @param dataset [CBGP::Dataset] the dataset to serialise
+# @param oldid [String, nil] if present, the old graph is dropped before insert
+# @return [String] the complete SPARQL UPDATE query string
 def write_dataset_to_db_query(dataset:, oldid: nil)
   database = dataset.form_type
   primary_id = dataset.primary_id
@@ -320,14 +362,12 @@ def write_dataset_to_db_query(dataset:, oldid: nil)
   timestamp = Time.now.utc.iso8601
 
   triples = []
-  # Core typing triples (unchanged)
   triples << "dataset:#{primary_id} rdf:type sio:SIO_000089 ;"
   triples << "   rdf:type cbgp:#{database} ;"
   triples << '   sio:SIO_000671 datasetfrag:primary_id .'
   triples << "   datasetfrag:primary_id sio:SIO_000300 \"#{primary_id}\" ;"
-  triples << '           rdf:type sio:SIO_000115 . # identifier.'
+  triples << '           rdf:type sio:SIO_000115 . # sio: identifier'
 
-  # [Rest of field processing unchanged...]
   dataset.fields.each do |field|
     next unless dataset.respond_to?(field[:method])
 
@@ -355,15 +395,14 @@ def write_dataset_to_db_query(dataset:, oldid: nil)
   end
 
   body = triples.join("\n")
-  # NEW: Provenance timestamps on the graph itself
-  # Always add dcterms:modified (last write time)
-  prov = "datasetgraph:#{primary_id} dcterms:modified \"#{timestamp}\"^^xsd:dateTime ."
 
-  # If this is a new dataset (no oldid), also add dcterms:created
+  # Provenance triples are intentionally written OUTSIDE the GRAPH {} block so
+  # they land in the default graph.  This keeps them queryable without knowing
+  # the graph URI and means delete_dataset_query must clean them up explicitly.
+  prov = "datasetgraph:#{primary_id} dcterms:modified \"#{timestamp}\"^^xsd:dateTime ."
+  # dcterms:created is only set on first write; updates drop and recreate the
+  # graph so the original creation date would be lost anyway.
   prov += "datasetgraph:#{primary_id} dcterms:created \"#{timestamp}\"^^xsd:dateTime ." if oldid.nil?
-  # NOTE: On updates (oldid present), we DROP the old graph, so the original created date is lost.
-  # This is intentional and simple – created = first seen write, modified = last write.
-  # If you need persistent created date across updates, we'd need to fetch it first (more complex).
 
   <<~WRITE_DATASET
     #{PREFIXES}

@@ -1,89 +1,238 @@
 <!-- _reference_typeahead.erb -->
 <!-- Expects locals: question, value (current @thisval), target (e.g. "member") -->
+<%
+  qid        = question.questionid
+  via        = question.references_via_class.to_s
+  label_meth = question.references_label_method.to_s
+  is_xref    = !via.strip.empty?
+  is_multi   = question.cardinality == 'Multiple'
+
+  # Normalise existing stored values into an array; always at least one (possibly empty) row
+  stored_values = Array(value).map(&:to_s).map(&:strip)
+  stored_values = [''] if stored_values.empty?
+  stored_values = [stored_values.first] unless is_multi
+%>
+<% warn "Rendering typeahead for #{qid} | xref=#{is_xref} multi=#{is_multi} values=#{stored_values.inspect}" %>
 
 <div class="reference-input-wrapper">
-  <label for="<%= question.questionid %>_ANSWER">
-    <%= question.question %> 
-    <small><br/>(type to search existing <%= target %>)</small>
-  </label>
-<% warn "Rendering typeahead for #{@question.questionid} with target: #{@question.references_target.inspect}" %>
-  <% suggestions = CBGP::Dataset.fetch_reference_suggestions(
-    target_form: target,
-    limit: 150,
-    search_query: nil,
-    via_class: question.references_via_class   # pass if available
-  ) %>
-  <% if suggestions.empty? %>
-    <small style="color: #888;">(No existing records found in <%= target %> database yet – feel free to enter new value)</small>
-  <% end %>
+  <label><%= question.question %></label>
 
-  <input 
-    type="text"
-    name="<%= question.questionid %><%= '[]' if question.cardinality == 'Multiple' %>"
-    id="<%= question.questionid %>_ANSWER"
-    value="<%= Array(value).first.to_s.strip %>"
-    list="<%= question.questionid %>_suggestions"
-    placeholder="Start typing name, ORCID, email..."
-    size="60"
-    autocomplete="off" 
-    <%= question.respond_to?(:required?) && question.required? ? 'required' : '' %>
-  />
+  <% if !is_xref %>
+    <!-- ================================================================
+         STANDARD TYPEAHEAD  (label = stored value, optional multiple)
+         ================================================================ -->
+    <% stored_values.each_with_index do |sv, idx| %>
+    <div class="std-row" id="<%= qid %>_row_<%= idx %>">
+      <input
+        type="text"
+        name="<%= qid %><%= is_multi ? '[]' : '' %>"
+        id="<%= qid %>_ANSWER_<%= idx %>"
+        value="<%= sv %>"
+        list="<%= qid %>_suggestions"
+        placeholder="Type to search existing <%= target %>..."
+        size="60"
+        autocomplete="off"
+      />
+      <% if is_multi && idx > 0 %>
+        <button type="button" onclick="this.closest('.std-row').remove()" style="font-size:0.8em;">− remove</button>
+      <% end %>
+    </div>
+    <% end %>
 
+    <!-- Shared datalist for standard typeahead (all rows search the same thing) -->
+    <datalist id="<%= qid %>_suggestions"></datalist>
 
-  <datalist id="<%= question.questionid %>_suggestions"></datalist>  <!-- empty at first -->
+    <% if is_multi %>
+      <button type="button" id="<%= qid %>_add_btn" style="margin-top:4px;">+ Add another</button>
+    <% end %>
 
-  <script>
+    <script>
     (function() {
-      const input = document.getElementById('<%= question.questionid %>_ANSWER');
-      const datalist = document.getElementById('<%= question.questionid %>_suggestions');
-      const targetForm = '<%= target %>';  // directly embedded from ERB
-
+      const datalist   = document.getElementById('<%= qid %>_suggestions');
+      const targetForm = '<%= target %>';
+      const qid        = '<%= qid %>';
       let timeout;
-      input.addEventListener('input', function() {
-        clearTimeout(timeout);
-        const query = this.value.trim();
 
-        // Only fetch if user typed at least 2 chars (adjust threshold)
-        if (query.length < 2) {
-          datalist.innerHTML = '';  // clear old suggestions
-          return;
+      // Attach fetch-on-input to every existing row, and new rows added later
+      function attachStdListener(input) {
+        input.addEventListener('input', function() {
+          const query = this.value.trim();
+          clearTimeout(timeout);
+          if (query.length < 2) { datalist.innerHTML = ''; return; }
+          timeout = setTimeout(() => {
+            fetch(`/cbgp/reference/suggest/${encodeURIComponent(targetForm)}?q=${encodeURIComponent(query)}&via=&label_method=`)
+              .then(r => r.json())
+              .then(data => {
+                datalist.innerHTML = '';
+                data.forEach(item => {
+                  const opt = document.createElement('option');
+                  opt.value = item.value;
+                  datalist.appendChild(opt);
+                });
+              })
+              .catch(err => console.error('[typeahead] fetch failed:', err));
+          }, 250);
+        });
+      }
+
+      document.querySelectorAll('[id^="<%= qid %>_ANSWER_"]').forEach(attachStdListener);
+
+      <% if is_multi %>
+      let rowCount = <%= stored_values.size %>;
+      document.getElementById('<%= qid %>_add_btn').addEventListener('click', function() {
+        const container = this.parentElement;
+        const row = document.createElement('div');
+        row.className = 'std-row';
+        row.id = qid + '_row_' + rowCount;
+        row.innerHTML = `
+          <input type="text" name="${qid}[]" id="${qid}_ANSWER_${rowCount}"
+                 list="${qid}_suggestions" placeholder="Type to search existing <%= target %>..."
+                 size="60" autocomplete="off">
+          <button type="button" onclick="this.closest('.std-row').remove()" style="font-size:0.8em;">− remove</button>`;
+        container.insertBefore(row, this);
+        attachStdListener(document.getElementById(qid + '_ANSWER_' + rowCount));
+        rowCount++;
+      });
+      <% end %>
+    })();
+    </script>
+
+  <% else %>
+    <!-- ================================================================
+         CROSS-REFERENCE TYPEAHEAD  (search by label, store different value)
+         ================================================================ -->
+    <div id="<%= qid %>_container" data-row-count="<%= stored_values.size %>">
+
+      <% stored_values.each_with_index do |sv, idx| %>
+      <div class="xref-row" id="<%= qid %>_row_<%= idx %>">
+        <div>
+          <input type="text" id="<%= qid %>_SEARCH_<%= idx %>"
+                 list="<%= qid %>_suggestions_<%= idx %>"
+                 placeholder="Type to search existing <%= target %>..."
+                 size="50" autocomplete="off">
+          <datalist id="<%= qid %>_suggestions_<%= idx %>"></datalist>
+          <% if is_multi %>
+            <button type="button" onclick="this.closest('.xref-row').remove()" style="font-size:0.8em; margin-left:4px;">− remove</button>
+          <% end %>
+        </div>
+        <div id="<%= qid %>_stored_row_<%= idx %>"
+             style="margin-top:4px;<%= sv.empty? ? ' display:none' : '' %>">
+          <small>Stored value:&nbsp;</small>
+          <code id="<%= qid %>_DISPLAY_<%= idx %>"><%= sv %></code>
+          <button type="button" id="<%= qid %>_CLEAR_<%= idx %>"
+                  style="margin-left:6px; font-size:0.8em;">✕ clear</button>
+        </div>
+        <input type="hidden"
+               name="<%= qid %><%= is_multi ? '[]' : '' %>"
+               id="<%= qid %>_ANSWER_<%= idx %>"
+               value="<%= sv %>">
+      </div>
+      <% end %>
+
+    </div><!-- /#container -->
+
+    <% if is_multi %>
+      <button type="button" id="<%= qid %>_add_btn" style="margin-top:4px;">+ Add another</button>
+    <% end %>
+
+    <script>
+    (function() {
+      const qid        = '<%= qid %>';
+      const targetForm = '<%= target %>';
+      const via        = '<%= via %>';
+      const labelMeth  = '<%= label_meth %>';
+
+      // Initialise one cross-ref row by its numeric suffix.
+      // Each call gets its own independent valueMap and timeout — no sharing.
+      function initXrefRow(suffix) {
+        const input       = document.getElementById(qid + '_SEARCH_'     + suffix);
+        const hiddenInput = document.getElementById(qid + '_ANSWER_'     + suffix);
+        const displayEl   = document.getElementById(qid + '_DISPLAY_'    + suffix);
+        const storedRow   = document.getElementById(qid + '_stored_row_' + suffix);
+        const clearBtn    = document.getElementById(qid + '_CLEAR_'      + suffix);
+        const datalist    = document.getElementById(qid + '_suggestions_' + suffix);
+
+        let timeout;
+        let valueMap = new Map();   // entirely private to this row
+
+        function setStoredValue(val) {
+          hiddenInput.value     = val;
+          displayEl.textContent = val;
+          storedRow.style.display = val ? '' : 'none';
         }
 
-        timeout = setTimeout(() => {
-          fetch(`/cbgp/reference/suggest/${encodeURIComponent(targetForm)}?q=${encodeURIComponent(query)}`)
-            .then(r => r.json())
-            .then(data => {
-              datalist.innerHTML = '';  // clear previous
-              data.forEach(item => {
-                const option = document.createElement('option');
-                option.value = item.value;
-                option.textContent = item.label;
-                datalist.appendChild(option);
-              });
-            })
-            .catch(err => console.error('Suggest failed:', err));
-        }, 250);  // debounce 250ms
+        clearBtn.addEventListener('click', function() {
+          setStoredValue('');
+          input.value = '';
+          datalist.innerHTML = '';
+          valueMap.clear();
+        });
+
+        input.addEventListener('input', function() {
+          const query = this.value.trim();
+          const realValue = valueMap.get(query);
+          if (realValue !== undefined) setStoredValue(realValue);
+
+          clearTimeout(timeout);
+          if (query.length < 2) { datalist.innerHTML = ''; valueMap.clear(); return; }
+
+          timeout = setTimeout(() => {
+            const url = `/cbgp/reference/suggest/${encodeURIComponent(targetForm)}` +
+              `?q=${encodeURIComponent(query)}&via=${encodeURIComponent(via)}&label_method=${encodeURIComponent(labelMeth)}`;
+            fetch(url)
+              .then(r => r.json())
+              .then(data => {
+                datalist.innerHTML = '';
+                valueMap.clear();
+                data.forEach(item => {
+                  const opt = document.createElement('option');
+                  opt.value = item.label;
+                  valueMap.set(item.label, item.value);
+                  datalist.appendChild(opt);
+                });
+              })
+              .catch(err => console.error('[typeahead] fetch failed:', err));
+          }, 250);
+        });
+      }
+
+      // Initialise all server-rendered rows
+      <% stored_values.each_index do |idx| %>
+      initXrefRow(<%= idx %>);
+      <% end %>
+
+      <% if is_multi %>
+      // "Add another" builds a fresh row in HTML, appends it, then initialises it
+      document.getElementById('<%= qid %>_add_btn').addEventListener('click', function() {
+        const container = document.getElementById(qid + '_container');
+        const suffix    = parseInt(container.dataset.rowCount);
+        container.dataset.rowCount = suffix + 1;
+
+        const row = document.createElement('div');
+        row.className = 'xref-row';
+        row.id = qid + '_row_' + suffix;
+        row.innerHTML = `
+          <div>
+            <input type="text" id="${qid}_SEARCH_${suffix}"
+                   list="${qid}_suggestions_${suffix}"
+                   placeholder="Type to search existing ${targetForm}..."
+                   size="50" autocomplete="off">
+            <datalist id="${qid}_suggestions_${suffix}"></datalist>
+            <button type="button" onclick="this.closest('.xref-row').remove()" style="font-size:0.8em; margin-left:4px;">− remove</button>
+          </div>
+          <div id="${qid}_stored_row_${suffix}" style="display:none; margin-top:4px;">
+            <small>Stored value:&nbsp;</small>
+            <code id="${qid}_DISPLAY_${suffix}"></code>
+            <button type="button" id="${qid}_CLEAR_${suffix}" style="margin-left:6px; font-size:0.8em;">✕ clear</button>
+          </div>
+          <input type="hidden" name="${qid}[]" id="${qid}_ANSWER_${suffix}" value="">`;
+
+        container.appendChild(row);
+        initXrefRow(suffix);   // fresh valueMap, fresh timeout, fresh listeners
       });
+      <% end %>
     })();
-  </script>
+    </script>
 
-
-  <% if question.cardinality == 'Multiple' %>
-    <button type="button" class="add-reference-btn" data-question-id="<%= question.questionid %>">+ Add another</button>
   <% end %>
 </div>
-
-<!-- Optional: JS for multiple (reuse your existing add/remove logic) -->
-<script>
-  // If multiple, clone the input row on +
-  document.querySelectorAll('.add-reference-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const qid = btn.dataset.questionId;
-      const container = document.getElementById(qid + '_container') || btn.parentElement;
-      const newRow = container.querySelector('input').parentElement.cloneNode(true);
-      newRow.querySelector('input').value = '';
-      container.insertBefore(newRow, btn);
-      // Add remove button if needed (like your text multiple widget)
-    });
-  });
-</script>

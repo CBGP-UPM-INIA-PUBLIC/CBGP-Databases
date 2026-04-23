@@ -342,23 +342,41 @@ def set_routes
   #   GROK CODE FOR SUGGESTION ENDPOINT
   #   GROK CODE FOR SUGGESTION ENDPOINT
   #   GROK CODE FOR SUGGESTION ENDPOINT
-  #   GROK CODE FOR SUGGESTION ENDPOINT
-  # Used for the typeahead widget for foreign keys
-
+  # Typeahead suggestion endpoint for cross-reference fields.
+  #
+  # Called by the JavaScript in _reference_typeahead.erb as the user types.
+  # Returns a JSON array of +{ value, label }+ objects where:
+  #   - +value+ is the field to be stored (e.g. ORCiD)
+  #   - +label+ is the human-readable text shown in the dropdown (e.g. surname)
+  #
+  # Query parameters:
+  #   @param q            [String] partial search string (required, min 2 chars
+  #     enforced client-side)
+  #   @param via          [String] questionclass of the stored-value field
+  #     (e.g. +"member_orcid"+); omit for standard typeahead where value==label
+  #   @param label_method [String] questionclass of the display field
+  #     (e.g. +"member_surnames"+); falls back to +via+ field when omitted
+  #
+  # @return [String] JSON array, or 400 JSON error if +target+ or +q+ is blank
   get '/cbgp/reference/suggest/:target' do
     content_type :json
 
     target = params[:target]
-    q = params[:q].to_s.strip
+    q      = params[:q].to_s.strip
+    via    = params[:via].to_s.strip
+    via    = nil if via.empty?
+    label  = params[:label_method].to_s.strip
+    label  = nil if label.empty?
 
     halt 400, { error: 'Missing params' }.to_json if target.empty? || q.empty?
 
     suggestions = CBGP::Dataset.fetch_reference_suggestions(
-      target_form: target,
-      limit: 20, # smaller limit now, since it's filtered
-      search_query: q
+      target_form:  target,
+      limit:        20,
+      search_query: q,
+      via_class:    via,
+      label_method: label
     )
-
     suggestions.map { |s| { value: s[:value], label: s[:label] } }.to_json
   end
 

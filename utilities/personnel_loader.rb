@@ -1,6 +1,8 @@
 require 'dotenv/load'
 require 'require_all'
-require_all 'app'
+require_all '../app'
+
+abort 'must provide input csv file' unless ARGV[0]
 
 # a dataset has #fields which is a sequence-ordered list of
 # @fields << { q: q, questionclass: questionclass, label: result[:label].to_s,
@@ -20,6 +22,10 @@ CSV.foreach(ARGV[0], headers: true) do |row|
     next if field =~ /DISCARD/
 
     warn "#{field}=#{row[field]}\n"
+    warn "METHODS: #{ds.methods.sort.join(',  ')}\n"
+    warn ds.respond_to?("#{field}=") # check that the setter method exists
+    abort "Dataset does not have setter for #{field}" unless ds.respond_to?("#{field}=")
+
     ds.public_send("#{field}=", row[field]) # invoke the setter
   end
   puts "writing #{ds.primary_id}"

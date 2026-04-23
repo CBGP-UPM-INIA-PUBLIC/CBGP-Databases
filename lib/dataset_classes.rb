@@ -3,13 +3,48 @@ require_relative 'core'
 require 'uuidtools'
 
 module CBGP
+  # Represents a single database record of any form type (member, project,
+  # publication, …).
+  #
+  # Each Dataset maps to one named graph in the triple store.  The graph URI
+  # follows the pattern:
+  #   #{BASE_URI}<form_type>/context/<primary_id>
+  #
+  # Field definitions are read from the OWL ontology at runtime via SPARQL and
+  # cached per (form_type, language) pair.  For each field, a pair of singleton
+  # getter/setter methods is defined on the instance so that field values can be
+  # accessed by the Ruby method name declared in the ontology (+local:method+).
+  #
+  # == Cross-reference fields
+  # Fields that link to records in another form carry three extra ontology
+  # properties (+local:references+, +local:references-via+,
+  # +local:references-label+) which drive the typeahead widget in the GUI.
+  # The stored value is whatever +references-via+ points to (e.g. an ORCiD),
+  # while the typeahead searches and displays using +references-label+ (e.g. a
+  # surname).
+  #
+  # @attr [Array<Hash>] fields field descriptors loaded from the ontology
+  # @attr [String] form_type  ontology class fragment identifying this form
+  #   (e.g. +"member"+, +"project"+)
+  # @attr [String, nil] primary_id  UUID identifying this record; nil until set
+  # rubocop:disable Metrics/ClassLength
   class Dataset
     attr_accessor :fields, :form_type, :primary_id
 
-    @@fields_cache = {} # OPTIMIZATION: Cache exact original @fields per type
-    @@methods_defined = {} # OPTIMIZATION: Track if dynamic methods defined per type
-    @@primary_key_cache = {}
+    @@fields_cache       = {}  # keyed by "form_type_lang"; avoids re-querying the ontology
+    @@methods_defined    = {}  # guards against redefining singleton methods per type
+    @@primary_key_cache  = {}  # caches the is-primary-id method name per form type
 
+    # Returns the array of field descriptor hashes for a given form type,
+    # building and caching it on first call per (type, language) pair.
+    #
+    # Each hash contains: +:q+, +:questionclass+, +:label+, +:widget+,
+    # +:method+, +:class+, +:cardinality+, +:answers+, +:is_external_primary+,
+    # +:sequence+, +:sectionid+, +:sectionlabel+, +:references+,
+    # +:references_target+, +:references_via+, +:references_via_method+.
+    #
+    # @param type [String] ontology form fragment, e.g. +"member"+
+    # @return [Array<Hash>] field descriptors sorted by +:sequence+
     def self.fields_for(type)
       lang = current_language
       key = "#{type}_#{lang}"
@@ -199,32 +234,64 @@ module CBGP
       end
     end
 
-    def self.fetch_reference_suggestions(target_form:, limit: 100, search_query: nil, via_class: nil)
+    # Builds a list of typeahead suggestions for a cross-reference field.
+    #
+    # This method powers the +/cbgp/reference/suggest/:target+ endpoint and
+    # supports two distinct modes:
+    #
+    # * *Standard* (+via_class+ absent): the displayed label and the stored
+    #   value are the same field (e.g. an email address field that also serves
+    #   as the cross-reference key).
+    #
+    # * *Cross-reference* (+via_class+ present): the user searches and sees one
+    #   field (e.g. surname, controlled by +label_method+) but the value that
+    #   gets stored is a different field (e.g. ORCiD, controlled by +via_class+).
+    #   Both +via_class+ and +label_method+ are questionclass fragments; they are
+    #   resolved to Ruby method names via +resolve_key_method+ before being used
+    #   with +public_send+.  The questionclass itself is used unmodified as the
+    #   SPARQL search predicate.
+    #
+    # @param target_form  [String]       form type to search, e.g. +"member"+
+    # @param limit        [Integer]      maximum number of suggestions to return
+    # @param search_query [String, nil]  partial text from the user; +nil+ or
+    #   blank returns up to +limit+ records (broad search)
+    # @param via_class    [String, nil]  questionclass of the field whose value
+    #   is stored (e.g. +"member_orcid"+); nil means value == label
+    # @param label_method [String, nil]  questionclass of the field shown in the
+    #   typeahead dropdown (e.g. +"member_surnames"+); falls back to +via_class+
+    #   field when nil
+    # @return [Array<Hash>] array of +{ value:, label: }+ hashes ready for JSON
+    #   serialisation; +value+ is what gets stored, +label+ is what is displayed
+    def self.fetch_reference_suggestions(target_form:, limit: 100,
+                                         search_query: nil, via_class: nil,
+                                         label_method: nil)
       return [] unless target_form
-
-      # 1. Find fields to use for label building (dynamic: prefer name-like fields)
-      # For simplicity: query ontology for fields in this form that look useful for display
-      # e.g. fields with method =~ /name|surname|mail|orcid/i and widget text/radio
-      label_fields = [] # implement ontology query to get e.g. ["surname", "name", "orcid", "institutional_mail"]
-      # Fallback: just use the key_method + primary_id
 
       key_method = if via_class && !via_class.to_s.strip.empty?
                      resolve_key_method(target_form, via_class)
                    else
                      key_method_for_form(target_form)
                    end
+      return [] if key_method.to_s.strip.empty?
 
-      if key_method.to_s.strip.empty?
-        warn "[WARN] No valid key_method resolved for #{target_form} – cannot search properly"
-        return [] # or fallback to primary_id search if you have a way
-      end
+      # label_method is a questionclass fragment used for two distinct purposes:
+      #   1. SPARQL search key  — used directly as the predicate type in search_params
+      #   2. Ruby public_send   — needs the local:method name, which may differ
+      # resolve_key_method handles the questionclass → method name translation.
+      search_questionclass = label_method.to_s.strip.empty? ? nil : label_method.to_s.strip
+      search_method = if search_questionclass
+                        resolved = resolve_key_method(target_form, search_questionclass)
+                        resolved.to_s.strip.empty? ? key_method : resolved
+                      else
+                        key_method
+                      end
 
-      warn "[SUGGEST] Using key_method '#{key_method}' for #{target_form}"
-      # Then proceed
-      broad = search_query.nil? || search_query.to_s.strip.empty?
+      warn "[SUGGEST] key_method='#{key_method}', search_questionclass='#{search_questionclass}', search_method='#{search_method}' for #{target_form}"
+
+      broad = search_query.nil? || search_query.strip.empty?
 
       graphs = execute_search(
-        search_params: broad ? {} : { key_method => search_query.to_s.strip },
+        search_params: broad ? {} : { (search_questionclass || key_method) => search_query.strip },
         dataset_type: target_form,
         broad: broad
       ).first(limit)
@@ -238,34 +305,41 @@ module CBGP
         rescue StandardError
           ds.primary_id.to_s.strip
         end
-
         next if value.empty?
 
-        # Dynamic label building (your existing code, Rails-free)
-        label_parts = ds.fields.select do |f|
-          f[:class].downcase == 'string' &&
-            !ds.public_send(f[:method].to_sym).to_s.strip.empty?
+        label = begin
+          ds.public_send(search_method).to_s.strip
+        rescue StandardError
+          value
         end
-        .sort_by { |f| f[:sequence] }
-                        .first(3)
-                        .map { |f| ds.public_send(f[:method].to_sym).to_s.strip }
-
-        joined = label_parts.join(' | ')
-        label = joined.empty? ? "ID: #{ds.primary_id}" : joined
+        label = value if label.empty?
 
         { value: value, label: label }
       end.compact
     end
 
-    # TODO: put this query into the queries.rb file
+    # Resolves a questionclass fragment to the Ruby method name declared in the
+    # ontology via +local:method+.
+    #
+    # This is necessary because the questionclass (used as the SPARQL predicate
+    # type, e.g. +"member_orcid"+) and the Ruby method name (used with
+    # +public_send+, e.g. +"orcid"+) can differ.  The ontology is the single
+    # source of truth for the mapping.
+    #
+    # Used for both the stored-value field (+via_class+) and the display/search
+    # field (+label_method+) in cross-reference typeaheads.
+    #
+    # @param target_form_fragment [String] form type, e.g. +"member"+ (currently
+    #   unused in the query but kept for future scoping)
+    # @param via_class_fragment [String] questionclass fragment, e.g.
+    #   +"member_orcid"+
+    # @return [String, nil] the +local:method+ value, or +nil+ if not found
     def self.resolve_key_method(target_form_fragment, via_class_fragment)
-      # Query for the method of that specific via_class
       query = <<~SPARQL
         #{PREFIXES}
         SELECT ?method
         WHERE {
           cbgp:#{via_class_fragment} local:method ?method .
-          # Optionally: FILTER EXISTS { cbgp:#{via_class_fragment} rdfs:subClassOf cbgp:new-#{target_form_fragment}-questions }
         }
       SPARQL
       results = SPARQL.parse(query).execute($ontology)
@@ -274,10 +348,18 @@ module CBGP
       method_name
     end
 
+    # Returns the Ruby method name for the field in +form_type+ that is marked
+    # +local:is-primary-id true+ in the ontology.  Result is memoised per form
+    # type.
+    #
+    # The primary-id field is the one whose value uniquely identifies a record
+    # for external cross-reference lookups (e.g. ORCiD for members).
+    #
+    # @param form_type [String] ontology form fragment, e.g. +"member"+
+    # @return [String, nil] the method name, or +nil+ if no primary field is
+    #   declared
     def self.key_method_for_form(form_type)
       @@primary_key_cache[form_type] ||= begin
-        # Query ontology for the question class in this form with local:is-primary-id true
-        # Reuse your existing SPARQL pattern from fields_for
         sections = get_questionnaire_sections_query(questionnaire_type: form_type)
         sections.each do |sec|
           results = get_section_questions_query(sectionid: sec[:sec].fragment)
@@ -285,10 +367,16 @@ module CBGP
             return res[:method].to_s if res[:primary].to_s.downcase == 'true'
           end
         end
-        nil # or raise / warn "No primary key field defined for #{form_type}"
+        nil
       end
     end
 
+    # Loads a Dataset by its primary_id string, searching across all graphs.
+    #
+    # @param primary_id [String] the record's primary identifier value
+    # @param database   [String] form type, e.g. +"member"+
+    # @return [CBGP::Dataset] populated dataset instance
+    # @raise [SystemExit] if primary_id is blank or no graph is found
     def self.load_from_primary_id(primary_id:, database:)
       dataset = new(type: database)
       abort 'primary id cannot be empty - load from identifier ' if primary_id.empty?
@@ -313,7 +401,19 @@ module CBGP
       dataset
     end
 
-    # If you have a similar single fallback in load_from_graph (the pre_fetched_details nil case)
+    # Loads a Dataset from a known named graph URI.
+    #
+    # Accepts pre-fetched data to avoid redundant SPARQL round-trips when
+    # called in a batch context (e.g. from +fetch_datasets_raw_data+).
+    #
+    # @param graph                 [String]     full named graph URI
+    # @param database              [String]     form type, e.g. +"member"+
+    # @param pre_fetched_details   [Hash, nil]  already-retrieved field hash
+    #   keyed by questionclass symbol; re-fetched if nil
+    # @param pre_fetched_primary_id [String, nil] already-retrieved primary_id;
+    #   queried from the graph if nil
+    # @return [CBGP::Dataset] populated dataset instance
+    # @raise [SystemExit] if the primary_id cannot be determined
     def self.load_from_graph(graph:, database:, pre_fetched_details: nil, pre_fetched_primary_id: nil)
       dataset = new(type: database)
 
@@ -339,54 +439,77 @@ module CBGP
       dataset
     end
 
-    # data has been entered into the HTML form, or a loader. Here we are validating it
+    # Validates incoming form parameters, writes the dataset, and returns it.
+    #
+    # This is the single entry point for all HTML form submissions and bulk
+    # loaders.  It handles both *new record* and *edit* paths:
+    #
+    # * *New record*: the form's hidden +primary_id+ field is empty; a fresh
+    #   UUID is generated.
+    # * *Edit*: the hidden +primary_id+ field carries the existing UUID; the old
+    #   named graph is dropped and rewritten with the same UUID, preserving the
+    #   graph URI across edits.
+    # * *External primary key*: if a field is marked +local:is-primary-id true+
+    #   in the ontology, its submitted value is used to look up an existing
+    #   record.  If found, that record's UUID becomes the primary_id (triggering
+    #   an overwrite rather than a duplicate).
+    #
+    # primary_id resolution priority:
+    #   1. +is_external_primary+ lookup (highest — set during field iteration)
+    #   2. Hidden +primary_id+ form param (edit path)
+    #   3. Fresh +SecureRandom.uuid+ (new record)
+    #
+    # @param params [Hash] Sinatra params hash from the POST request; must
+    #   include +'database'+ (form type) and +'primary_id'+ (may be empty)
+    # @return [CBGP::Dataset] the saved dataset instance
+    # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
     def self.load_from_params_and_write(params:)
       warn "PARAMS: #{params.inspect}"
-      # Create the instance – NO auto-generation of primary_id in initialize anymore
-      # primary_id starts as nil
       dataset = CBGP::Dataset.new(type: params['database'])
 
       dataset.fields.each do |field|
-        value = params[field[:questionclass]] # get the submitted value from incoming FORM parameters
+        value = params[field[:questionclass]]
         next unless value
         next if value.empty?
 
         warn "field #{field[:label]} value #{value}"
 
-        if field[:is_external_primary].downcase == 'true' # filter for an existing record that has this external primary identifier
-          # set the current primary_id to the primary_id of that record if it exists.
-          # # this will trigger an overwrite, rather than a duplication of that record
+        if field[:is_external_primary].downcase == 'true'
+          # Look up any existing record with this external identifier so we
+          # overwrite it rather than create a duplicate.
           dataset.primary_id = CBGP::Dataset.get_primary_id(questionclass: field[:questionclass], questionvalue: value,
                                                             dataset_type: params['database'])
           warn "set primaryid to #{dataset.primary_id.inspect}"
-          # can return nil if there is no existing record, and a new primary_id will be generated later
         end
 
         coerced_value = dataset.coerce_value(value, field[:class], field[:cardinality])
         if coerced_value && (!coerced_value.is_a?(Array) || !coerced_value.empty?)
-          dataset.public_send("#{field[:method]}=",
-                              coerced_value)
+          dataset.public_send("#{field[:method]}=", coerced_value)
         end
       end
 
-      # ensure a primary_id exists at this point, from any source
-      # - If params include a primary_id (hidden field from edit form) → reuse it (update existing graph)
-      # - If params include an external primary identifier, then the earlier query will have set the dataset.primary_id already
-      # - Otherwise (new record) → generate a fresh UUID now
       primary_id_param = params['primary_id'].to_s.strip
-      dataset.primary_id = if dataset.primary_id && dataset.primary_id.empty? # if it has already been set, then this takes precedence
-                             if primary_id_param.empty?
-                               SecureRandom.uuid # Fresh ID for new records
-                             else
-                               primary_id_param # Reuse imcoming ID for updates
-                             end
-                           else
-                             dataset.primary_id # just return existing id
-                           end
-      dataset.write_to_db
+
+      if dataset.primary_id.to_s.strip.empty?
+        dataset.primary_id = primary_id_param.empty? ? SecureRandom.uuid : primary_id_param
+      end
+
+      oldid = primary_id_param.empty? ? nil : primary_id_param
+      write_dataset_to_db(dataset: dataset, oldid: oldid)
       dataset
     end
+    # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 
+    # Searches for an existing record whose +questionclass+ field has the given
+    # value, and returns its primary_id string.
+    #
+    # Used by +load_from_params_and_write+ to detect duplicates when a field is
+    # marked +local:is-primary-id true+ in the ontology (e.g. ORCiD for members).
+    #
+    # @param questionclass [String] the ontology questionclass to match against
+    # @param questionvalue [String] the value to search for
+    # @param dataset_type  [String] form type to scope the search
+    # @return [String, nil] primary_id of the matching record, or +nil+ if none
     def self.get_primary_id(questionclass:, questionvalue:, dataset_type:)
       graphuris = execute_search(search_params: { questionclass => questionvalue }, dataset_type: dataset_type) # execute_search(search_params:, dataset_type:)
       warn "Found GraphURIs #{graphuris.inspect}"
@@ -397,19 +520,36 @@ module CBGP
       nil # keeps it empty for the main routine to set it later
     end
 
+    # Persists this instance to the triple store, generating a UUID if the
+    # record has no primary_id yet.  Always performs a plain INSERT (no delete
+    # of a prior graph).  Use +load_from_params_and_write+ for edit semantics.
+    #
+    # @return [Object] raw response from the SPARQL update endpoint
     def write_to_db
       warn 'WRITING DATASET TO DB'
       self.primary_id = SecureRandom.uuid unless primary_id
       write_dataset_to_db(dataset: self)
     end
 
+    # Class-level write helper.  Delegates to +write_dataset_to_db+ after
+    # ensuring a primary_id exists.  Prefer +load_from_params_and_write+ for
+    # form submissions, which handles edit/delete semantics correctly.
+    #
+    # @param dataset [CBGP::Dataset] the dataset to persist
+    # @param oldid   [String, nil]   if supplied, the old graph is dropped first
+    # @return [Object] raw response from the SPARQL update endpoint
     def self.write_to_db(dataset:, oldid: nil)
-      # TODO: Should check... probably an existing primary_id should be made the old id for deletion??  think about this
       warn 'WRITING DATASET TO DB'
-      dataset.primary_id = SecureRandom.uuid if dataset.primary_id.empty?
+      dataset.primary_id = SecureRandom.uuid if dataset.primary_id.to_s.strip.empty?
       write_dataset_to_db(dataset: dataset, oldid: oldid)
     end
 
+    # Returns a simplified field list derived from a cached +Questionnaire+
+    # object.  Used by older code paths that work with the Questionnaire layer
+    # rather than the ontology SPARQL layer directly.
+    #
+    # @param questionnaire_type [String] questionnaire identifier
+    # @return [Array<Hash>] field descriptors sorted by +:sequence+
     def self.get_questionnaire_fields(questionnaire_type:)
       @@fields_cache[questionnaire_type] ||= begin # OPTIMIZATION: Compute once from cached Questionnaire
         questionnaire = Questionnaire.get_cached(questionnaire_type: questionnaire_type)
@@ -432,7 +572,13 @@ module CBGP
       end
     end
 
-    # use labels for display of currently selected hiearrchical tree node
+    # Recursively searches a jstree-style node array for a node whose +'id'+
+    # matches +target_id+ and returns its +'text'+ label.
+    #
+    # @param nodes     [Array<Hash>] tree nodes with +'id'+, +'text'+, and
+    #   optional +'children'+ keys
+    # @param target_id [String] the node id to locate
+    # @return [String, nil] the node's label, or +nil+ if not found
     def self.find_label_by_id(nodes, target_id)
       nodes.each do |node|
         return node['text'] if node['id'] == target_id
@@ -445,7 +591,15 @@ module CBGP
       nil
     end
 
-    # Flatten tree with paths for search suggestions
+    # Flattens a jstree-style node tree into an array of +{ id:, label: }+
+    # hashes where each label is the full ancestor path joined with +' → '+.
+    # Used to build search-suggestion text for hierarchical controlled
+    # vocabularies (e.g. taxonomy, research area).
+    #
+    # @param nodes  [Array<Hash>] tree nodes (see +find_label_by_id+)
+    # @param path   [Array<String>] ancestor labels accumulated during recursion
+    # @param result [Array<Hash>]  accumulator; pass +[]+ on initial call
+    # @return [Array<Hash>] flat list of +{ id: String, label: String }+
     def self.flatten_with_path(nodes, path = [], result = [])
       nodes.each do |node|
         current_path = path + [node['text']]
@@ -455,4 +609,5 @@ module CBGP
       result
     end
   end
+  # rubocop:enable Metrics/ClassLength
 end

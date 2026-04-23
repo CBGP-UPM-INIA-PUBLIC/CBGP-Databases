@@ -72,6 +72,8 @@ class QuestionnaireSection
       references_target = references_uri ? references_uri.gsub(/.*\#/, '') : nil # e.g. "member"
       references_via_uri = res[:references_via]&.to_s
       references_via_class = references_via_uri ? references_via_uri.gsub(/.*\#/, '') : nil # e.g. "orcid"
+      references_via_label = res[:references_label]&.to_s
+      references_label_method = references_via_label ? references_via_label.gsub(/.*\#/, '') : nil # e.g. "name"
 
       qs << QuestionnaireQuestion.new(
         questionid: qid,
@@ -84,7 +86,8 @@ class QuestionnaireSection
         objectmethod: objectmethod,
         # NEW params:
         references_target: references_target,
-        references_via_class: references_via_class
+        references_via_class: references_via_class,
+        references_label_method: references_label_method  
       )
     end
     qs
@@ -94,10 +97,10 @@ end
 class QuestionnaireQuestion
   attr_accessor :questionid, :sequence, :objectclass, :objectmethod, :ablockid, :answertree, :question, :selected_answer,
                 :widget, :cardinality, :answerblock,
-                :references_target, :references_via_class
+                :references_target, :references_via_class, :references_label_method 
 
   def initialize(questionid:, sequence:, objectclass:, objectmethod:, ablockid:, question:,
-                 widget:, cardinality:, references_target: nil, references_via_class: nil)
+                 widget:, cardinality:, references_target: nil, references_via_class: nil, references_label_method: nil)
     @question = question
     @questionid = questionid # this is the ontology class (e.g. cbgp:mem1  becomes questionid = "mem1")
     @sequence = sequence
@@ -113,6 +116,7 @@ class QuestionnaireQuestion
     # NEW: store reference info
     @references_target = references_target # e.g. "member"
     @references_via_class = references_via_class # e.g. "orcid"
+    @references_label_method = references_label_method # e.g. "surname"
     # warn "WIDGET IS #{@widget}"
     return unless @widget.match(/TreeSelector/i)
 

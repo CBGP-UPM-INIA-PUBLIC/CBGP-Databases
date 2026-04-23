@@ -62,7 +62,7 @@ end
             <tr>
               <th>
                 <!-- Select All checkbox -->
-                <input type="checkbox" id="select-all" />
+                <!-- <input type="checkbox" id="select-all" /> -->
               </th>
               <th>Action</th>
               <% @fields.each do |field| %>
@@ -74,7 +74,7 @@ end
             <% @datasets.each do |dataset| %>
               <tr>
                 <td>
-                  <input type="checkbox" name="selected_ids[]" value="<%= dataset.primary_id %>" class="select-item" />
+                  <!-- <input type="checkbox" name="selected_ids[]" value="<%= dataset.primary_id %>" class="select-item" /> -->
                 </td>
                 <td class="dataset-id-cell">
                   <% primary_id = dataset.primary_id %>
@@ -115,11 +115,6 @@ end
       </div>
 
       <!-- Bulk delete button (disabled until items selected) -->
-      <div style="margin-top: 20px; text-align: center;">
-        <button type="submit" id="delete-selected-btn" disabled>
-          Delete Selected
-        </button>
-      </div>
     </form>
   <% end %>
 </div>

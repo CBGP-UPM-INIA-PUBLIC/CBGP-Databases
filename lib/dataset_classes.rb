@@ -29,11 +29,37 @@ module CBGP
   # @attr [String, nil] primary_id  UUID identifying this record; nil until set
   # rubocop:disable Metrics/ClassLength
   class Dataset
+    # Raised by .load_from_params_and_write when one or more submitted field
+    # values fail coercion/validation (e.g. an unparseable currency amount).
+    # Carries every failing field's label + message, not just the first, so
+    # the caller can show the user everything that needs fixing in one pass
+    # rather than a whack-a-mole of one error per resubmission.
+    class ValidationError < StandardError
+      attr_reader :errors # Array<{ label:, message: }>
+
+      def initialize(errors:)
+        @errors = errors
+        super("Validation failed: #{errors.map { |e| "#{e[:label]}: #{e[:message]}" }.join('; ')}")
+      end
+    end
+
     attr_accessor :fields, :form_type, :primary_id
 
     @@fields_cache       = {}  # keyed by "form_type_lang"; avoids re-querying the ontology
     @@methods_defined    = {}  # guards against redefining singleton methods per type
     @@primary_key_cache  = {}  # caches the is-primary-id method name per form type
+
+    # Clears every ontology-derived cache (field definitions, primary-id
+    # method lookups) so the next request re-queries the freshly-reloaded
+    # $ontology instead of serving stale field definitions.
+    #
+    # Reloading $ontology on its own does NOT invalidate these — they're
+    # cached independently, keyed by (form_type, language). Call this
+    # whenever $ontology is reloaded (see GET /cbgp/refresh in routes.rb).
+    def self.clear_caches!
+      @@fields_cache.clear
+      @@primary_key_cache.clear
+    end
 
     # Returns the array of field descriptor hashes for a given form type,
     # building and caching it on first call per (type, language) pair.
@@ -41,7 +67,8 @@ module CBGP
     # Each hash contains: +:q+, +:questionclass+, +:label+, +:widget+,
     # +:method+, +:class+, +:cardinality+, +:answers+, +:is_external_primary+,
     # +:sequence+, +:sectionid+, +:sectionlabel+, +:references+,
-    # +:references_target+, +:references_via+, +:references_via_method+.
+    # +:references_target+, +:references_via+, +:references_via_method+,
+    # +:comment+ (mouseover help text, blank if the ontology has none).
     #
     # @param type [String] ontology form fragment, e.g. +"member"+
     # @return [Array<Hash>] field descriptors sorted by +:sequence+
@@ -96,7 +123,8 @@ module CBGP
               references: references, # full URI of the FOrm (e.g. w3id.org/CBGP-App#member)
               references_target: references_target, # just #form
               references_via: references_via,
-              references_via_method: references_via_method
+              references_via_method: references_via_method,
+              comment: result[:comment]&.to_s # mouseover help text, current language; blank if the ontology has none
             }
           end
         end
@@ -168,7 +196,7 @@ module CBGP
     end
 
     def coerce_value(value, klass, cardinality)
-      klass.downcase!
+      klass = klass.to_s.downcase
       return '' if value.to_s.strip.empty?
 
       if cardinality.downcase == 'multiple' && value.is_a?(Array)
@@ -181,6 +209,9 @@ module CBGP
           value.to_i
         when 'date'
           Date.parse(value.to_s).strftime('%Y-%m-%d')
+        when 'currency'
+          parse_currency_input(value) or
+            raise ArgumentError, "'#{value}' doesn't look like a valid amount (e.g. 1234.56 or 1.234,56)"
         else
           value.to_s.strip
         end
@@ -459,13 +490,21 @@ module CBGP
     #   2. Hidden +primary_id+ form param (edit path)
     #   3. Fresh +SecureRandom.uuid+ (new record)
     #
+    # Every field is attempted even if an earlier one fails coercion, and all
+    # failures are collected into a single +ValidationError+ (rather than
+    # raising on the first bad field) so the caller can show the user
+    # everything that needs fixing in one pass. Nothing is written to the
+    # triple store if any field fails.
+    #
     # @param params [Hash] Sinatra params hash from the POST request; must
     #   include +'database'+ (form type) and +'primary_id'+ (may be empty)
     # @return [CBGP::Dataset] the saved dataset instance
+    # @raise [ValidationError] if one or more fields fail coercion/validation
     # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
     def self.load_from_params_and_write(params:)
       warn "PARAMS: #{params.inspect}"
       dataset = CBGP::Dataset.new(type: params['database'])
+      errors = []
 
       dataset.fields.each do |field|
         value = params[field[:questionclass]]
@@ -482,11 +521,17 @@ module CBGP
           warn "set primaryid to #{dataset.primary_id.inspect}"
         end
 
-        coerced_value = dataset.coerce_value(value, field[:class], field[:cardinality])
-        if coerced_value && (!coerced_value.is_a?(Array) || !coerced_value.empty?)
-          dataset.public_send("#{field[:method]}=", coerced_value)
+        begin
+          coerced_value = dataset.coerce_value(value, field[:class], field[:cardinality])
+          if coerced_value && (!coerced_value.is_a?(Array) || !coerced_value.empty?)
+            dataset.public_send("#{field[:method]}=", coerced_value)
+          end
+        rescue ArgumentError => e
+          errors << { label: field[:label], message: e.message }
         end
       end
+
+      raise ValidationError.new(errors: errors) if errors.any?
 
       primary_id_param = params['primary_id'].to_s.strip
 
@@ -499,6 +544,39 @@ module CBGP
       dataset
     end
     # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+
+    # Builds a Dataset populated with the *raw*, unvalidated values a user
+    # just submitted (bypassing coerce_value entirely), so a form can be
+    # redisplayed with everything they typed still in place after a
+    # ValidationError — instead of losing their work and starting blank.
+    #
+    # @param type [String] form type, e.g. +"project"+
+    # @param params [Hash] the same Sinatra params hash passed to
+    #   +load_from_params_and_write+
+    # @return [CBGP::Dataset] dataset with raw submitted values, unvalidated
+    def self.new_from_raw_params(type:, params:)
+      dataset = new(type: type)
+      primary_id = params['primary_id'].to_s.strip
+      dataset.primary_id = primary_id unless primary_id.empty?
+
+      dataset.fields.each do |field|
+        value = params[field[:questionclass]]
+        next if value.nil?
+
+        dataset.set_raw(field[:q], value)
+      end
+      dataset
+    end
+
+    # Directly sets a field's underlying storage, bypassing coerce_value and
+    # any validation. Only for redisplaying unvalidated user input (see
+    # .new_from_raw_params) — never use this for data that will be persisted.
+    #
+    # @param field_uri [String] full field URI (field[:q])
+    # @param value [Object] raw value to store, unvalidated
+    def set_raw(field_uri, value)
+      @data[field_uri] = value
+    end
 
     # Searches for an existing record whose +questionclass+ field has the given
     # value, and returns its primary_id string.

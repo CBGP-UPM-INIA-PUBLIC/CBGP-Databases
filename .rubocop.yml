@@ -1,3 +1,10 @@
 AllCops:
   TargetRubyVersion: 3.2.4
   NewCops: enable
+
+# RSpec's describe/context/it blocks are expected to run long — that's normal
+# spec structure, not a complexity smell. Standard exemption absent a
+# rubocop-rspec dependency.
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'

@@ -19,9 +19,9 @@ unless @datasets.empty?
           cell = if value.nil? || (value.is_a?(Array) && value.empty?)
                    ''
                  elsif value.is_a?(Array)
-                   value.join(', ')
+                   value.map { |v| resolve_display_value(field, v) }.join(', ')
                  else
-                   value.to_s
+                   resolve_display_value(field, value)
                  end
           row << cell
         else
@@ -96,7 +96,11 @@ end
                         -
                       <% else %>
                         <%
-                          display_value = raw_value.is_a?(Array) ? raw_value.join(', ') : raw_value.to_s
+                          display_value = if raw_value.is_a?(Array)
+                                             raw_value.map { |v| resolve_display_value(field, v) }.join(', ')
+                                           else
+                                             resolve_display_value(field, raw_value)
+                                           end
                           truncated = display_value.length > 100 ? display_value[0...100] + '...' : display_value
                         %>
                         <span title="<%= display_value %>">

@@ -112,6 +112,12 @@ def set_routes
 
   get '/cbgp/refresh' do # when the ontology is updated...
     $ontology = RDF::Repository.load(CBGP_KB) # set in configuration.rb and/or in docker-compose
+    # Reloading $ontology alone doesn't invalidate the per-form-type field
+    # caches, so without this a refresh would keep serving stale field
+    # definitions (e.g. a newly-added currency field wouldn't show up)
+    # until the whole app process restarted.
+    CBGP::Dataset.clear_caches!
+    Questionnaire.clear_cache!
     redirect '/cbgp/dashboard'
   end
   # ----------------------------------------------------------------------------
@@ -178,7 +184,22 @@ def set_routes
     @form = params[:database]
     @questionnaire = generate_questionnaire(questionnaire_type: @form) # create the fields that will carry the answers provided
     @mode = 'edit' # the HTML form has a query mode and an edit mode.  Select the edit mode
-    @entry = CBGP::Dataset.load_from_params_and_write(params: params)
+
+    begin
+      @entry = CBGP::Dataset.load_from_params_and_write(params: params)
+    rescue CBGP::Dataset::ValidationError => e
+      @validation_errors = e.errors
+      @entry = CBGP::Dataset.new_from_raw_params(type: params['database'], params: params)
+      halt erb :user_dataset, layout: :database_layout
+    end
+
+    # Every submission through this route came from a UserFacing form, so
+    # always give the admins a heads-up — form-agnostic, so this covers any
+    # future UserFacing form (e.g. incoming Staff registration) with no
+    # changes needed here. See notify_new_user_submission in helpers.rb.
+    link = "#{request.base_url}/cbgp/dataset/#{@form}/#{@entry.primary_id}"
+    notify_new_user_submission(dataset: @entry, link: link)
+
     halt erb :thankyou, layout: :database_layout
   end
 
@@ -262,7 +283,14 @@ def set_routes
     @database = get_dbname_for_form(form: @form)
     @questionnaire = generate_questionnaire(questionnaire_type: @form) # create the fields that will carry the answers provided
     @mode = 'edit' # the HTML form has a query mode and an edit mode.  Select the edit mode
-    @entry = CBGP::Dataset.load_from_params_and_write(params: params)
+
+    begin
+      @entry = CBGP::Dataset.load_from_params_and_write(params: params)
+    rescue CBGP::Dataset::ValidationError => e
+      @validation_errors = e.errors
+      @entry = CBGP::Dataset.new_from_raw_params(type: params['database'], params: params)
+    end
+
     halt erb :dataset, layout: :database_layout
   end
 

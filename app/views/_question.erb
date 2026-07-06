@@ -5,8 +5,14 @@
      :selected_answer, :widget, :cardinality -->
 
 <% label = @question.question %>
+<% comment = @question.respond_to?(:comment) ? @question.comment.to_s.strip : '' %>
 <div id="<%= label %>" class="field-row" style="clear: both;">
-  <h4 class="question-label"><%= label %></h4>
+  <h4 class="question-label">
+    <%= label %>
+    <% unless comment.empty? %>
+      <span class="field-help" tabindex="0" title="<%= CGI.escapeHTML(comment) %>">&#9432;</span>
+    <% end %>
+  </h4>
   <% widget = @question.widget.match(/.*\#(\S+)/)[1] %>
   <% warn "Widget for #{@question.questionid}: #{@question.widget}" %>
   <% warn "Extracted widget: #{widget}" %>

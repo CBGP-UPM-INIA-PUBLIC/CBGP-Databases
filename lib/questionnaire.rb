@@ -12,6 +12,13 @@ class Questionnaire
     @@cache[key] ||= new(questionnaire_type: questionnaire_type) # new() triggers queries with current_language
   end
 
+  # Clears the cached Questionnaire objects so the next request rebuilds
+  # them from the freshly-reloaded $ontology. See CBGP::Dataset.clear_caches!
+  # (same reasoning: reloading $ontology alone doesn't invalidate this).
+  def self.clear_cache!
+    @@cache.clear
+  end
+
   def initialize(questionnaire_type:) # questionnaire_type  "add-publications", "add-project" "add-member"
     # GET THE LABELS HERE
     # @lang = lang.upcase
@@ -74,6 +81,7 @@ class QuestionnaireSection
       references_via_class = references_via_uri ? references_via_uri.gsub(/.*\#/, '') : nil # e.g. "orcid"
       references_via_label = res[:references_label]&.to_s
       references_label_method = references_via_label ? references_via_label.gsub(/.*\#/, '') : nil # e.g. "name"
+      comment = res[:comment]&.to_s # mouseover help text, current language; blank if the ontology has none
 
       qs << QuestionnaireQuestion.new(
         questionid: qid,
@@ -87,7 +95,8 @@ class QuestionnaireSection
         # NEW params:
         references_target: references_target,
         references_via_class: references_via_class,
-        references_label_method: references_label_method  
+        references_label_method: references_label_method,
+        comment: comment
       )
     end
     qs
@@ -97,11 +106,13 @@ end
 class QuestionnaireQuestion
   attr_accessor :questionid, :sequence, :objectclass, :objectmethod, :ablockid, :answertree, :question, :selected_answer,
                 :widget, :cardinality, :answerblock,
-                :references_target, :references_via_class, :references_label_method 
+                :references_target, :references_via_class, :references_label_method, :comment
 
   def initialize(questionid:, sequence:, objectclass:, objectmethod:, ablockid:, question:,
-                 widget:, cardinality:, references_target: nil, references_via_class: nil, references_label_method: nil)
+                 widget:, cardinality:, references_target: nil, references_via_class: nil, references_label_method: nil,
+                 comment: nil)
     @question = question
+    @comment = comment
     @questionid = questionid # this is the ontology class (e.g. cbgp:mem1  becomes questionid = "mem1")
     @sequence = sequence
     @widget = widget.downcase

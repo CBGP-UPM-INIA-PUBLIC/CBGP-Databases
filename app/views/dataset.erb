@@ -3,6 +3,15 @@
 
     <!-- incoming @entry object and @questionnaire object -->
 
+      <% if @validation_errors && @validation_errors.any? %>
+        <div class="error-messages">
+          <ul>
+            <% @validation_errors.each do |err| %>
+              <li><strong><%= err[:label] %>:</strong> <%= err[:message] %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
 
       <form action="/cbgp/validate-dataset/<%= @database %>" method="post">
         <table id="dataset_validate" width="80%">

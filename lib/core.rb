@@ -25,6 +25,103 @@ def identifier_type(id: nil)
   ['db_entry', id] # Return the original identifier if not a DOI
 end
 
+# Parses a currency amount as typed by the user in the given UI language's
+# number convention, into the canonical DB form: a plain decimal string,
+# '.' separator, no thousands grouping (e.g. "1234.56").
+#
+#   en: "1,234.56" -> "1234.56"
+#   es: "1.234,56" -> "1234.56"
+#
+# Used by CBGP::Dataset#coerce_value (save path, where an invalid amount
+# should raise) and by build_search_query (search path, where an invalid
+# amount should just be skipped) — so this returns nil on unparseable input
+# rather than raising; callers decide what nil means for them.
+#
+# @return [String, nil] canonical decimal string, or nil if unparseable/blank
+def parse_currency_input(value, language: current_language)
+  text = value.to_s.strip
+  return nil if text.empty?
+
+  text = language == 'es' ? text.delete('.').tr(',', '.') : text.delete(',')
+  format('%.2f', Float(text))
+rescue ArgumentError
+  nil
+end
+
+# Formats a canonical DB decimal string (see parse_currency_input) for
+# display/export in the given UI language's number convention.
+#
+#   en: "1234.56" -> "1,234.56"
+#   es: "1234.56" -> "1.234,56"
+#
+# If value isn't actually in canonical form (e.g. we're redisplaying a user's
+# invalid raw input after a ValidationError, or stored data is somehow
+# corrupt), it's returned unchanged rather than mangled — so the user always
+# sees exactly what they typed when there's something to fix.
+#
+# @return [String] formatted amount, unchanged input, or '' if value is blank
+def format_currency(value, language: current_language)
+  text = value.to_s.strip
+  return '' if text.empty?
+
+  negative = text.start_with?('-')
+  body = text.sub(/\A-/, '')
+  return text unless body.match?(/\A\d+(\.\d+)?\z/)
+
+  whole, fraction = body.split('.', 2)
+  fraction = (fraction || '00').ljust(2, '0')[0, 2]
+  grouped = whole.reverse.gsub(/(\d{3})(?=\d)/, '\1,').reverse
+
+  thousands_sep, decimal_sep = language == 'es' ? ['.', ','] : [',', '.']
+  grouped = grouped.tr(',', thousands_sep)
+
+  "#{'-' if negative}#{grouped}#{decimal_sep}#{fraction}"
+end
+
+# Answer-block IDs that mean "free entry" rather than "controlled
+# vocabulary" — see QuestionnaireAnswerBlock in lib/questionnaire.rb, which
+# special-cases the same four IDs for the same reason.
+FREE_TEXT_ANSWER_BLOCKS = %w[FREE NUM DATE HIDDEN].freeze
+
+# True if this field's widget is backed by a controlled vocabulary (select,
+# radio, checkbox list, or tree-selector) rather than free text/number/date
+# entry — i.e. the value actually stored is an ontology class ID (e.g.
+# "usa"), not a human-readable string.
+def controlled_vocabulary_field?(field)
+  ablockid = field[:answers].to_s.split('#').last
+  !ablockid.to_s.empty? && !FREE_TEXT_ANSWER_BLOCKS.include?(ablockid)
+end
+
+# Memoized wrapper around get_label_for_id (lib/queries.rb) — a search
+# results page can call this once per (field, row), so caching avoids
+# re-parsing/re-executing the same SPARQL lookup for repeated values (e.g.
+# the same country or status appearing across many rows).
+LABEL_LOOKUP_CACHE = {} # rubocop:disable Style/MutableConstant -- intentionally mutated as a cache
+
+def cached_label_for_id(id:, language: current_language)
+  key = "#{id}_#{language}"
+  LABEL_LOOKUP_CACHE.fetch(key) { LABEL_LOOKUP_CACHE[key] = get_label_for_id(id: id, language: language) }
+end
+
+# Resolves a single stored field value for display: currency amounts are
+# locale-formatted (see format_currency); controlled-vocabulary values (e.g.
+# "usa") are resolved to their current-language rdfs:label (e.g. "United
+# States of America"); anything else (free text, dates, ORCiDs, …) is passed
+# through unchanged. Falls back to the raw stored value if no label is found
+# (e.g. a since-removed ontology class), so a lookup miss never makes data
+# disappear from the results.
+#
+# @param field [Hash] a field descriptor from CBGP::Dataset.fields_for
+# @param value [Object] one stored value for that field (not an Array —
+#   callers handle Multiple-cardinality fields by mapping this over each one)
+# @return [String] the value as it should be displayed/exported
+def resolve_display_value(field, value)
+  return format_currency(value) if field[:class] == 'currency'
+  return value.to_s unless controlled_vocabulary_field?(field)
+
+  cached_label_for_id(id: value) || value.to_s
+end
+
 def build_transitive_tree(results, abblockid:)
   abblockid = abblockid.to_s.strip
   if abblockid.empty?

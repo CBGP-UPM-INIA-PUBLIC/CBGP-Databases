@@ -1,0 +1,26 @@
+<!-- @answerblock [:type, :answers, :lang=, :lang, :ablockid=, :answers=, :type=, :ablockid] -->
+<!-- Stored value is always canonical (e.g. "1234.56"); displayed/typed value
+     follows the current UI language's number convention (see format_currency
+     / parse_currency_input in lib/core.rb). -->
+<div class="inputtype">
+  <div id="<%= @question.questionid %>_container">
+    <% if @question.cardinality == "Multiple" %>
+      <% @thisval = [""] if @thisval.nil? || (@thisval.is_a?(Array) && @thisval.empty?) %>
+      <% @thisval.each_with_index do |val, index| %>
+        <div class="text-input-row" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+          <input type="text" inputmode="decimal" name="<%= @question.questionid %>[]" value="<%= format_currency(val) %>" id="<%= @question.questionid %>_<%= index + 1 %>_ANSWER" size="20" style="vertical-align: middle;" />
+          <% if index > 0 %>
+            <button type="button" class="remove-input" data-index="<%= index %>">−</button>
+          <% end %>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="text-input-row" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+        <input type="text" inputmode="decimal" name="<%= @question.questionid %>" value="<%= format_currency(@thisval) %>" id="<%= @question.questionid %>_ANSWER" size="20" style="vertical-align: middle;" />
+      </div>
+    <% end %>
+  </div>
+  <% if @question.cardinality == "Multiple" %>
+    <button type="button" class="add-input" data-question-id="<%= @question.questionid %>">+</button>
+  <% end %>
+</div>

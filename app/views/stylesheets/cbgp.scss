@@ -163,6 +163,16 @@ h3 {
   grid-column: 1;
 }
 
+/* Mouseover help icon shown next to a field label when the ontology
+   provides an rdfs:comment for that question (see _question.erb) */
+.field-help {
+  display: inline-block;
+  margin-left: 4px;
+  color: #1976D2;
+  cursor: help;
+  font-size: .85em;
+}
+
 #new-publication-questions .inputtype,
 #new-publication-questions .authorlist,
 #new-publication-questions .affiliation {

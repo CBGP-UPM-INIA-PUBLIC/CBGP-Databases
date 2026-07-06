@@ -105,7 +105,7 @@ def get_section_questions_query(sectionid:, language: current_language)
   qs = <<GET_SECTION_QUESTIONS
     #{PREFIXES}
 
-    SELECT ?q (str(?qlab) as ?label) ?widget ?class ?method ?cardinality ?answers ?primary ?sequence ?references ?references_via ?references_label WHERE {
+    SELECT ?q (str(?qlab) as ?label) ?widget ?class ?method ?cardinality ?answers ?primary ?sequence ?references ?references_via ?references_label (str(?qcomment) as ?comment) WHERE {
     ?q rdfs:subClassOf cbgp:#{sectionid} .
     ?q rdfs:label ?qlab .
     FILTER (lang(?qlab) = "#{language}")
@@ -119,6 +119,7 @@ def get_section_questions_query(sectionid:, language: current_language)
     OPTIONAL { ?q local:references ?references . }
     OPTIONAL { ?q local:references-via ?references_via . }
     OPTIONAL { ?q local:references-label ?references_label . }
+    OPTIONAL { ?q rdfs:comment ?qcomment . FILTER (lang(?qcomment) = "#{language}") }
   } ORDER BY ?sequence
 
 GET_SECTION_QUESTIONS
@@ -456,7 +457,26 @@ def accent_insensitive_pattern(term)
   }
 
   # Build pattern: replace each base char with its class or escaped
-  base_term.gsub(/./) { |char| mapping[char] || Regexp.escape(char) }
+  base_term.gsub(/./) { |char| mapping[char] || sparql_regex_escape(char) }
+end
+
+# Escapes a single character for safe use inside a SPARQL FILTER regex(...)
+# string-literal argument.
+#
+# NOTE: this is deliberately NOT Ruby's Regexp.escape. SPARQL's regex()
+# function uses XPath F&O regex syntax, and the pattern is embedded inside a
+# SPARQL string literal. Ruby's Regexp.escape escapes characters (like a
+# plain space, to survive Ruby's own /x extended-mode regexes) that are
+# meaningless to escape here and that SPARQL's string-literal grammar
+# actually rejects — e.g. Regexp.escape(' ') => '\ ', and "\ " is not a
+# legal SPARQL string escape, which previously caused a lexical error on any
+# multi-word search term (e.g. "My Innovative Project").
+def sparql_regex_escape(char)
+  case char
+  when '"', '\\' then "\\#{char}" # must not break out of the SPARQL string literal
+  when '.', '*', '+', '?', '(', ')', '[', ']', '{', '}', '|', '^', '$' then "\\#{char}" # XPath regex metacharacters
+  else char
+  end
 end
 
 def build_search_query(search_params:, dataset_type:)
@@ -518,7 +538,22 @@ def build_search_query(search_params:, dataset_type:)
       value_str = value.to_s.strip
       next if value_str.empty?
 
-      if ACCENT_SENSITIVE_LABELS.include?(field[:label].downcase)
+      if field[:class] == 'currency'
+        # Search input is typed in the current UI language's number
+        # convention (e.g. "15.000,50" in Spanish); normalize it to the
+        # canonical decimal form the value is actually stored in before
+        # matching, same as on save. Skip silently on unparseable input,
+        # like every other search field does on a blank/invalid term.
+        parsed = parse_currency_input(value_str)
+        next unless parsed
+
+        conditions << <<-CONDITION
+          ?dataset sio:SIO_000008 ?attribute .
+          ?attribute sio:SIO_000300 ?value .
+          ?attribute rdf:type cbgp:#{questionclass} .
+          FILTER(CONTAINS(STR(?value), "#{parsed}"))
+        CONDITION
+      elsif ACCENT_SENSITIVE_LABELS.include?(field[:label].downcase)
         pattern = accent_insensitive_pattern(value_str)
         next if pattern.empty?
 

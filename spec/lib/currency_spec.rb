@@ -39,6 +39,25 @@ RSpec.describe 'currency parsing and formatting' do
       expect(parse_currency_input('fifteen thousand', language: 'en')).to be_nil
       expect(parse_currency_input('abc', language: 'en')).to be_nil
     end
+
+    it 'rejects malformed grouping/decimals instead of silently misreading them' do
+      # Reported bug (2026-07-06): stripping thousands separators blindly and
+      # handing the rest to Float() accepted "2,00.0000" as 200.00 — a wrong
+      # grouping (2 digits, not 3) *and* a nonsensical decimal length (4
+      # digits), neither of which should ever parse as a real amount.
+      expect(parse_currency_input('2,00.0000', language: 'en')).to be_nil
+      expect(parse_currency_input('2.00,0000', language: 'es')).to be_nil
+      expect(parse_currency_input('1,23.45', language: 'en')).to be_nil # bad grouping alone
+      expect(parse_currency_input('1234.567', language: 'en')).to be_nil # bad decimal length alone
+    end
+
+    it 'accepts large numbers with multiple correct thousands groups' do
+      expect(parse_currency_input('1,234,567.89', language: 'en')).to eq('1234567.89')
+    end
+
+    it 'accepts a single decimal digit' do
+      expect(parse_currency_input('15.5', language: 'en')).to eq('15.50')
+    end
   end
 
   describe '#format_currency' do

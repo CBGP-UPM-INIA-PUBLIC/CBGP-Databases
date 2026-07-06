@@ -181,7 +181,15 @@ def set_routes
 
   # the form has been filled - now validate it
   post '/cbgp/validate-user-dataset/:database' do
-    @form = params[:database]
+    # :database here is the dbname (e.g. "project") the User form was posted
+    # under — the same value used to write/look up the record. It is NOT the
+    # restricted UserFacing questionnaire code (e.g. "userproject"), so it
+    # must not be used to rebuild @questionnaire: that would silently swap in
+    # the full Admin field set on redisplay. The true form code is carried
+    # separately via the hidden user_form_type field (see user_dataset.erb).
+    @database = params[:database]
+    @form = params['user_form_type'].to_s.strip
+    @form = @database if @form.empty? # defensive fallback for a stale/hand-crafted request missing the hidden field
     @questionnaire = generate_questionnaire(questionnaire_type: @form) # create the fields that will carry the answers provided
     @mode = 'edit' # the HTML form has a query mode and an edit mode.  Select the edit mode
 
@@ -197,7 +205,7 @@ def set_routes
     # always give the admins a heads-up — form-agnostic, so this covers any
     # future UserFacing form (e.g. incoming Staff registration) with no
     # changes needed here. See notify_new_user_submission in helpers.rb.
-    link = "#{request.base_url}/cbgp/dataset/#{@form}/#{@entry.primary_id}"
+    link = "#{request.base_url}/cbgp/dataset/#{@database}/#{@entry.primary_id}"
     notify_new_user_submission(dataset: @entry, link: link)
 
     halt erb :thankyou, layout: :database_layout

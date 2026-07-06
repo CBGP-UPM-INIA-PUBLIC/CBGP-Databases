@@ -19,6 +19,13 @@
           <tr><td>
             <input type="submit" value="Submit <%= @database.capitalize %> Record"/>
             <input type="hidden" name="primary_id" value="<%= @entry.primary_id %>">
+            <!-- @database (used in the URL/action above) is the dbname (e.g. "project") the
+                 record is stored/looked up under; @form is the *restricted* UserFacing
+                 questionnaire code (e.g. "userproject"). Carried separately so that if this
+                 form gets redisplayed after a validation error, the route can rebuild the
+                 restricted User questionnaire again instead of falling back to the dbname
+                 and accidentally generating the full Admin field set. -->
+            <input type="hidden" name="user_form_type" value="<%= @form %>">
           </td></tr>
           <tr> <td>
           <%= erb :_questionnaire %> 

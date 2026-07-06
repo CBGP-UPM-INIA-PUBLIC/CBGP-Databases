@@ -25,12 +25,30 @@ def identifier_type(id: nil)
   ['db_entry', id] # Return the original identifier if not a DOI
 end
 
+# Matches a properly-formatted amount in each language's number convention:
+# either no grouping separator at all (any number of digits), or grouping in
+# proper 3-digit clusters; an optional decimal part of exactly 1-2 digits.
+# This is deliberately strict — e.g. "2,00.0000" (en) must be *rejected*, not
+# silently reinterpreted as 200.00 by stripping the comma and hoping. Without
+# this check, parse_currency_input would accept almost any string containing
+# digits and at most one '.', regardless of whether the grouping/decimal
+# shape actually makes sense as money.
+CURRENCY_INPUT_PATTERNS = {
+  'en' => /\A-?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d{1,2})?\z/,
+  'es' => /\A-?(?:\d+|\d{1,3}(?:\.\d{3})+)(?:,\d{1,2})?\z/
+}.freeze
+
 # Parses a currency amount as typed by the user in the given UI language's
 # number convention, into the canonical DB form: a plain decimal string,
 # '.' separator, no thousands grouping (e.g. "1234.56").
 #
 #   en: "1,234.56" -> "1234.56"
 #   es: "1.234,56" -> "1234.56"
+#
+# Rejects (returns nil for) input that doesn't actually look like a properly
+# formatted amount in that language — e.g. "2,00.0000" (bad grouping *and* a
+# nonsensical number of decimal digits) — rather than blindly stripping
+# separators and accepting whatever Float() makes of the remainder.
 #
 # Used by CBGP::Dataset#coerce_value (save path, where an invalid amount
 # should raise) and by build_search_query (search path, where an invalid
@@ -42,8 +60,11 @@ def parse_currency_input(value, language: current_language)
   text = value.to_s.strip
   return nil if text.empty?
 
-  text = language == 'es' ? text.delete('.').tr(',', '.') : text.delete(',')
-  format('%.2f', Float(text))
+  pattern = CURRENCY_INPUT_PATTERNS[language] || CURRENCY_INPUT_PATTERNS['en']
+  return nil unless pattern.match?(text)
+
+  normalized = language == 'es' ? text.delete('.').tr(',', '.') : text.delete(',')
+  format('%.2f', Float(normalized))
 rescue ArgumentError
   nil
 end

@@ -47,6 +47,24 @@ here.
   the in-memory ontology but left the per-form-type field caches stale, so
   ontology edits (e.g. marking another field as currency) silently didn't
   take effect until the whole app process was restarted.
+- Fixed a crash (`NoMethodError` on `nil.capitalize`) when a User's project
+  submission failed validation: the user-facing validate route never set
+  `@database`, which only mattered once a validation error started
+  re-rendering the form instead of the thank-you page.
+- Fixed the User project form redisplaying with the *full Admin field set*
+  after a validation error, instead of the restricted set of fields Users
+  are actually meant to see/fill in. The route only ever had the dbname
+  (e.g. `"project"`) available from the URL, not the restricted UserFacing
+  questionnaire code (e.g. `"userproject"`) — a pre-existing ambiguity that
+  never mattered while a failed submission just crashed, but silently built
+  the wrong (Admin) questionnaire once redisplay started working. The
+  correct form code is now carried through via a hidden field.
+- Fixed currency validation silently accepting malformed amounts (e.g.
+  `"2,00.0000"` was misread as `200.00`) by blindly stripping whatever
+  character looked like a thousands separator and handing the rest to a
+  float parser. Amounts are now checked against the actual expected shape
+  (proper 3-digit grouping, at most 2 decimal digits) before being accepted,
+  in both English and Spanish conventions.
 
 ## [0.5.0] - 2026-04-23
 ### Added

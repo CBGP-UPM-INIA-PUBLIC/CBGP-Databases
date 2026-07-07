@@ -12,6 +12,23 @@ here.
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-07-07
+### Added
+- SCD Type 2 history tracking (recording layer only — query/reporting layer
+  and UI are designed but not yet built; see `.claude/plans/enumerated-zooming-sedgewick.md`).
+  Every edit or delete of a record now snapshots its full prior state into a
+  separate, dedicated GraphDB repository (`kbhistory`, new `GRAPHDB_HISTORY`/
+  `HISTORY_USER`/`HISTORY_PASS` config) before the current-state graph is
+  dropped/rewritten. Current-state data and behavior are completely
+  unchanged — snapshots are annotated at the graph level (nanopub/PROV
+  style: `prov:generatedAtTime`, `prov:invalidatedAtTime`,
+  `local:history-reason`, `local:history-detail`) rather than mixed into the
+  record's own data, and include a heuristic human-readable summary of what
+  changed (e.g. "Total funding: 15,000.00 → 20,000.00").
+- Fixed a pre-existing bug found while building the above: `dcterms:created`
+  was silently lost after a record's first edit (an edit's cleanup deleted
+  it and nothing rewrote it) — it's now preserved across edits.
+
 ## [0.6.0] - 2026-07-06
 ### Added
 - Currency field type: a new `currency` ontology widget/object-class that
@@ -150,6 +167,7 @@ here.
 - Initial commit; first exploratory Project and Staff data models.
 - Raw HTML form prototypes and CSV-based data capture, pre-ontology.
 
-[Unreleased]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/commits/main

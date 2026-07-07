@@ -36,6 +36,14 @@ GRAPHDB_HOST = ENV.fetch('GRAPHDB_HOST', nil)
 GRAPHDB_USER = ENV.fetch('GRAPHDB_USER', nil)
 GRAPHDB_PASS = ENV.fetch('GRAPHDB_PASS', nil)
 GRAPHDB_DBNAME = ENV.fetch('GRAPHDB_DBNAME', 'kbdatabase')
+# SCD Type 2 history: a separate GraphDB repository dedicated to snapshots of
+# superseded/deleted records (see lib/queries.rb delete_dataset_query). Kept
+# physically separate from GRAPHDB_DBNAME rather than a namespaced graph in
+# the same repository, so current-state queries can never accidentally match
+# a history graph.
+GRAPHDB_HISTORY = ENV.fetch('GRAPHDB_HISTORY', "#{GRAPHDB_DBNAME}_history")
+HISTORY_USER = ENV.fetch('HISTORY_USER', GRAPHDB_USER)
+HISTORY_PASS = ENV.fetch('HISTORY_PASS', GRAPHDB_PASS)
 CBGP_KB = ENV.fetch('CBGP_KB', 'https://w3id.org/CBGP-App')
 BASE_URI = 'http://admin.cbgp.upm.es/graphs/datasets/'
 

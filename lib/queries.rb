@@ -3,6 +3,7 @@
 require 'linkeddata'
 require 'sparql'
 require 'sparql/client'
+require 'securerandom'
 # require 'unicode' # If not already available; Ruby stdlib has String#unicode_normalize, but ensure it's loaded if needed
 
 host = GRAPHDB_HOST || 'localhost:7200'
@@ -13,6 +14,12 @@ GRAPHDB_DBNAME || 'kbdatabase'
 $ontology = RDF::Repository.load(CBGP_KB) # set in configuration.rb and/or in docker-compose
 DATABASE = SPARQL::Client.new("http://#{GRAPHDB_USER}:#{GRAPHDB_PASS}@#{host}/repositories/#{GRAPHDB_DBNAME}")
 DATABASE_UPDATE = SPARQL::Client.new("http://#{GRAPHDB_USER}:#{GRAPHDB_PASS}@#{host}/repositories/#{GRAPHDB_DBNAME}/statements")
+
+# SCD Type 2 history repository — a separate GraphDB repository (not a
+# namespaced graph in DATABASE) that holds snapshots of superseded/deleted
+# records. See delete_dataset_query.
+HISTORY_DATABASE = SPARQL::Client.new("http://#{HISTORY_USER}:#{HISTORY_PASS}@#{host}/repositories/#{GRAPHDB_HISTORY}")
+HISTORY_DATABASE_UPDATE = SPARQL::Client.new("http://#{HISTORY_USER}:#{HISTORY_PASS}@#{host}/repositories/#{GRAPHDB_HISTORY}/statements")
 
 # List unchanged
 ACCENT_SENSITIVE_LABELS = [
@@ -291,26 +298,89 @@ SELECT_DS
   nil
 end
 
-# Removes a named graph and its associated provenance annotations.
+# Escapes a value for safe embedding in a SPARQL string literal.
 #
-# Two-step SPARQL UPDATE executed in a single request:
-#   1. DELETE WHERE { <oldid> ?p ?o } — removes any triples in the *default*
-#      graph whose subject is the graph URI (i.e. dcterms:created /
-#      dcterms:modified written by write_dataset_to_db_query).
-#   2. DROP GRAPH <oldid> — removes the named graph and all its contents.
+# @param value [Object]
+# @return [String]
+def escape_for_literal(value)
+  value.to_s.gsub('\\', '\\\\').gsub('"', '\\"')
+end
+
+# Removes a named graph from the CURRENT-state repository (DATABASE), first
+# snapshotting its prior state into the separate HISTORY repository
+# (HISTORY_DATABASE/HISTORY_DATABASE_UPDATE) — this is the SCD Type 2
+# recording mechanism. Called for both true deletes (reason: 'deleted', the
+# default — single/multi-select delete, utilities/purge_dataset.rb) and, from
+# write_dataset_to_db_query, edits (reason: 'superseded').
 #
-# Step 1 is necessary because provenance triples are written outside the named
-# graph block in INSERT DATA, so DROP GRAPH alone leaves them orphaned.
+# Steps:
+#   1. Read the live graph's own dcterms:created/dcterms:modified (default
+#      graph, subject = graph URI) before touching anything. dcterms:modified
+#      becomes the snapshot's prov:generatedAtTime (when *this* version
+#      became current); dcterms:created is returned so the caller can
+#      preserve it into the new write instead of losing it (a pre-existing
+#      bug: this same DELETE wipes it and nothing rewrites it after an edit).
+#   2. CONSTRUCT the old graph's triples out of DATABASE (read-only) and
+#      INSERT them verbatim into a freshly-named graph in HISTORY_DATABASE,
+#      then annotate that snapshot graph at the graph level (subject = the
+#      snapshot's own URI, not a resource inside it — deliberately
+#      nanopub/PROV-style, not mixed into the assertion data) with
+#      prov:generatedAtTime/prov:invalidatedAtTime/local:history-reason/
+#      local:history-detail, all living in HISTORY_DATABASE's default graph.
+#      Two independent repositories are used — no SPARQL federation, no
+#      INSERT-WHERE across connections.
+#   3. Only then remove the live graph (and its default-graph provenance)
+#      from DATABASE — unchanged from the original delete logic.
 #
-# @param oldid [String] the full named graph URI to delete
-# @return [Object] raw response from the SPARQL update endpoint
-def delete_dataset_query(oldid:)
-  delete = <<~DELETE_DATASET
+# @param oldid [String] the full named graph URI to delete (in DATABASE)
+# @param reason ['deleted', 'superseded'] why this version is ending
+# @param detail [String, nil] heuristic human-readable summary of what
+#   changed (see CBGP::Dataset... summarize_field_changes in lib/core.rb);
+#   defaults to "Record deleted" when reason is 'deleted' and none is given
+# @return [Hash] +{ created:, history_graph: }+ — +created+ is the prior
+#   dcterms:created value (or nil for a brand-new record), for the caller to
+#   preserve; +history_graph+ is the new snapshot's graph URI
+def delete_dataset_query(oldid:, reason: 'deleted', detail: nil)
+  detail ||= 'Record deleted' if reason == 'deleted'
+  form_type, primary_id = oldid.match(%r{\A#{Regexp.escape(BASE_URI)}(.+)/context/(.+)\z})&.captures
+
+  prov_results = DATABASE.query(<<~PROV)
+    #{PREFIXES}
+    SELECT ?created ?modified WHERE {
+      OPTIONAL { <#{oldid}> dcterms:created  ?created }
+      OPTIONAL { <#{oldid}> dcterms:modified ?modified }
+    }
+  PROV
+  created = prov_results.first&.bound?(:created) ? prov_results.first[:created].to_s : nil
+  generated_at = prov_results.first&.bound?(:modified) ? prov_results.first[:modified].to_s : Time.now.utc.iso8601
+
+  history_graph = "#{BASE_URI}#{form_type}/history/#{primary_id}/#{SecureRandom.uuid}"
+  now = Time.now.utc.iso8601
+
+  old_triples = DATABASE.query(<<~CONSTRUCT)
+    #{PREFIXES}
+    CONSTRUCT { ?s ?p ?o } WHERE { GRAPH <#{oldid}> { ?s ?p ?o } }
+  CONSTRUCT
+  HISTORY_DATABASE_UPDATE.insert_data(old_triples, graph: history_graph)
+
+  HISTORY_DATABASE_UPDATE.update(<<~META)
+    #{PREFIXES}
+    PREFIX prov: <http://www.w3.org/ns/prov#>
+    INSERT DATA {
+      <#{history_graph}> prov:generatedAtTime    "#{generated_at}"^^xsd:dateTime ;
+                          prov:invalidatedAtTime  "#{now}"^^xsd:dateTime ;
+                          local:history-reason    "#{escape_for_literal(reason)}" ;
+                          local:history-detail    "#{escape_for_literal(detail)}" .
+    }
+  META
+
+  DATABASE_UPDATE.update(<<~DELETE_DATASET)
     #{PREFIXES}
     DELETE WHERE { <#{oldid}> ?p ?o } ;
     DROP GRAPH <#{oldid}>
   DELETE_DATASET
-  DATABASE_UPDATE.update(delete)
+
+  { created: created, history_graph: history_graph }
 end
 
 # Executes the SPARQL UPDATE that persists a dataset to the triple store.
@@ -332,27 +402,37 @@ end
 
 # Builds the SPARQL UPDATE string that inserts a dataset's triples.
 #
-# If +oldid+ is given, +delete_dataset_query+ is called first (side-effect),
-# then an INSERT DATA block is constructed containing:
+# If +oldid+ is given, the old graph is first snapshotted into the SCD Type 2
+# history repository and dropped (see +delete_dataset_query+, reason:
+# 'superseded'), then an INSERT DATA block is constructed containing:
 #   - Core typing triples (rdf:type sio:SIO_000089, cbgp:<form_type>)
 #   - An sio:SIO_000115 identifier node carrying the primary_id string
 #   - One attribute node per field value, using the SIO reified-attribute pattern
 #   - Provenance triples in the DEFAULT graph:
-#       * dcterms:modified  — always written (timestamp of this write)
-#       * dcterms:created   — written only for new records (oldid is nil)
+#       * dcterms:modified — always written (timestamp of this write)
+#       * dcterms:created  — always written; preserved from the prior version
+#         on an edit (via delete_dataset_query's return value) rather than
+#         reset, so creation date survives edits instead of being lost
 #
 # Multiple-cardinality fields produce one numbered attribute node per value:
 #   <dataset>/<questionclass>_1, <dataset>/<questionclass>_2, …
 #
 # @param dataset [CBGP::Dataset] the dataset to serialise
-# @param oldid [String, nil] if present, the old graph is dropped before insert
+# @param oldid [String, nil] if present, the old graph is snapshotted+dropped
+#   before insert
 # @return [String] the complete SPARQL UPDATE query string
 def write_dataset_to_db_query(dataset:, oldid: nil)
   database = dataset.form_type
   primary_id = dataset.primary_id
   warn "WRITE DATASET primary_id is #{primary_id}\n\n"
 
-  delete_dataset_query(oldid: "#{BASE_URI}#{database}/context/#{oldid}") if oldid
+  captured = nil
+  if oldid
+    old_graph_uri = "#{BASE_URI}#{database}/context/#{oldid}"
+    old_values = fetch_datasets_raw_data(graph_uris: [old_graph_uri], database: database).first || {}
+    detail = summarize_field_changes(fields: dataset.fields, old_values: old_values, new_dataset: dataset)
+    captured = delete_dataset_query(oldid: old_graph_uri, reason: 'superseded', detail: detail)
+  end
 
   datasetPREFIX         = "<#{BASE_URI}#{database}/dataset/>"
   datasetgraphPREFIX    = "<#{BASE_URI}#{database}/context/>"
@@ -376,7 +456,6 @@ def write_dataset_to_db_query(dataset:, oldid: nil)
     next if value.nil? || (value.is_a?(Array) && value.empty?)
 
     questionclass = field[:questionclass]
-    escape_for_literal = ->(v) { v.to_s.gsub('\\', '\\\\').gsub('"', '\\"') }
 
     if field[:cardinality] == 'Multiple' && value.is_a?(Array)
       value.each_with_index do |val, index|
@@ -385,13 +464,13 @@ def write_dataset_to_db_query(dataset:, oldid: nil)
         this_attribute = "#{datasetPREFIX.gsub(/[<>]/, '')}#{primary_id}/#{questionclass}_#{index + 1}"
         triples << "dataset:#{primary_id} sio:SIO_000008 <#{this_attribute}> ."
         triples << "<#{this_attribute}> rdf:type cbgp:#{questionclass} ."
-        triples << "<#{this_attribute}> sio:SIO_000300 \"#{escape_for_literal.call(val)}\" ."
+        triples << "<#{this_attribute}> sio:SIO_000300 \"#{escape_for_literal(val)}\" ."
       end
     else
       this_attribute = "#{datasetPREFIX.gsub(/[<>]/, '')}#{primary_id}/#{questionclass}"
       triples << "dataset:#{primary_id} sio:SIO_000008 <#{this_attribute}> ."
       triples << "<#{this_attribute}> rdf:type cbgp:#{questionclass} ."
-      triples << "<#{this_attribute}> sio:SIO_000300 \"#{escape_for_literal.call(value)}\" ."
+      triples << "<#{this_attribute}> sio:SIO_000300 \"#{escape_for_literal(value)}\" ."
     end
   end
 
@@ -400,10 +479,11 @@ def write_dataset_to_db_query(dataset:, oldid: nil)
   # Provenance triples are intentionally written OUTSIDE the GRAPH {} block so
   # they land in the default graph.  This keeps them queryable without knowing
   # the graph URI and means delete_dataset_query must clean them up explicitly.
+  # dcterms:created is preserved from the prior version on an edit (captured
+  # by delete_dataset_query above) rather than reset, so it survives edits.
+  created_value = captured&.dig(:created) || timestamp
   prov = "datasetgraph:#{primary_id} dcterms:modified \"#{timestamp}\"^^xsd:dateTime ."
-  # dcterms:created is only set on first write; updates drop and recreate the
-  # graph so the original creation date would be lost anyway.
-  prov += "datasetgraph:#{primary_id} dcterms:created \"#{timestamp}\"^^xsd:dateTime ." if oldid.nil?
+  prov += "datasetgraph:#{primary_id} dcterms:created \"#{created_value}\"^^xsd:dateTime ."
 
   <<~WRITE_DATASET
     #{PREFIXES}

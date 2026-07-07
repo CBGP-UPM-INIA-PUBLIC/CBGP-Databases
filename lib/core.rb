@@ -143,6 +143,59 @@ def resolve_display_value(field, value)
   cached_label_for_id(id: value) || value.to_s
 end
 
+# True if a field value should be treated as "no value" — nil, an empty
+# array/string, or a string that's blank once stripped.
+def blank_field_value?(value)
+  return true if value.nil?
+  return value.empty? if value.respond_to?(:empty?)
+
+  value.to_s.strip.empty?
+end
+
+# True if two stored field values are the same, ignoring only the order of a
+# Multiple-cardinality field's array (re-ordering isn't a real change) and
+# treating any blank shape (nil/""/[]) as equal to any other.
+def field_values_equal?(old_value, new_value)
+  return true if blank_field_value?(old_value) && blank_field_value?(new_value)
+
+  Array(old_value).map(&:to_s).sort == Array(new_value).map(&:to_s).sort
+end
+
+# Renders a field value for the change-summary heuristic below: "(none)" for
+# blank, otherwise each value through resolve_display_value (so currency and
+# controlled-vocabulary values read the same way here as everywhere else).
+def display_field_value_or_none(field, value)
+  return '(none)' if blank_field_value?(value)
+
+  Array(value).map { |v| resolve_display_value(field, v) }.join(', ')
+end
+
+# Builds the SCD Type 2 "history-detail" heuristic: a human-readable, one
+# line per changed field summary of what an edit changed, e.g.
+# "Total funding: 15,000.00 → 20,000.00; PI ORCiD: (none) → 0000-0001-2345-6789".
+# Unchanged fields are omitted entirely. This is a straightforward
+# field-by-field diff, not a semantic understanding of the data — good
+# enough to see what changed at a glance.
+#
+# @param fields [Array<Hash>] field descriptors, e.g. dataset.fields
+# @param old_values [Hash] questionclass Symbol => prior value, as returned
+#   by fetch_datasets_raw_data (lib/queries.rb)
+# @param new_dataset [CBGP::Dataset] the dataset with its new values already set
+# @return [String] semicolon-separated change summary, or '' if nothing changed
+def summarize_field_changes(fields:, old_values:, new_dataset:)
+  fields.filter_map do |field|
+    next unless field[:method]
+
+    old_value = old_values[field[:questionclass].to_sym]
+    new_value = new_dataset.public_send(field[:method])
+    next if field_values_equal?(old_value, new_value)
+
+    old_display = display_field_value_or_none(field, old_value)
+    new_display = display_field_value_or_none(field, new_value)
+    "#{field[:label]}: #{old_display} → #{new_display}"
+  end.join('; ')
+end
+
 def build_transitive_tree(results, abblockid:)
   abblockid = abblockid.to_s.strip
   if abblockid.empty?

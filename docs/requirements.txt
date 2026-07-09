@@ -1,0 +1,14 @@
+# Documentation build dependencies (Read the Docs installs these via
+# .readthedocs.yaml -> python.install -> requirements: docs/requirements.txt).
+# Lower-bound pins only, deliberately not exact-pinned yet - tighten once the
+# site has been building cleanly for a while. See docs/README.md.
+sphinx>=7.2
+myst-parser>=3.0
+sphinx-rtd-theme>=2.0
+sphinx-intl>=2.2
+sphinx-copybutton>=0.5
+# Embeds real, runnable Jupyter notebooks as in-browser JupyterLite
+# instances (Pyodide/WASM, no install, click-and-run) - chosen over
+# nbsphinx (which only shows static pre-run output) because the intended
+# audience can't run notebooks from a command line. See time_travel.md.
+jupyterlite-sphinx>=0.20

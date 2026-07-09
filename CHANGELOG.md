@@ -12,6 +12,35 @@ here.
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-07-09
+### Added
+- Full bilingual (English/Spanish) end-user documentation site, built from
+  scratch with Sphinx + MyST + sphinx-intl, hosted on Read the Docs
+  (`docs/source/`): Philosophy & Design (the ontology-driven/metaprogrammed
+  architecture, its novelty relative to Rails/Django scaffolding, CEDAR,
+  VIVO, Wikibase, and SHACL+DASH), Installation, Configuration, a five-page
+  Admin Guide (data entry, history & snapshots, search & queries, cross-
+  references, exports), a User Guide, and a Time Travel / API guide covering
+  the history query endpoints shipped in 0.9.0 with real worked examples.
+  Every page ships with a complete Spanish translation via `.po` catalogs
+  under `docs/source/locale/es/`.
+- `docs/source/backup_and_migration.md` (EN+ES): what actually needs backing
+  up (only the `cbgp-graphdb` Docker volume and `.env` — everything else is
+  reproducible), a self-alerting nightly backup script that captures both a
+  native GraphDB backup and a vendor-neutral N-Quads dump of every
+  repository (portable to any RDF store, not just GraphDB) and emails an
+  alert on failure using the application's own `NOTIFY_*` SMTP settings,
+  disaster-recovery restore, and full server-migration steps.
+- `.env.example` — a safe, checked-in placeholder template for every `.env`
+  variable the application reads, previously undocumented in the repo.
+### Fixed
+- `docker-compose.yml` was missing several `.env` variables
+  (`configuration.rb` aborts startup without them: `NOTIFY_PW`,
+  `CBGP_USERS`, `CBGP_SECRET`, `NOTIFY_TO`, `NOTIFY_UN`, `GRAPHDB_DBNAME`,
+  `GRAPHDB_HISTORY`) and had a malformed `CBGP_KB` value with a stray
+  trailing `#"`. Found while writing the installation documentation, since
+  following it as written would otherwise have failed.
+
 ## [0.9.0] - 2026-07-09
 ### Added
 - SCD Type 2 history query layer ("time machine"), built on the recording

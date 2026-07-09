@@ -12,6 +12,7 @@ code.
 philosophy
 installation
 configuration
+backup_and_migration
 admin/index
 user_guide
 time_travel

@@ -12,6 +12,18 @@ here.
 
 ## [Unreleased]
 
+## [0.8.2] - 2026-07-09
+### Fixed
+- The 0.8.1 test-count badge never actually worked: it was a shields.io
+  "endpoint" badge, which requires shields.io's servers to anonymously fetch
+  `badges/tests.json` from this repo - impossible for a private repo (the
+  fetch 404s for anyone who isn't an authenticated viewer, which is exactly
+  who shields.io is). Replaced with a shields.io *static* badge, where the
+  count is baked directly into the badge's own image URL instead of being
+  fetched from anywhere, so it renders the same regardless of repo
+  visibility. CI now rewrites that URL directly in `README.md` (and
+  `badges/tests.json` is gone).
+
 ## [0.8.1] - 2026-07-09
 ### Added
 - Second README badge showing the actual RSpec pass count (e.g. "72
@@ -208,7 +220,8 @@ here.
 - Initial commit; first exploratory Project and Staff data models.
 - Raw HTML form prototypes and CSV-based data capture, pre-ontology.
 
-[Unreleased]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.8.1...HEAD
+[Unreleased]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.8.2...HEAD
+[0.8.2]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.6.0...v0.7.0

@@ -2,8 +2,6 @@ name: RSpec
 
 on:
   push:
-    paths-ignore:
-      - 'badges/**'
   pull_request:
 
 permissions:
@@ -24,15 +22,23 @@ jobs:
       - name: Run RSpec
         run: bundle exec rspec --format progress --format json --out "$RUNNER_TEMP/rspec_results.json"
 
-      # Publishes the exact pass/fail count as a shields.io "endpoint" badge
-      # (README reads badges/tests.json via img.shields.io/endpoint). Only
-      # runs for pushes to the default branch, since that's the one build
-      # whose badge the README should reflect, and since a fork PR's
-      # GITHUB_TOKEN can't push here anyway. `if: always()` so a badge still
-      # gets published (in red) when tests fail, not just when they pass;
-      # paths-ignore on the push trigger above stops this step's own commit
-      # from re-triggering the workflow.
-      - name: Update test count badge
+      # Publishes the exact pass/fail count as a shields.io *static* badge -
+      # the count is baked directly into the badge's image URL, so shields.io
+      # never has to fetch anything out of this repo. That matters because
+      # this repo is private: an "endpoint" badge (shields.io fetching a JSON
+      # file from raw.githubusercontent.com) 404s for anyone anonymous,
+      # which is everyone but a logged-in viewer - a static badge has no such
+      # dependency. CI rewrites the badge URL directly in README.md instead
+      # of a separate file. Only runs for pushes to the default branch
+      # (that's the one build the README should reflect; a fork PR's
+      # GITHUB_TOKEN can't push here anyway). `if: always()` so the badge
+      # still updates (in red) when tests fail, not just when they pass.
+      # The commit message ends in "[skip ci]" - GitHub natively skips
+      # creating a workflow run for a push whose message contains that,
+      # which is what stops this step's own commit from re-triggering the
+      # workflow (README.md is a real path other commits touch too, so a
+      # paths-ignore filter isn't an option here).
+      - name: Update test count badge in README
         if: always() && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
         run: |
           results="$RUNNER_TEMP/rspec_results.json"
@@ -53,17 +59,16 @@ jobs:
             color="brightgreen"
           fi
 
-          mkdir -p badges
-          jq -n --arg label 'tests' --arg message "$message" --arg color "$color" \
-            '{schemaVersion: 1, label: $label, message: $message, color: $color}' \
-            > badges/tests.json
+          encoded_message=$(printf '%s' "$message" | jq -sRr @uri)
+          badge_url="https://img.shields.io/badge/tests-${encoded_message}-${color}"
+          sed -i -E "s#(\[!\[Tests\]\()[^)]*(\))#\1${badge_url}\2#" README.md
 
-          if git diff --quiet -- badges/tests.json; then
+          if git diff --quiet -- README.md; then
             echo "Badge unchanged"
           else
             git config user.name 'github-actions[bot]'
             git config user.email 'github-actions[bot]@users.noreply.github.com'
-            git add badges/tests.json
-            git commit -m "chore: update test badge (${message})"
+            git add README.md
+            git commit -m "chore: update test badge (${message}) [skip ci]"
             git push origin "HEAD:${{ github.ref_name }}"
           fi

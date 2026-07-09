@@ -63,6 +63,7 @@ require_relative '../lib/core'
 require_relative '../lib/queries'
 require_relative '../lib/dataset_classes'
 require_relative '../lib/questionnaire'
+require_relative '../lib/history_queries'
 
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|

@@ -12,6 +12,42 @@ here.
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-07-09
+### Added
+- SCD Type 2 history query layer ("time machine"), built on the recording
+  mechanism shipped in 0.7.0: `lib/history_queries.rb` provides schema-agnostic
+  primitives (never assume a past snapshot's shape matches today's ontology)
+  composed into two queries — a record's complete version history resolved by
+  an identifying field (e.g. a member's full history by ORCiD, from creation
+  to now), and a facet/date-range filtered search across every record of a
+  type that's durable across deletions (a deleted record still contributes
+  via its last known snapshot, with an optional numeric field summed across
+  the matches). Every result is a real `RDF::Repository` (each contributing
+  snapshot kept in its own named graph, so same-named fields across different
+  versions never collide) served as JSON-LD or TriG.
+- Three new read-only API endpoints exposing the above over HTTP, so any
+  language/tool can call them directly (not just this app's own views):
+  `POST /cbgp/query-history/:database` (duplicates `query-dataset`'s request
+  shape — arbitrary facet/date-range params, optional `sum_field` — against
+  history instead of current state), `GET /cbgp/history/:database/:questionclass/:value`
+  (one record's timeline), and `GET /cbgp/facets/:form_type` (exposes the
+  field/controlled-vocabulary metadata already used to render forms, for
+  building external query UIs without scraping HTML).
+- `utilities/time_machine.rb` CLI (`history`/`funding` subcommands) as a
+  quick way to exercise the above without the web app.
+### Fixed
+- `escape_for_literal` (used to sanitize every field value before writing it
+  into a SPARQL string literal) never actually escaped backslashes — its
+  `gsub('\\', '\\\\')` was silently a no-op (gsub re-interprets backslash
+  sequences in a *string* replacement, so the "doubled" backslash collapsed
+  back to a single one). A value containing a literal backslash could produce
+  a malformed SPARQL literal and fail to save. Fixed with the block form of
+  `gsub`, which isn't subject to that re-interpretation.
+### Testing
+- New `spec/lib/history_queries_spec.rb` (50 examples) and
+  `spec/lib/escape_for_literal_spec.rb` (6 examples, including a real
+  round-trip through `RDF::Turtle::Reader`) — full suite now 128 examples.
+
 ## [0.8.2] - 2026-07-09
 ### Fixed
 - The 0.8.1 test-count badge never actually worked: it was a shields.io
@@ -220,7 +256,8 @@ here.
 - Initial commit; first exploratory Project and Staff data models.
 - Raw HTML form prototypes and CSV-based data capture, pre-ontology.
 
-[Unreleased]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.8.2...HEAD
+[Unreleased]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.8.2...v0.9.0
 [0.8.2]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.7.0...v0.8.0

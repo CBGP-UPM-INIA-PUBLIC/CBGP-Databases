@@ -288,10 +288,17 @@ end
 
 # Escapes a value for safe embedding in a SPARQL string literal.
 #
+# Must use the block form of gsub, not a string replacement: gsub
+# re-interprets backslash sequences (\\, \1, \&, …) in a *string*
+# replacement, so `gsub('\\', '\\\\')` — intended to double every backslash
+# — is actually a no-op (the "doubled" replacement collapses back down to a
+# single literal backslash on the way out). A block's return value is
+# inserted literally, with no second interpretation pass, so this is safe.
+#
 # @param value [Object]
 # @return [String]
 def escape_for_literal(value)
-  value.to_s.gsub('\\', '\\\\').gsub('"', '\\"')
+  value.to_s.gsub(/["\\]/) { |c| "\\#{c}" }
 end
 
 # Removes a named graph from the CURRENT-state repository (DATABASE), first

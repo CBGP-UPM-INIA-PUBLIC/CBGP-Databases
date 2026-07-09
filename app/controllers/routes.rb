@@ -373,6 +373,95 @@ def set_routes
     erb :search_dataset_resultform, layout: :database_layout
   end
 
+  # "Time machine" API: duplicates query-dataset's request shape (arbitrary
+  # questionclass => value params for exact-match facets; questionclass =>
+  # {start:, end:} for date-range facets, same nested-param convention the
+  # search form already uses) but resolves against the SCD Type 2 history
+  # repository via lib/history_queries.rb's filter_snapshots_during instead
+  # of execute_search, and returns JSON-LD/TriG instead of rendering HTML —
+  # a real API response, not a page, so it's directly callable from
+  # anything that speaks HTTP (a notebook, a script in any language, a
+  # future plugin), not just this app's own views.
+  #
+  # An optional sum_field param additionally sums that numeric field across
+  # the matches (local:totalAmount in the response) — omit it for a plain
+  # "what matched" result.
+  #
+  # @see lib/history_queries.rb#temporal_search_result
+  post '/cbgp/query-history/:database' do
+    database = params[:database]
+    format = (params[:format] || 'jsonld').to_s
+    halt 400, { error: 'format must be jsonld or trig' }.to_json unless %w[jsonld trig].include?(format)
+
+    search_params = to_plain_hash(params.except('database', 'format', 'sum_field').to_h)
+    facets = {}
+    date_ranges = {}
+    search_params.each do |field, value|
+      if value.is_a?(Hash)
+        date_ranges[field] = { start: value['start'], end: value['end'] }
+      elsif !value.to_s.strip.empty?
+        facets[field] = value
+      end
+    end
+
+    repo = temporal_search_result(form_type: database, facets: facets, date_ranges: date_ranges,
+                                  sum_field: params[:sum_field])
+
+    content_type(format == 'jsonld' ? 'application/ld+json' : 'application/trig')
+    repo.dump(format.to_sym, prefixes: time_machine_prefixes)
+  end
+
+  # "Time machine" API: the complete version history of one record, resolved
+  # by an identifying field (e.g. "give me the full history of member ORCiD
+  # X from creation until today") — every edit/delete snapshot plus the
+  # current state if it still exists, in order.
+  #
+  # @see lib/history_queries.rb#record_history_result
+  get '/cbgp/history/:database/:questionclass/:value' do
+    format = (params[:format] || 'jsonld').to_s
+    halt 400, { error: 'format must be jsonld or trig' }.to_json unless %w[jsonld trig].include?(format)
+
+    repo = record_history_result(form_type: params[:database], questionclass: params[:questionclass],
+                                 value: params[:value])
+    if repo.nil?
+      halt 404,
+           { error: "No #{params[:database]} record found with #{params[:questionclass]} = #{params[:value]}" }.to_json
+    end
+
+    content_type(format == 'jsonld' ? 'application/ld+json' : 'application/trig')
+    repo.dump(format.to_sym, prefixes: time_machine_prefixes)
+  end
+
+  # Exposes the facet/possible-values metadata already used internally to
+  # render add/edit/search forms (CBGP::Dataset.fields_for +
+  # get_answer_block_query, lib/queries.rb) as a standalone API — lets an
+  # external UI (or the query-history endpoint's own caller) discover what
+  # fields exist for a form and, for controlled-vocabulary fields, what
+  # values are legal, without having to scrape an HTML form.
+  get '/cbgp/facets/:form_type' do
+    content_type :json
+
+    fields = CBGP::Dataset.fields_for(params[:form_type])
+    facets = fields.map do |f|
+      entry = {
+        questionclass: f[:questionclass],
+        label: f[:label],
+        class: f[:class],
+        cardinality: f[:cardinality],
+        widget: f[:widget]
+      }
+      if controlled_vocabulary_field?(f)
+        ablockid = f[:answers].to_s.split('#').last
+        entry[:values] = get_answer_block_query(ablockid: ablockid).map do |r|
+          { id: r[:aid].to_s.split('#').last, label: r[:label].to_s }
+        end
+      end
+      entry
+    end
+
+    { form_type: params[:form_type], facets: facets }.to_json
+  end
+
   #   GROK CODE FOR SUGGESTION ENDPOINT
   #   GROK CODE FOR SUGGESTION ENDPOINT
   #   GROK CODE FOR SUGGESTION ENDPOINT
@@ -407,10 +496,10 @@ def set_routes
     halt 400, { error: 'Missing params' }.to_json if target.empty? || q.empty?
 
     suggestions = CBGP::Dataset.fetch_reference_suggestions(
-      target_form:  target,
-      limit:        20,
+      target_form: target,
+      limit: 20,
       search_query: q,
-      via_class:    via,
+      via_class: via,
       label_method: label
     )
     suggestions.map { |s| { value: s[:value], label: s[:label] } }.to_json

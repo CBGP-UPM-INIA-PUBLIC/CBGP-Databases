@@ -94,4 +94,33 @@ RSpec.describe CBGP::Dataset do
       expect(dataset.public_send(currency_method)).to eq('fifteen thousand')
     end
   end
+
+  # Regression coverage for a 2026-07-09 finding: project_overheads was left
+  # tagged local:object-class String/local:widget-type text in the ontology
+  # while five sibling money fields (including project_total_funding, tested
+  # above) were Currency. An untyped money field silently skips locale-aware
+  # parsing/validation on save, locale-aware formatting on display, and
+  # canonical-form normalization on search (see spec/lib/search_accent_spec.rb
+  # and lib/queries.rb's currency branch in build_search_query). Every field
+  # semantically representing a monetary amount must carry class "currency" so
+  # none of that happens by accident again.
+  describe 'monetary field coverage' do
+    monetary_questionclasses = %w[
+      project_total_funding
+      project_annual_cbgp_overheads
+      project_annual_income
+      project_annual_overheads
+      project_cbgp_overheads
+      project_overheads
+    ]
+
+    monetary_questionclasses.each do |qc|
+      it "tags #{qc} as a currency field in the ontology" do
+        field = described_class.fields_for('project').find { |f| f[:questionclass] == qc }
+        raise "fixture ontology no longer has a '#{qc}' field - update this spec" unless field
+
+        expect(field[:class]).to eq('currency')
+      end
+    end
+  end
 end

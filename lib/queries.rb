@@ -21,18 +21,6 @@ DATABASE_UPDATE = SPARQL::Client.new("http://#{GRAPHDB_USER}:#{GRAPHDB_PASS}@#{h
 HISTORY_DATABASE = SPARQL::Client.new("http://#{HISTORY_USER}:#{HISTORY_PASS}@#{host}/repositories/#{GRAPHDB_HISTORY}")
 HISTORY_DATABASE_UPDATE = SPARQL::Client.new("http://#{HISTORY_USER}:#{HISTORY_PASS}@#{host}/repositories/#{GRAPHDB_HISTORY}/statements")
 
-# List unchanged
-ACCENT_SENSITIVE_LABELS = [
-  'title',
-  'author',
-  'authors',
-  'affiliation',
-  'journal name',
-  'partner institutions',
-  'research group',
-  'research group affiliation'
-].freeze
-
 PREFIXES = "PREFIX cbgp: <https://w3id.org/CBGP-App#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -633,7 +621,17 @@ def build_search_query(search_params:, dataset_type:)
           ?attribute rdf:type cbgp:#{questionclass} .
           FILTER(CONTAINS(STR(?value), "#{parsed}"))
         CONDITION
-      elsif ACCENT_SENSITIVE_LABELS.include?(field[:label].downcase)
+      else
+        # Accent-insensitive by default for every free-text/dropdown field.
+        # Previously this was opt-in per field via an ACCENT_SENSITIVE_LABELS
+        # allowlist keyed on the ontology's human-readable (and
+        # language-specific, and rewording-prone) field label, which is how
+        # fields silently fell out of coverage — e.g. "member_name" was never
+        # added, and label rewordings ("affiliation" -> "Affiliations",
+        # "partner institutions" -> "Partner institutions (acronym and
+        # country)") broke the exact-string match for fields that WERE
+        # supposedly covered. Matching is now unconditional, so there is no
+        # list to fall out of sync.
         pattern = accent_insensitive_pattern(value_str)
         next if pattern.empty?
 
@@ -642,14 +640,6 @@ def build_search_query(search_params:, dataset_type:)
           ?attribute sio:SIO_000300 ?value .
           ?attribute rdf:type cbgp:#{questionclass} .
           FILTER regex(STR(?value), "#{pattern}", "i")
-        CONDITION
-      else
-        escaped_value = value_str.gsub('"', '\\"')
-        conditions << <<-CONDITION
-          ?dataset sio:SIO_000008 ?attribute .
-          ?attribute sio:SIO_000300 ?value .
-          ?attribute rdf:type cbgp:#{questionclass} .
-          FILTER(CONTAINS(LCASE(STR(?value)), "#{escaped_value.downcase}"))
         CONDITION
       end
     end

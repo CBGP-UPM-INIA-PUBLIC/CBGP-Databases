@@ -1,16 +1,43 @@
 # frozen_string_literal: true
 
+require 'timeout'
+require 'linkeddata' # for the live-ontology probe below; lib/queries.rb also requires it later
+
 # Test env vars — set *before* requiring configuration.rb so its Dotenv.load
 # (which never overwrites already-set ENV vars) can't pull in a developer's
-# real .env secrets. Keeps the suite hermetic: no network access, no real
-# credentials, runs the same on any machine or in CI.
+# real .env secrets.
 #
-# CBGP_KB is the one that matters most: it points at a frozen local snapshot
-# of the ontology (spec/fixtures/cbgp-application-ontology.owl) instead of
-# the live https://w3id.org/CBGP-App URL, so specs never depend on network
-# access or the ontology's current live state. If a spec starts failing
-# because a field/widget it depends on changed shape, re-copy the fixture:
-#   cp ../CBGP-Ontology/cbgp-application-ontology.owl spec/fixtures/
+# CBGP_KB drives which copy of the ontology $ontology gets loaded from. This
+# project deliberately puts almost no domain knowledge in code (see
+# lib/dataset_classes.rb) so that non-programmer curators can add/change
+# fields by editing the ontology alone — which means the ontology changes far
+# more often than this codebase does. A frozen local snapshot alone would
+# silently drift out of date (a 2026-07-09 bug slipped through exactly this
+# way: 4 fields had been retyped live but the committed fixture still showed
+# the old type). So resolution prefers the freshest source available and
+# only falls back to the committed snapshot if neither is reachable:
+#   1. A sibling ../CBGP-Ontology checkout, if this machine happens to have
+#      one (fast, no network) - not guaranteed, since CBGP-Databases can be
+#      checked out on its own.
+#   2. The live ontology at https://w3id.org/CBGP-App (same URL production
+#      uses), probed with a short timeout so offline dev doesn't hang.
+#   3. spec/fixtures/cbgp-application-ontology.owl, the last-resort committed
+#      snapshot, used only when neither of the above is available. Refresh it
+#      occasionally with:
+#        cp ../CBGP-Ontology/cbgp-application-ontology.owl spec/fixtures/
+def resolve_ontology_source
+  sibling = File.expand_path('../../CBGP-Ontology/cbgp-application-ontology.owl', __dir__)
+  return sibling if File.exist?(sibling)
+
+  live_url = 'https://w3id.org/CBGP-App'
+  Timeout.timeout(5) { RDF::Repository.load(live_url) }
+  live_url
+rescue StandardError => e
+  warn "[spec_helper] Live ontology unreachable (#{e.class}: #{e.message}) - " \
+       'falling back to the committed fixture snapshot, which may be stale'
+  File.expand_path('fixtures/cbgp-application-ontology.owl', __dir__)
+end
+
 ENV['CBGP_USERS']     ||= '{"test-admin":{"password":"test","role":"admin"}}'
 ENV['CBGP_SECRET']    ||= 'test-secret-not-for-production'
 ENV['NOTIFY_TO']      ||= 'test@example.invalid'
@@ -20,7 +47,7 @@ ENV['GRAPHDB_HOST']   ||= 'localhost:7200'
 ENV['GRAPHDB_USER']   ||= 'test'
 ENV['GRAPHDB_PASS']   ||= 'test'
 ENV['GRAPHDB_DBNAME'] ||= 'test'
-ENV['CBGP_KB'] ||= File.expand_path('fixtures/cbgp-application-ontology.owl', __dir__)
+ENV['CBGP_KB'] ||= resolve_ontology_source
 
 # Normally defined in app/controllers/application_controller.rb; redefined
 # here so lib/ files can be exercised standalone without booting the full

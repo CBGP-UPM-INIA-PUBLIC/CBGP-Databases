@@ -12,6 +12,38 @@ here.
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-07-09
+### Added
+- GitHub Actions CI (`.github/workflows/rspec.yml`) runs the RSpec suite on
+  every push and pull request; status badge added to the README.
+- RSpec regression coverage asserting every free-text search field emits an
+  accent-insensitive filter, and that all six monetary project fields stay
+  tagged `currency`.
+### Fixed
+- Accent-insensitive search had stopped matching accented values (e.g.
+  searching "Maria" found none of the many accented "María" records) for
+  most fields, including member name/surname. It was gated per field on an
+  `ACCENT_SENSITIVE_LABELS` allowlist keyed on the ontology's human-readable
+  label text, which had drifted out of sync three ways: `member_name`/
+  `member_surnames` were never added; label rewording silently broke
+  exact-string matches already in the list (`"affiliation"` vs. the live
+  `"Affiliations"`, `"partner institutions"` vs. the live `"Partner
+  institutions (acronym and country)"`); and the list was English-only, so
+  it silently stopped applying under the Spanish UI too. Accent-insensitive
+  matching is now unconditional for every free-text/dropdown search field,
+  so there's no longer a label list to fall out of sync.
+- `project_overheads` was left tagged as a plain string field instead of
+  `currency` (unlike its five sibling monetary fields), so it silently
+  skipped locale-aware validation, display formatting, and search
+  normalization.
+### Changed
+- The RSpec suite's ontology source (`spec/spec_helper.rb`) now prefers a
+  sibling `../CBGP-Ontology` checkout, then a live fetch from
+  `https://w3id.org/CBGP-App`, before falling back to the committed
+  `spec/fixtures/cbgp-application-ontology.owl` snapshot. The
+  previously-frozen-only fixture is exactly what let the
+  `project_overheads` mistagging above go undetected by tests.
+
 ## [0.7.0] - 2026-07-07
 ### Added
 - SCD Type 2 history tracking (recording layer only — query/reporting layer
@@ -167,7 +199,8 @@ here.
 - Initial commit; first exploratory Project and Staff data models.
 - Raw HTML form prototypes and CSV-based data capture, pre-ontology.
 
-[Unreleased]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/commits/main

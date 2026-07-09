@@ -2,7 +2,12 @@ name: RSpec
 
 on:
   push:
+    paths-ignore:
+      - 'badges/**'
   pull_request:
+
+permissions:
+  contents: write
 
 jobs:
   test:
@@ -17,4 +22,48 @@ jobs:
           bundler-cache: true
 
       - name: Run RSpec
-        run: bundle exec rspec
+        run: bundle exec rspec --format progress --format json --out "$RUNNER_TEMP/rspec_results.json"
+
+      # Publishes the exact pass/fail count as a shields.io "endpoint" badge
+      # (README reads badges/tests.json via img.shields.io/endpoint). Only
+      # runs for pushes to the default branch, since that's the one build
+      # whose badge the README should reflect, and since a fork PR's
+      # GITHUB_TOKEN can't push here anyway. `if: always()` so a badge still
+      # gets published (in red) when tests fail, not just when they pass;
+      # paths-ignore on the push trigger above stops this step's own commit
+      # from re-triggering the workflow.
+      - name: Update test count badge
+        if: always() && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        run: |
+          results="$RUNNER_TEMP/rspec_results.json"
+          if [ ! -f "$results" ]; then
+            echo "No RSpec results file (suite likely failed to boot) - leaving badge as-is"
+            exit 0
+          fi
+
+          total=$(jq '.summary.example_count' "$results")
+          failures=$(jq '.summary.failure_count' "$results")
+          passed=$((total - failures))
+
+          if [ "$failures" -gt 0 ]; then
+            message="${passed}/${total} passing"
+            color="red"
+          else
+            message="${total} passing"
+            color="brightgreen"
+          fi
+
+          mkdir -p badges
+          jq -n --arg label 'tests' --arg message "$message" --arg color "$color" \
+            '{schemaVersion: 1, label: $label, message: $message, color: $color}' \
+            > badges/tests.json
+
+          if git diff --quiet -- badges/tests.json; then
+            echo "Badge unchanged"
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email 'github-actions[bot]@users.noreply.github.com'
+            git add badges/tests.json
+            git commit -m "chore: update test badge (${message})"
+            git push origin "HEAD:${{ github.ref_name }}"
+          fi

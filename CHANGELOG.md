@@ -12,6 +12,15 @@ here.
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-07-09
+### Added
+- Second README badge showing the actual RSpec pass count (e.g. "72
+  passing"), not just a generic pass/fail indicator. CI parses the RSpec
+  JSON formatter's summary counts after each run on the default branch and
+  commits a small `badges/tests.json` (shields.io "endpoint" format), which
+  the README badge reads via `img.shields.io/endpoint`. Turns red with an
+  "X/Y passing" message instead of green if any examples fail.
+
 ## [0.8.0] - 2026-07-09
 ### Added
 - GitHub Actions CI (`.github/workflows/rspec.yml`) runs the RSpec suite on
@@ -199,7 +208,8 @@ here.
 - Initial commit; first exploratory Project and Staff data models.
 - Raw HTML form prototypes and CSV-based data capture, pre-ontology.
 
-[Unreleased]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/CBGP-UPM-INIA-PUBLIC/CBGP-Databases/compare/v0.5.0...v0.6.0

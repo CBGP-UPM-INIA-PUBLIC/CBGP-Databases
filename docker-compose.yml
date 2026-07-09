@@ -11,14 +11,18 @@ services:
       - cbgp-default
 
   cbgp-databases:
-    image: markw/cbgp-databases:0.9.0
+    image: markw/cbgp-databases:0.10.0
     restart: always
     hostname: databases
+    # Everything else (CBGP_SECRET, CBGP_USERS, NOTIFY_*, GRAPHDB_DBNAME,
+    # GRAPHDB_HISTORY, HISTORY_USER/PASS, ...) comes from .env - see
+    # configuration.md. GRAPHDB_HOST is overridden below because inside
+    # Docker's network the app must reach GraphDB by its service hostname
+    # (graphdb:7200), not whatever GRAPHDB_HOST says in .env (typically
+    # localhost:7200, correct for running the app natively instead).
+    env_file: .env
     environment:
       - GRAPHDB_HOST=graphdb:7200
-      - GRAPHDB_USER=cbgp
-      - GRAPHDB_PASS=cbgp
-      - CBGP_KB=https://w3id.org/CBGP-App#"
     ports:
       - 127.0.0.1:8000:4567
     networks:

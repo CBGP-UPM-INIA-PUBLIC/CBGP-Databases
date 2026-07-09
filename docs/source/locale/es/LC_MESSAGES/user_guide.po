@@ -1,0 +1,210 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, CBGP-UPM-INIA
+# This file is distributed under the same license as the CBGP-Databases
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: CBGP-Databases 0.9.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-09 17:15+0200\n"
+"PO-Revision-Date: 2026-07-09 17:15+0200\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: es\n"
+"Language-Team: es <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: ../../source/user_guide.md:1 07c2f9d2eb6a40b8b431a05bd85317fb
+msgid "User Guide"
+msgstr "Guía del usuario"
+
+#: ../../source/user_guide.md:3 9ec657ad16d84e7b9e5ee1344978d4ce
+msgid ""
+"This page is for the **User** side of the application — day-to-day "
+"contributors submitting information, as opposed to the **Admin** side "
+"covered in the [Admin Guide](admin/index.md). Which side is available "
+"after logging in depends entirely on the account used: see "
+"[Configuration](configuration.md) for how an administrator sets up "
+"accounts and assigns each one the `admin` or `user` role."
+msgstr ""
+"Esta página trata sobre el lado de **Usuario** de la aplicación — "
+"colaboradores del día a día que envían información, en contraposición "
+"al lado de **Administrador** cubierto en la [Guía del "
+"administrador](admin/index.md). Cuál de los dos lados está disponible "
+"tras iniciar sesión depende por completo de la cuenta utilizada: véase "
+"[Configuración](configuration.md) para saber cómo un administrador "
+"configura las cuentas y asigna a cada una el rol `admin` o `user`."
+
+#: ../../source/user_guide.md:10 da5d7b08246143f5a0ba7e37c51a7d45
+msgid "Logging in"
+msgstr "Iniciar sesión"
+
+#: ../../source/user_guide.md:12 1a65d8628fe34258af0009758496d64a
+msgid ""
+"The login screen is the same one everyone uses — there's no separate "
+"\"User\" login page. After entering a username and password, a User "
+"account lands on its own dashboard, distinct from the Admin dashboard "
+"described in [Data Entry](admin/data_entry.md), listing only the record "
+"types this instance accepts public submissions for."
+msgstr ""
+"La pantalla de inicio de sesión es la misma para todo el mundo — no "
+"existe una página de inicio de sesión separada para «Usuario». Tras "
+"escribir el nombre de usuario y la contraseña, una cuenta de Usuario "
+"llega a su propio panel de control, distinto del panel de control del "
+"Administrador descrito en [Entrada de datos](admin/data_entry.md), que "
+"solo muestra los tipos de registro para los que esta instancia acepta "
+"envíos públicos."
+
+#: ../../source/user_guide.md:19 e37a4ba5d6714d978c7eda313a274944
+msgid ""
+"Screenshot needed: `docs/source/_static/screenshots/user-dashboard.png` —"
+" the User dashboard after logging in, showing the record types available "
+"for submission."
+msgstr ""
+"Captura de pantalla necesaria: "
+"`docs/source/_static/screenshots/user-dashboard.png` — el panel de "
+"control del Usuario tras iniciar sesión, mostrando los tipos de "
+"registro disponibles para enviar."
+
+#: ../../source/user_guide.md:24 a39f3b0a69114599bd4319d068744f03
+msgid ""
+"![User dashboard](_static/screenshots/user-dashboard.png) *The User "
+"dashboard.*"
+msgstr ""
+"![Panel de control del Usuario](_static/screenshots/user-dashboard.png)"
+" *El panel de control del Usuario.*"
+
+#: ../../source/user_guide.md:24 2925b91fa2a245af977a37509cc25877
+msgid "User dashboard"
+msgstr "Panel de control del Usuario"
+
+#: ../../source/user_guide.md:27 55b2f3b022934c97b7980a549eca12b7
+msgid "Submitting a form"
+msgstr "Enviar un formulario"
+
+#: ../../source/user_guide.md:29 9cb100652bcd41a0aa6bebd8f7970c5d
+msgid ""
+"Choosing a record type opens a form — built the same ontology-driven way "
+"described in [Philosophy & Design](philosophy.md), but offering only a "
+"smaller, specific set of fields chosen for public submission, not the "
+"full set an administrator sees. Required fields and validation work "
+"exactly as described in [Data Entry](admin/data_entry.md)'s \"Required "
+"fields and validation\" section: an incomplete or invalid submission "
+"redisplays the same form with a clear banner listing what needs fixing, "
+"and nothing already typed is lost."
+msgstr ""
+"Elegir un tipo de registro abre un formulario — construido de la misma"
+" forma guiada por la ontología descrita en [Filosofía y "
+"diseño](philosophy.md), pero ofreciendo solo un conjunto más pequeño y"
+" específico de campos elegidos para el envío público, no el conjunto "
+"completo que ve un administrador. Los campos obligatorios y la "
+"validación funcionan exactamente como se describe en la sección "
+"«Campos obligatorios y validación» de [Entrada de "
+"datos](admin/data_entry.md): un envío incompleto o no válido vuelve a "
+"mostrar el mismo formulario con un aviso claro que indica qué hay que "
+"corregir, y nada de lo ya escrito se pierde."
+
+#: ../../source/user_guide.md:39 6edfda55b5bb40adb016315d76a0e83c
+msgid ""
+"Screenshot needed: `docs/source/_static/screenshots/user-submission-"
+"form.png` — a User submission form, showing its (smaller) set of fields."
+msgstr ""
+"Captura de pantalla necesaria: "
+"`docs/source/_static/screenshots/user-submission-form.png` — un "
+"formulario de envío de Usuario, mostrando su conjunto (más reducido) "
+"de campos."
+
+#: ../../source/user_guide.md:44 54ef8b22cd8048e8b02ea46a86a8553e
+msgid ""
+"![User submission form](_static/screenshots/user-submission-form.png) *A "
+"User-facing submission form.*"
+msgstr ""
+"![Formulario de envío de Usuario](_static/screenshots/user-submission-"
+"form.png) *Un formulario de envío orientado al Usuario.*"
+
+#: ../../source/user_guide.md:44 8588174c4b3345b397bf58ae6dfd4889
+msgid "User submission form"
+msgstr "Formulario de envío de Usuario"
+
+#: ../../source/user_guide.md:47 38303a33ce684fbe822be9a992f153bb
+msgid "What happens after submitting"
+msgstr "Qué ocurre después de enviar"
+
+#: ../../source/user_guide.md:49 6715b27b168f4886ba027e2e6d8a291b
+msgid "Once a submission passes validation, two things happen right away:"
+msgstr "En cuanto un envío pasa la validación, ocurren dos cosas de inmediato:"
+
+#: ../../source/user_guide.md:51 a2badd9444c34f0b853d157cea38ed06
+msgid ""
+"**A new record is created immediately** — a User's submission isn't held "
+"in some separate queue waiting for an administrator to approve it before "
+"it exists; it's written to the database as a real record as soon as it's "
+"submitted."
+msgstr ""
+"**Se crea un nuevo registro de inmediato** — el envío de un Usuario no"
+" queda retenido en una especie de cola aparte esperando a que un "
+"administrador lo apruebe antes de existir; se escribe en la base de "
+"datos como un registro real en cuanto se envía."
+
+#: ../../source/user_guide.md:55 ab26f8d1a1ca40709bc58fb62e09d521
+msgid ""
+"**An administrator is emailed automatically**, so someone reviews the new"
+" submission — the email lists exactly what was submitted and links "
+"directly to the new record in the Admin interface (see the \"Admin email "
+"notifications\" section of [Configuration](configuration.md) for how this"
+" address is set up)."
+msgstr ""
+"**Se envía automáticamente un correo a un administrador**, para que "
+"alguien revise el nuevo envío — el correo enumera exactamente lo que "
+"se envió y enlaza directamente con el nuevo registro en la interfaz de"
+" Administrador (véase la sección «Notificaciones por correo al "
+"administrador» de [Configuración](configuration.md) para saber cómo se"
+" configura esa dirección)."
+
+#: ../../source/user_guide.md:61 703230f31cbd467d8be07c19bf30bfbb
+msgid ""
+"The screen that appears after a successful submission confirms this and "
+"says it's safe to close the window — there's nothing further to do."
+msgstr ""
+"La pantalla que aparece tras un envío correcto lo confirma e indica "
+"que ya se puede cerrar la ventana con seguridad — no hay nada más que "
+"hacer."
+
+#: ../../source/user_guide.md:65 d81c52cc941e4ff982889a35075cdb97
+msgid ""
+"Screenshot needed: `docs/source/_static/screenshots/user-thank-you.png` —"
+" the confirmation screen shown after a successful submission."
+msgstr ""
+"Captura de pantalla necesaria: "
+"`docs/source/_static/screenshots/user-thank-you.png` — la pantalla de "
+"confirmación mostrada tras un envío correcto."
+
+#: ../../source/user_guide.md:69 f110ace763db4e4da7159c73a23a73ff
+msgid ""
+"![Thank-you screen](_static/screenshots/user-thank-you.png) *The "
+"confirmation screen after a successful submission.*"
+msgstr ""
+"![Pantalla de agradecimiento](_static/screenshots/user-thank-you.png) "
+"*La pantalla de confirmación tras un envío correcto.*"
+
+#: ../../source/user_guide.md:69 47d1051915b64514ae2fc063da304514
+msgid "Thank-you screen"
+msgstr "Pantalla de agradecimiento"
+
+#: ../../source/user_guide.md:72 eec2e8c53a8340679fe3cce30c8b2ee7
+msgid ""
+"In short: submitting a form through the User side bootstraps a new record"
+" and lets an administrator know there's something new to look at — it's "
+"the starting point for getting new information into the system, not a "
+"final, unreviewed publication of it."
+msgstr ""
+"En resumen: enviar un formulario desde el lado de Usuario pone en "
+"marcha un nuevo registro y avisa a un administrador de que hay algo "
+"nuevo que revisar — es el punto de partida para incorporar nueva "
+"información al sistema, no una publicación final y sin revisar de esa "
+"información."

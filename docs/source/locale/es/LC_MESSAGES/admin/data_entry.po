@@ -1,0 +1,266 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, CBGP-UPM-INIA
+# This file is distributed under the same license as the CBGP-Databases
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: CBGP-Databases 0.9.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-09 16:51+0200\n"
+"PO-Revision-Date: 2026-07-09 16:51+0200\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: es\n"
+"Language-Team: es <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: ../../source/admin/data_entry.md:1 a9b2393b1d58462eb15e478cc510097d
+msgid "Data Entry"
+msgstr "Entrada de datos"
+
+#: ../../source/admin/data_entry.md:3 ab0a6e4e60554fbd8f46dc5ae907d6ef
+msgid ""
+"This page covers adding and editing records as an administrator — "
+"Projects, Personnel, and Publications all work the same way, since (per "
+"[Philosophy & Design](../philosophy.md)) the same generic form-rendering "
+"code drives every one of them, reading whatever the ontology currently "
+"says a given record type looks like."
+msgstr ""
+"Esta página explica cómo añadir y editar registros como administrador — "
+"Proyectos, Personal y Publicaciones funcionan todos de la misma manera, "
+"ya que (según [Filosofía y diseño](../philosophy.md)) el mismo código "
+"genérico de generación de formularios controla cada uno de ellos, "
+"leyendo en cada momento lo que la ontología dice sobre el aspecto de "
+"ese tipo de registro."
+
+#: ../../source/admin/data_entry.md:9 51598ad0c8804ba9a9cb8bbdc99873fc
+msgid "Logging in and finding the dashboard"
+msgstr "Iniciar sesión y encontrar el panel de control"
+
+#: ../../source/admin/data_entry.md:11 19824241fe7b4a0580dfc09080e92971
+msgid ""
+"After logging in with an admin account (see "
+"[Configuration](../configuration.md) for how accounts are set up), the "
+"dashboard lists every record type this instance manages. Each one leads "
+"to the same three actions: add a new record, search/edit existing ones "
+"(see [Search & Queries](search_and_queries.md)), or — reached from a "
+"search result, not from the dashboard directly — edit or delete one "
+"specific record."
+msgstr ""
+"Tras iniciar sesión con una cuenta de administrador (véase "
+"[Configuración](../configuration.md) para saber cómo se configuran las "
+"cuentas), el panel de control muestra todos los tipos de registro que "
+"gestiona esta instancia. Cada uno lleva a las mismas tres acciones: "
+"añadir un nuevo registro, buscar/editar los ya existentes (véase "
+"[Búsqueda y consultas](search_and_queries.md)), o — accediendo desde un "
+"resultado de búsqueda, no directamente desde el panel de control — "
+"editar o eliminar un registro concreto."
+
+#: ../../source/admin/data_entry.md:20 7a6baa93a5ee4a749fc539bb2ac3ffad
+msgid ""
+"Screenshot needed: `docs/source/_static/screenshots/admin-dashboard.png` "
+"— the admin dashboard showing the list of record types."
+msgstr ""
+"Captura de pantalla necesaria: "
+"`docs/source/_static/screenshots/admin-dashboard.png` — el panel de "
+"control del administrador mostrando la lista de tipos de registro."
+
+#: ../../source/admin/data_entry.md:24 4d75e5a3ed184544bfb6a78a9263ddf6
+msgid ""
+"![Admin dashboard](../_static/screenshots/admin-dashboard.png) *The admin"
+" dashboard.*"
+msgstr ""
+"![Panel de control del administrador]"
+"(../_static/screenshots/admin-dashboard.png) *El panel de control del "
+"administrador.*"
+
+#: ../../source/admin/data_entry.md:24 ca03e5be3e6447d9a71dfc7025bf2e2a
+msgid "Admin dashboard"
+msgstr "Panel de control del administrador"
+
+#: ../../source/admin/data_entry.md:27 f3b0fe4cfe254fee9fda25ea8f154573
+msgid "The form itself"
+msgstr "El formulario en sí"
+
+#: ../../source/admin/data_entry.md:29 39c8a9a878354bf3a4f3a3ac5d295baa
+msgid ""
+"Every field on an add/edit form, in the order it appears, its label, and "
+"what kind of input it accepts, comes straight from the ontology at the "
+"moment the page loads — nothing on this page is specific to Projects, "
+"Personnel, or Publications; it applies equally to any record type this "
+"instance is configured to manage, including ones that don't exist yet at "
+"the time this is being read. A few field types show up repeatedly:"
+msgstr ""
+"Cada campo de un formulario de añadir/editar, el orden en que aparece, "
+"su etiqueta y el tipo de entrada que acepta, proviene directamente de la "
+"ontología en el momento en que se carga la página — nada en esta página "
+"es específico de Proyectos, Personal o Publicaciones; se aplica por "
+"igual a cualquier tipo de registro que esta instancia esté configurada "
+"para gestionar, incluidos los que todavía no existan en el momento de "
+"leer esto. Algunos tipos de campo aparecen repetidamente:"
+
+#: ../../source/admin/data_entry.md:36 bad2da58336d473cb92253b8e3f0a42e
+msgid ""
+"**Plain text** — a single line or a larger text box, for anything without"
+" a more specific type below."
+msgstr ""
+"**Texto simple** — una sola línea o un cuadro de texto más grande, para "
+"cualquier cosa que no tenga un tipo más específico de los siguientes."
+
+#: ../../source/admin/data_entry.md:38 c0afd4d1eacc4c79a09bd384a88d7131
+msgid "**Date** — a date picker."
+msgstr "**Fecha** — un selector de fechas."
+
+#: ../../source/admin/data_entry.md:39 12dd133570814570833f1d82289b641c
+msgid ""
+"**Currency** — a monetary amount, typed and displayed in whichever number"
+" format matches the current language (e.g. `1,234.56` in English, "
+"`1.234,56` in Spanish) — see [Search & Queries](search_and_queries.md"
+"#currency-fields) for how this also affects searching, and "
+"[Exports](exports.md) for how it appears in a downloaded spreadsheet."
+msgstr ""
+"**Moneda** — una cantidad monetaria, escrita y mostrada en el formato "
+"numérico correspondiente al idioma actual (por ejemplo, `1,234.56` en "
+"inglés, `1.234,56` en español) — véase [Búsqueda y "
+"consultas](search_and_queries.md#currency-fields) para saber cómo esto "
+"también afecta a la búsqueda, y [Exportaciones](exports.md) para ver "
+"cómo aparece en una hoja de cálculo descargada."
+
+#: ../../source/admin/data_entry.md:45 73eece865c4242669521d4616cf81477
+msgid ""
+"**Dropdown / radio buttons** — a fixed list of choices defined in the "
+"ontology, shown in whichever language is currently selected. A "
+"hierarchical variant of this (a expandable tree rather than a flat list) "
+"is used for a few fields where the choices are naturally organized in "
+"categories."
+msgstr ""
+"**Lista desplegable / botones de opción** — una lista fija de opciones "
+"definida en la ontología, mostrada en el idioma seleccionado en cada "
+"momento. Para algunos campos cuyas opciones se organizan de forma "
+"natural en categorías se usa una variante jerárquica (un árbol "
+"desplegable en lugar de una lista plana)."
+
+#: ../../source/admin/data_entry.md:50 d05c7bb0c93a4293a6b7b001e02ad72f
+msgid ""
+"**Cross-reference lookup** — search another record type by a human-"
+"readable label (e.g. a person's surname) and store a different, more "
+"stable value behind the scenes (e.g. their ORCID). This has its own page:"
+" [Cross-References](cross_references.md)."
+msgstr ""
+"**Búsqueda por referencia cruzada** — busca otro tipo de registro por una"
+" etiqueta legible para las personas (por ejemplo, el apellido de una "
+"persona) y almacena internamente un valor distinto y más estable (por "
+"ejemplo, su ORCID). Esto tiene su propia página: [Referencias "
+"cruzadas](cross_references.md)."
+
+#: ../../source/admin/data_entry.md:55 11b0a36c9e46423b90465c020ec651fe
+msgid ""
+"Some fields accept more than one value (for example, a publication can "
+"have several authors) — those show up as a repeatable group of inputs "
+"rather than a single one, with a way to add another entry."
+msgstr ""
+"Algunos campos aceptan más de un valor (por ejemplo, una publicación "
+"puede tener varios autores) — estos aparecen como un grupo repetible de "
+"entradas en lugar de una sola, con una forma de añadir otra."
+
+#: ../../source/admin/data_entry.md:60 d60dacd044e04c3e9c509aa24d5a4554
+msgid ""
+"Screenshot needed: `docs/source/_static/screenshots/admin-add-form.png` —"
+" an add/edit form showing a mix of field types (text, dropdown, currency,"
+" a cross-reference lookup)."
+msgstr ""
+"Captura de pantalla necesaria: "
+"`docs/source/_static/screenshots/admin-add-form.png` — un formulario de "
+"añadir/editar mostrando una mezcla de tipos de campo (texto, lista "
+"desplegable, moneda, una búsqueda por referencia cruzada)."
+
+#: ../../source/admin/data_entry.md:65 dcace0398070433b9d399035aea582b4
+msgid ""
+"![Add/edit form](../_static/screenshots/admin-add-form.png) *An add/edit "
+"form, showing several different field types.*"
+msgstr ""
+"![Formulario de añadir/editar](../_static/screenshots/admin-add-form.png)"
+" *Un formulario de añadir/editar, mostrando varios tipos de campo "
+"distintos.*"
+
+#: ../../source/admin/data_entry.md:65 e357441dd4f24953b7f6f8b2f8dfa657
+msgid "Add/edit form"
+msgstr "Formulario de añadir/editar"
+
+#: ../../source/admin/data_entry.md:68 a3d8137e5d59446aa6993a9220841d79
+msgid "Required fields and validation"
+msgstr "Campos obligatorios y validación"
+
+#: ../../source/admin/data_entry.md:70 730543c90e2045ff903b2fc1861ab632
+msgid ""
+"Some fields must be filled in before a record can be saved (the ontology "
+"marks which ones); trying to save without them, or with a value that "
+"doesn't make sense for that field's type (an unparseable currency amount,"
+" for instance), doesn't lose any work — the form reappears with a clear "
+"banner listing every problem found, and everything already typed is still"
+" there to fix and resubmit. Nothing is written to the database until "
+"every field passes."
+msgstr ""
+"Algunos campos deben rellenarse antes de poder guardar un registro (la "
+"ontología indica cuáles); intentar guardar sin ellos, o con un valor que "
+"no tiene sentido para el tipo de ese campo (una cantidad monetaria no "
+"interpretable, por ejemplo), no hace perder nada de lo ya escrito — el "
+"formulario vuelve a mostrarse con un aviso claro que enumera todos los "
+"problemas encontrados, y todo lo que ya se había escrito sigue ahí para "
+"corregirlo y volver a enviarlo. No se escribe nada en la base de datos "
+"hasta que todos los campos son válidos."
+
+#: ../../source/admin/data_entry.md:79 dff7816fe6534917bd4fff833df45116
+msgid ""
+"Screenshot needed: `docs/source/_static/screenshots/admin-validation-"
+"error.png` — a form redisplayed after a validation error, showing the "
+"error banner."
+msgstr ""
+"Captura de pantalla necesaria: "
+"`docs/source/_static/screenshots/admin-validation-error.png` — un "
+"formulario mostrado de nuevo tras un error de validación, con el aviso "
+"de error."
+
+#: ../../source/admin/data_entry.md:83 7a37ce7c11a94d12a4d9ac3a04b2c283
+msgid ""
+"![Validation error banner](../_static/screenshots/admin-validation-"
+"error.png) *A friendly validation-error banner after an invalid "
+"submission.*"
+msgstr ""
+"![Aviso de error de validación](../_static/screenshots/admin-validation-"
+"error.png) *Un aviso de error de validación, en un lenguaje sencillo y "
+"claro, tras un envío no válido.*"
+
+#: ../../source/admin/data_entry.md:83 5ef5168412e54099a8cc12d83ff12768
+msgid "Validation error banner"
+msgstr "Aviso de error de validación"
+
+#: ../../source/admin/data_entry.md:86 570c41b8258b4f70b73c3a8b98ff5e04
+msgid "Editing and deleting an existing record"
+msgstr "Editar y eliminar un registro existente"
+
+#: ../../source/admin/data_entry.md:88 97f2630eb0594d4380e37062e285426e
+msgid ""
+"Editing an existing record starts from a search result (see [Search & "
+"Queries](search_and_queries.md)), not from the dashboard — opening one "
+"loads the same kind of form, pre-filled with that record's current "
+"values. Deleting a record is available from the same place. **Both "
+"editing and deleting are worth understanding before using them "
+"routinely**: neither one actually destroys data — see [History & "
+"Snapshots](history_and_snapshots.md) for what really happens and why that"
+" matters."
+msgstr ""
+"Para editar un registro existente se parte de un resultado de búsqueda "
+"(véase [Búsqueda y consultas](search_and_queries.md)), no del panel de "
+"control — al abrirlo se carga el mismo tipo de formulario, ya "
+"rellenado con los valores actuales de ese registro. Eliminar un registro "
+"está disponible en el mismo lugar. **Conviene entender tanto la edición "
+"como la eliminación antes de usarlas de forma habitual**: ninguna de las "
+"dos destruye realmente los datos — véase [Historial y "
+"instantáneas](history_and_snapshots.md) para saber qué ocurre en "
+"realidad y por qué es importante."

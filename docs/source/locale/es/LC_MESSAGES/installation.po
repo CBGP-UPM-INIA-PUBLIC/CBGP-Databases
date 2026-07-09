@@ -1,0 +1,334 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, CBGP-UPM-INIA
+# This file is distributed under the same license as the CBGP-Databases
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: CBGP-Databases 0.9.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-09 16:28+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: es\n"
+"Language-Team: es <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: ../../source/installation.md:1 65c62083f42d4883b0276e1ce6668fec
+msgid "Installation"
+msgstr "Instalación"
+
+#: ../../source/installation.md:3 f2d46d742c0d48d6aca064664c4a85f3
+msgid ""
+"This page covers getting a working copy of the application running, end "
+"to end: the two-repository database it needs, the Docker images, and how "
+"to choose a version. It assumes Docker is already installed on the "
+"machine that will run this. Configuring *what the application does once "
+"it's running* (the `.env` file) is the next page, "
+"[Configuration](configuration.md) — do this page first, since the "
+"database needs to exist before the application can start."
+msgstr ""
+"Esta página explica cómo poner en marcha una copia funcional de la "
+"aplicación, de principio a fin: la base de datos de dos repositorios que "
+"necesita, las imágenes Docker, y cómo elegir una versión. Se asume que "
+"Docker ya está instalado en la máquina donde se va a ejecutar. Configurar "
+"*qué hace la aplicación una vez que está en marcha* (el archivo `.env`) "
+"es la página siguiente, [Configuración](configuration.md) — siga esta "
+"página primero, ya que la base de datos tiene que existir antes de que "
+"la aplicación pueda arrancar."
+
+#: ../../source/installation.md:11 4a1af292814c4e78b7adb6bc9178005c
+msgid "The two-repository database"
+msgstr "La base de datos de dos repositorios"
+
+#: ../../source/installation.md:13 21883252ba8e4e8f9c0f84482a80e6f0
+msgid ""
+"This application stores data in "
+"[GraphDB](https://www.ontotext.com/products/graphdb/), a graph database, "
+"and it needs **two separate repositories inside the same GraphDB "
+"instance**, not one:"
+msgstr ""
+"Esta aplicación almacena los datos en "
+"[GraphDB](https://www.ontotext.com/products/graphdb/), una base de datos "
+"de grafos, y necesita **dos repositorios separados dentro de la misma "
+"instancia de GraphDB**, no uno solo:"
+
+#: ../../source/installation.md:17 c30810800b6a4aedb848e8dfcbe7df65
+msgid ""
+"A **current-state repository** — every record as it exists right now. "
+"This is the one the application reads and writes for ordinary use."
+msgstr ""
+"Un **repositorio de estado actual** — cada registro tal como existe "
+"ahora mismo. Es el que la aplicación lee y escribe en el uso ordinario."
+
+#: ../../source/installation.md:19 aeb62cd949e140ee8e6d98517e6c045b
+msgid ""
+"A **history repository** — a permanent, append-only record of every prior"
+" version of every record, written automatically whenever something is "
+"edited or deleted. See [History & "
+"Snapshots](admin/history_and_snapshots.md) for what this means in "
+"practice; for installation purposes, it's enough to know it's a second, "
+"separate repository that must exist before the application can start."
+msgstr ""
+"Un **repositorio de historial** — un registro permanente, de solo "
+"adición, de cada versión anterior de cada registro, escrito "
+"automáticamente cada vez que algo se edita o se elimina. Consulte "
+"[Historial y Capturas](admin/history_and_snapshots.md) para saber qué "
+"significa esto en la práctica; a efectos de instalación, basta con saber "
+"que es un segundo repositorio, separado, que debe existir antes de que "
+"la aplicación pueda arrancar."
+
+#: ../../source/installation.md:27 6017bbb59686442a9847c0ea02e095a4
+msgid ""
+"They're kept physically separate — two repositories, not one repository "
+"with the history mixed in — specifically so that an ordinary search can "
+"never accidentally turn up old, superseded data. Nothing about installing"
+" or running the application differs between the two; GraphDB simply needs"
+" both to exist, with names the application is told about (see "
+"[Configuration](configuration.md))."
+msgstr ""
+"Se mantienen físicamente separados — dos repositorios, no uno solo con "
+"el historial mezclado — precisamente para que una búsqueda ordinaria "
+"nunca pueda encontrar por accidente datos antiguos y ya sustituidos. "
+"Nada en la instalación o ejecución de la aplicación difiere entre uno y "
+"otro; GraphDB simplemente necesita que ambos existan, con los nombres "
+"que se le indiquen a la aplicación (véase "
+"[Configuración](configuration.md))."
+
+#: ../../source/installation.md:34 a50bf6df757a4834ba729b4c1e9248c3
+msgid "Creating the two repositories"
+msgstr "Creación de los dos repositorios"
+
+#: ../../source/installation.md:36 19f4ff1a6a9940c9a4fd77d6492c7d39
+msgid ""
+"GraphDB itself doesn't come with these repositories pre-created — that's "
+"a one-time setup step, done through GraphDB's own web interface (the "
+"\"Workbench\"), not through this application:"
+msgstr ""
+"GraphDB en sí no trae estos repositorios ya creados — es un paso de "
+"configuración que se hace una sola vez, a través de la propia interfaz "
+"web de GraphDB (el \"Workbench\"), no a través de esta aplicación:"
+
+#: ../../source/installation.md:40 1b025144322248f68c4d9a1f597ddba9
+msgid ""
+"Start GraphDB (see [Running via Docker](#running-via-docker) below) and "
+"open its Workbench in a browser — by default, `http://localhost:7200`."
+msgstr ""
+"Inicie GraphDB (véase [Ejecución con Docker](#running-via-docker) más "
+"abajo) y abra su Workbench en un navegador — por defecto, "
+"`http://localhost:7200`."
+
+#: ../../source/installation.md:43 e715a9c3a64a464e8017ec54f47ef993
+msgid ""
+"Go to **Setup → Repositories → Create new repository**, choose the plain "
+"**GraphDB Repository** type (no reasoning/inference profile is needed; "
+"this application does its own querying), and give it an ID — this ID "
+"becomes the `GRAPHDB_DBNAME` value on the "
+"[Configuration](configuration.md) page. Repeat for the second repository,"
+" whose ID becomes `GRAPHDB_HISTORY`."
+msgstr ""
+"Vaya a **Setup → Repositories → Create new repository**, elija el tipo "
+"simple **GraphDB Repository** (no hace falta ningún perfil de "
+"razonamiento/inferencia; esta aplicación hace sus propias consultas), y "
+"asígnele un ID — ese ID se convierte en el valor de `GRAPHDB_DBNAME` en "
+"la página de [Configuración](configuration.md). Repita el proceso para "
+"el segundo repositorio, cuyo ID se convierte en `GRAPHDB_HISTORY`."
+
+#: ../../source/installation.md:48 b2854cdfcd064ec3a4e32e0552c96680
+msgid ""
+"Leave the rest of the repository settings at their defaults unless "
+"there's a specific reason to change them."
+msgstr ""
+"Deje el resto de los ajustes del repositorio en sus valores por defecto, "
+"a menos que haya una razón concreta para cambiarlos."
+
+#: ../../source/installation.md:52 2c846239cf4c4a268de0dce7e7c81bd4
+msgid ""
+"Screenshot needed: `docs/source/_static/screenshots/graphdb-create-"
+"repository.png` — the GraphDB Workbench's \"Create new repository\" form,"
+" showing where the repository ID is entered."
+msgstr ""
+"Falta una captura de pantalla: `docs/source/_static/screenshots/graphdb-"
+"create-repository.png` — el formulario \"Create new repository\" del "
+"Workbench de GraphDB, mostrando dónde se introduce el ID del repositorio."
+
+#: ../../source/installation.md:57 56ef27557a5d4536909cd9cc64b25097
+msgid ""
+"![GraphDB create-repository screen](_static/screenshots/graphdb-create-"
+"repository.png) *The GraphDB Workbench's repository-creation screen.*"
+msgstr ""
+"![Pantalla de creación de repositorio de "
+"GraphDB](_static/screenshots/graphdb-create-repository.png) *La pantalla "
+"de creación de repositorios del Workbench de GraphDB.*"
+
+#: ../../source/installation.md:57 119854a9f0e24590af7270886da8bcf1
+msgid "GraphDB create-repository screen"
+msgstr "Pantalla de creación de repositorio de GraphDB"
+
+#: ../../source/installation.md:60 461adc9f9dd845afb70d461b507e0661
+msgid ""
+"The two repository IDs are just names — they don't have to be any "
+"particular value — but whatever they are, they need to match exactly what"
+" gets written into `.env` as `GRAPHDB_DBNAME` and `GRAPHDB_HISTORY` on "
+"the [Configuration](configuration.md) page. A mismatch here is the single"
+" most common reason a freshly-installed instance fails to start or shows "
+"no data."
+msgstr ""
+"Los dos ID de repositorio son solo nombres — no tienen que ser ningún "
+"valor en concreto — pero sean cuales sean, deben coincidir exactamente "
+"con lo que se escriba en `.env` como `GRAPHDB_DBNAME` y "
+"`GRAPHDB_HISTORY` en la página de [Configuración](configuration.md). Un "
+"desajuste aquí es, con diferencia, la causa más habitual de que una "
+"instancia recién instalada no arranque o no muestre ningún dato."
+
+#: ../../source/installation.md:66 886f11c8befc4044bcf1a92d3c2a99b0
+msgid "Running via Docker"
+msgstr "Ejecución con Docker"
+
+#: ../../source/installation.md:68 f37e6d8b45d54ba68eace03fda8f1af4
+msgid ""
+"The application ships as a Docker image; this repository includes two "
+"different Docker Compose files, for two different situations:"
+msgstr ""
+"La aplicación se distribuye como una imagen Docker; este repositorio "
+"incluye dos archivos Docker Compose distintos, para dos situaciones "
+"diferentes:"
+
+#: ../../source/installation.md:71 54eab909b8db49f3af95ec011afa0536
+msgid ""
+"**`docker-compose-graphdb.yml`** — GraphDB *only*, nothing else. Useful "
+"for the one-time repository-creation step above, or if GraphDB is meant "
+"to run somewhere separate from the application itself."
+msgstr ""
+"**`docker-compose-graphdb.yml`** — *solo* GraphDB, nada más. Útil para "
+"el paso único de creación de repositorios explicado antes, o si GraphDB "
+"va a ejecutarse en un lugar separado de la propia aplicación."
+
+#: ../../source/installation.md:74 72827db4b8a5434abc46a0ea6aa8b10b
+msgid ""
+"**`docker-compose.yml`** — GraphDB *and* the application together, the "
+"normal way to run a complete instance."
+msgstr ""
+"**`docker-compose.yml`** — GraphDB *y* la aplicación juntos, la forma "
+"habitual de ejecutar una instancia completa."
+
+#: ../../source/installation.md:77 841ad280639d4ce4a1c8db618f873a37
+msgid ""
+"Both expect a Docker volume named `cbgp-graphdb` to already exist (so "
+"GraphDB's data survives container restarts/upgrades independently of the "
+"containers themselves) — create it once, before the first start:"
+msgstr ""
+"Ambos esperan que ya exista un volumen Docker llamado `cbgp-graphdb` "
+"(para que los datos de GraphDB sobrevivan a reinicios/actualizaciones de "
+"los contenedores, independientemente de los propios contenedores) — "
+"créelo una sola vez, antes del primer arranque:"
+
+#: ../../source/installation.md:85 68711b0b221342a1811e613fa11ca824
+msgid ""
+"Then, having created `.env` per the [Configuration](configuration.md) "
+"page (the application container reads it via `env_file: .env` in `docker-"
+"compose.yml`):"
+msgstr ""
+"Después, una vez creado `.env` según la página de "
+"[Configuración](configuration.md) (el contenedor de la aplicación lo lee "
+"mediante `env_file: .env` en `docker-compose.yml`):"
+
+#: ../../source/installation.md:93 c77ea67397724151b1b0a352e7272ef6
+msgid ""
+"This starts GraphDB on `localhost:7200` (the Workbench) and the "
+"application on `localhost:8000`. The very first time, GraphDB will be "
+"empty — that's when you do the one-time repository-creation step above, "
+"before the application can do anything useful."
+msgstr ""
+"Esto arranca GraphDB en `localhost:7200` (el Workbench) y la aplicación "
+"en `localhost:8000`. La primera vez, GraphDB estará vacío — es entonces "
+"cuando debe realizarse el paso único de creación de repositorios "
+"explicado antes, antes de que la aplicación pueda hacer nada útil."
+
+#: ../../source/installation.md:99 f0473cd01e334a5ab1123077e638e496
+msgid ""
+"Screenshot needed: `docs/source/_static/screenshots/docker-compose-"
+"up.png` — a terminal showing `docker compose up -d` completing "
+"successfully with both containers reported as started/healthy."
+msgstr ""
+"Falta una captura de pantalla: `docs/source/_static/screenshots/docker-"
+"compose-up.png` — una terminal mostrando `docker compose up -d` "
+"completándose correctamente, con ambos contenedores indicados como "
+"iniciados/saludables."
+
+#: ../../source/installation.md:104 aa5a0d404ca4495c95ceadb773e5434d
+msgid ""
+"![docker compose up succeeding](_static/screenshots/docker-compose-"
+"up.png) *A successful `docker compose up -d`.*"
+msgstr ""
+"![docker compose up correcto](_static/screenshots/docker-compose-up.png) "
+"*Un `docker compose up -d` correcto.*"
+
+#: ../../source/installation.md:104 9d548070817a407ab0e00e3c1a74cd29
+msgid "docker compose up succeeding"
+msgstr "docker compose up correcto"
+
+#: ../../source/installation.md:107 f0497b41dfaf439d87fb458bb856f75b
+msgid "Choosing a version"
+msgstr "Elegir una versión"
+
+#: ../../source/installation.md:109 cf6130a0e0c8446d9de819132407a2ca
+msgid ""
+"The application's version number appears in three places that are always "
+"kept in sync with each other in this repository: the `VERSION` file, the "
+"image tag in `docker-compose.yml` (`markw/cbgp-databases:X.Y.Z`), and an "
+"entry in `CHANGELOG.md` describing what changed in that release. There is"
+" deliberately no `latest` tag in ordinary use — every release is a "
+"specific, pinned version number, and upgrading is a deliberate choice "
+"(edit the tag in `docker-compose.yml`, re-run `docker compose up -d`), "
+"not something that happens automatically in the background."
+msgstr ""
+"El número de versión de la aplicación aparece en tres lugares que "
+"siempre se mantienen sincronizados entre sí en este repositorio: el "
+"archivo `VERSION`, la etiqueta de imagen en `docker-compose.yml` "
+"(`markw/cbgp-databases:X.Y.Z`), y una entrada en `CHANGELOG.md` que "
+"describe qué cambió en esa versión. Deliberadamente no existe una "
+"etiqueta `latest` de uso habitual — cada versión publicada es un número "
+"concreto y fijo, y actualizar es una decisión deliberada (editar la "
+"etiqueta en `docker-compose.yml`, volver a ejecutar `docker compose up "
+"-d`), no algo que ocurra automáticamente en segundo plano."
+
+#: ../../source/installation.md:118 5cb4468be87b4ee0a6d5c69cfa1c3f95
+msgid ""
+"To decide which version to run: read `CHANGELOG.md` in the repository "
+"from the top down — each entry lists what was added, changed, or fixed in"
+" that release — and pick the most recent one, or an earlier one "
+"specifically if there's a reason to avoid a more recent change. `docker-"
+"compose.yml` as checked into this repository already points at a specific"
+" known-good version; there's no need to change it unless a newer release "
+"is wanted."
+msgstr ""
+"Para decidir qué versión ejecutar: lea `CHANGELOG.md` en el repositorio "
+"de arriba hacia abajo — cada entrada enumera qué se añadió, cambió o "
+"corrigió en esa versión — y elija la más reciente, o una anterior "
+"específicamente si hay una razón para evitar un cambio más reciente. El "
+"`docker-compose.yml` tal como está en este repositorio ya apunta a una "
+"versión concreta y conocida como correcta; no hace falta cambiarlo a "
+"menos que se quiera una versión más nueva."
+
+#: ../../source/installation.md:126 4a603a5212ee435f81a057a74be52649
+msgid ""
+"This application is under active development, and its version numbering "
+"follows a \"we bump it and describe it every time something meaningful "
+"ships\" convention rather than a strict semantic-versioning contract — "
+"the changelog entry is the reliable source of truth for what a given "
+"version actually contains."
+msgstr ""
+"Esta aplicación está en desarrollo activo, y su numeración de versiones "
+"sigue una convención de \"la incrementamos y la describimos cada vez que "
+"se publica algo significativo\", en lugar de un contrato estricto de "
+"versionado semántico — la entrada del changelog es la fuente fiable de "
+"lo que realmente contiene una versión determinada."
+
+#~ msgid "This page is a placeholder — content coming soon."
+#~ msgstr ""

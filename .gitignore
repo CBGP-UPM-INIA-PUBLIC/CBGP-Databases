@@ -2,3 +2,6 @@
 .env
 .env.*
 utilities/.env
+
+# Sphinx build output (docs/source/ is the tracked source; this is generated)
+docs/build/

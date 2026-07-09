@@ -1,0 +1,4 @@
+# Secrets / local environment config - never commit real credentials.
+.env
+.env.*
+utilities/.env

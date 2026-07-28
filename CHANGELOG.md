@@ -12,6 +12,45 @@ here.
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-07-28
+### Added
+- **Calculated fields**: a form can now declare that one of its fields is
+  computed automatically from other field values, rather than typed in by
+  the user, via a new `local:has-formulas` ontology branch (Dentaku
+  expressions - a safe, sandboxed expression evaluator, not Ruby `eval`).
+  Like `local:has-defaults`/`local:requires-field`, this is declared
+  per-form: the same shared field can be calculated differently on two
+  different forms, or not calculated at all on a form that doesn't declare
+  a formula for it.
+  - Computation is server-side and authoritative, always run at save time
+    from that submission's other field values - nothing a user could type
+    or tamper with in a calculated field's own widget (which carries no
+    `name` attribute at all) ever reaches the database.
+  - **Dependency chains are supported**: one calculated field's formula can
+    reference another calculated field's result (e.g. a percentage
+    calculated *of* another percentage, rather than of a raw input
+    field), resolved automatically via a bounded fixed-point iteration -
+    no need to declare fields in dependency order.
+  - The widget (`_calculated.erb`) shows a greyed-out, read-only box with
+    the formula displayed underneath in plain text, plus a live
+    (non-authoritative) preview that recomputes as dependency fields
+    change and cascades correctly through a dependency chain.
+  - Demonstrated on the Research/Personnel Project forms' `project_overheads`
+    ("UPM overheads") / `project_cbgp_overheads` fields (a real two-step
+    chain), plus a disposable `project_test_*` sandbox chain for manual
+    testing - all percentages are explicitly-marked placeholders pending
+    real confirmation from CBGP/UPM administration.
+  - Documented (English + Spanish) in the Admin Guide's new "Calculated
+    fields" section, including the per-form declaration requirement for
+    ontology editors.
+### Fixed
+- `GET /cbgp/search-dataset/:database` 500'd for any form containing a
+  `HiddenField`-widget question (e.g. `project_category`, shipped in
+  0.11.0) because no `_search_hiddenfield.erb` partial existed. Added one:
+  since a HiddenField is still a genuine controlled-vocabulary field even
+  though it's invisible on the add/edit form, search mode now renders it
+  as an ordinary dropdown, letting records be filtered by that value.
+
 ## [0.11.0] - 2026-07-28
 ### Added
 - Support for multiple ontology **Forms sharing one dbname/graph table**:

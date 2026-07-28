@@ -184,6 +184,37 @@ def get_form_required_fields_query(form_class:)
   qs.execute($ontology)
 end
 
+# Fetches a form's calculated-field formulas: the local:has-formulas branch,
+# a THIRD sibling of has-defaults/requires-field above (see the
+# local:has-formulas AnnotationProperty comment in the .owl file for the
+# full rationale). Shaped exactly like get_form_defaults_query — a formula
+# is TWO pieces of data per (form, field) (which field, AND the formula
+# text), so it needs the same reified intermediate-node shape as a default
+# does, not the direct-property shape "required" uses.
+#
+#   cbgp:project local:has-formulas cbgp:some_formula_node .
+#   cbgp:some_formula_node local:formula-for-field  cbgp:project_cbgp_overheads ;
+#                           local:formula-expression "project_total_funding * 0.13" .
+#
+# @param form_class [String] the specific form class fragment, e.g.
+#   "project" - same caveat as its siblings: must be the real form class,
+#   never the shared dbname.
+# @return [SPARQL::Client::Solutions] rows with ?field (full URI) and
+#   ?formula (the Dentaku expression string) per calculated field this form
+#   declares
+def get_form_formulas_query(form_class:)
+  qs = <<~GET_FORM_FORMULAS
+    #{PREFIXES}
+    SELECT ?field ?formula WHERE {
+      cbgp:#{form_class} local:has-formulas ?f .
+      ?f local:formula-for-field  ?field ;
+         local:formula-expression ?formula .
+    }
+  GET_FORM_FORMULAS
+  qs = SPARQL.parse(qs)
+  qs.execute($ontology)
+end
+
 def get_answer_block_query(ablockid:, language: current_language)
   a = <<GET_ANSWER_BLOCK
     #{PREFIXES}

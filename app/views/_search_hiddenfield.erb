@@ -1,0 +1,19 @@
+<!-- _search_hiddenfield.erb
+     A HiddenField (see _hiddenfield.erb) is invisible on the add/edit form
+     - the user never sees or picks it, it's populated by local:has-defaults
+     (e.g. project_category, defaulted per-form to distinguish Research vs
+     Personnel Project records). But it's still a genuine controlled-
+     vocabulary field with a real answer-block, and searching/filtering
+     records BY that value (e.g. "show me all Personnel Project records")
+     is exactly the kind of thing a search form should support - so unlike
+     add/edit mode, search mode renders it as an ordinary dropdown, same
+     shape as _search_radio.erb, rather than hiding it. -->
+<div class="inputtype">
+  <select name="<%= @question.questionid %>" id="<%= @answerblock.ablockid %>" width="70">
+    <option value="">-- select an option --</option>
+    <% @answerblock.answers.each do |answer| %>
+      <% selected = (@thisval == answer.answer || @thisval == answer.answerid) ? "selected" : "" %>
+      <option value="<%= answer.answerid %>" <%= selected %>><%= answer.answer %></option>
+    <% end %>
+  </select>
+</div>

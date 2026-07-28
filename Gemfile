@@ -11,6 +11,10 @@ ruby '3.2.4'
 
 # Runtime dependencies (needed for the app to run in production)
 gem 'compass', '~> 1.0'
+# Safe expression evaluator for calculated-field formulas (see
+# local:has-formulas in the ontology / lib/dataset_classes.rb's
+# evaluate_calculated_fields) - sandboxed arithmetic, not Ruby eval.
+gem 'dentaku', '~> 3.5'
 gem 'dotenv', '~> 3.1'
 gem 'httparty', '~> 0.23.1'
 gem 'json-canonicalization', '~> 1.0.0'

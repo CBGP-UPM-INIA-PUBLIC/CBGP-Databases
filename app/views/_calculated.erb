@@ -1,0 +1,135 @@
+<!-- _calculated.erb
+     Renders a "calculated field" — a widget whose value the user never
+     types, only ever SEES. Triggered by app/views/_question.erb whenever
+     @question.formula is present (see local:has-formulas in the ontology
+     and CBGP::Dataset.form_formulas/evaluate_calculated_fields in
+     lib/dataset_classes.rb for the full mechanism).
+
+     TWO SEPARATE THINGS HAPPEN HERE, and it's important not to confuse
+     them:
+
+     1. THE REAL VALUE (authoritative, trustworthy): computed SERVER-SIDE,
+        on save, by CBGP::Dataset.evaluate_calculated_fields, using Dentaku
+        (a safe, sandboxed expression evaluator - not Ruby eval) over this
+        submission's OTHER field values. That's what actually gets written
+        to the database. This widget's <input> below carries NO "name"
+        attribute, so even if somebody used devtools to edit the number on
+        screen, nothing would be submitted for it at all - the server-side
+        computation always runs and always overwrites whatever was there.
+
+     2. THE LIVE PREVIEW (cosmetic only): the little bit of JavaScript at
+        the bottom of this file, so the user isn't staring at a blank box
+        while filling in the form - it recomputes a rough preview in the
+        browser every time one of the formula's dependency fields changes,
+        using the SAME formula text but a tiny, deliberately-restricted
+        JS evaluator (see safeEvalFormula below - it only ever hands
+        digits/operators to JavaScript's Function(), never a variable name
+        or anything else, so there's no eval-injection risk even though
+        it's less sophisticated than Dentaku). If this preview is ever
+        wrong or stale, that's fine - it is NEVER what gets saved.
+
+     Dependency CHAINS (one calculated field referencing another, e.g.
+     "CBGP overheads" = 5% of "UPM overheads", itself 25% of Total
+     funding) are handled by both halves, in different ways:
+       - Server-side: see evaluate_calculated_fields' fixed-point-iteration
+         doc comment in lib/dataset_classes.rb.
+       - Here, client-side: after recomputing, this widget manually fires
+         a synthetic "input" event on its OWN (read-only) box. Any OTHER
+         calculated widget listening for changes on this field (because
+         ITS formula depends on this one) picks that up exactly like a
+         real keystroke, and the preview cascades down the chain
+         automatically - no special chain-aware code needed here, it just
+         falls out of every calculated widget listening for "input" events
+         the same way, on whatever its own dependencies happen to be.
+-->
+<%
+  qid          = @question.questionid
+  formula_text = @question.formula.to_s
+  dependencies = @question.formula_dependencies
+  is_currency  = @question.objectclass.to_s.downcase == 'currency'
+  display_value = is_currency ? format_currency(@thisval) : @thisval.to_s
+%>
+<div class="inputtype">
+  <div id="<%= qid %>_container">
+    <div class="text-input-row" style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+      <input type="text" id="<%= qid %>_ANSWER" value="<%= display_value %>" readonly size="20"
+             style="vertical-align: middle; background: #eee; color: #555; cursor: not-allowed;" />
+      <small style="color: #777;">(calculated automatically)</small>
+    </div>
+    <div style="margin: 0 0 10px 0;">
+      <small style="color: #777;">Formula: <code><%= formula_text %></code></small>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const qid          = '<%= qid %>';
+  const formula      = <%= formula_text.to_json %>;
+  const dependencies = <%= dependencies.to_json %>;
+  const output       = document.getElementById(qid + '_ANSWER');
+  if (!output) return;
+
+  // Substitutes every dependency name in `template` with its numeric value,
+  // then refuses to evaluate unless ONLY digits/operators/parens/whitespace
+  // remain - so nothing but arithmetic on numbers ever reaches Function().
+  // Any leftover unbound name (a dependency that wasn't substituted, e.g.
+  // because its input was blank) causes this to bail out and return null,
+  // same spirit as Dentaku::UnboundVariableError server-side.
+  function safeEvalFormula(template, values) {
+    let expr = template;
+    Object.keys(values).forEach(function(name) {
+      expr = expr.replace(new RegExp('\\b' + name + '\\b', 'g'), values[name]);
+    });
+    if (!/^[0-9+\-*/(). \t]+$/.test(expr)) return null;
+    try {
+      // eslint-disable-next-line no-new-func
+      return Function('"use strict"; return (' + expr + ')')();
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function recompute() {
+    const values = {};
+    let allPresent = true;
+
+    dependencies.forEach(function(dep) {
+      const el  = document.getElementById(dep + '_ANSWER');
+      const raw = el ? el.value.trim() : '';
+      const num = parseFloat(raw);
+      if (el && raw !== '' && !isNaN(num)) {
+        values[dep] = num;
+      } else {
+        allPresent = false;
+      }
+    });
+
+    output.value = allPresent ? formatPreview(safeEvalFormula(formula, values)) : '';
+
+    // Cascade: if some OTHER calculated widget depends on this one, let it
+    // know this value just changed, exactly like a real keystroke would.
+    output.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  function formatPreview(result) {
+    if (result === null || isNaN(result)) return '';
+    return String(Math.round(result * 100) / 100);
+  }
+
+  dependencies.forEach(function(dep) {
+    const el = document.getElementById(dep + '_ANSWER');
+    if (el) el.addEventListener('input', recompute);
+  });
+
+  // Deliberately NOT calling recompute() here on page load. The value
+  // already sitting in the box above is whatever was actually SAVED
+  // (server-computed, properly locale-formatted) - correct for an existing
+  // record, and correctly blank for a new one. Running the cruder JS
+  // preview immediately would either show the same number in a worse
+  // format, or wipe out a real saved value to blank (if a dependency
+  // element can't be found yet for some reason) - a self-inflicted bug
+  // fixed before this ever shipped. The preview only ever needs to kick in
+  // once the user actually starts editing a dependency.
+})();
+</script>

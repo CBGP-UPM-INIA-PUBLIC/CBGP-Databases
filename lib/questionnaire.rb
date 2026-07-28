@@ -37,6 +37,14 @@ class Questionnaire
     # has no "required" concept), not a bug - see form_required_fields'
     # own doc comment in lib/dataset_classes.rb for the full rationale.
     @required_fields = CBGP::Dataset.form_required_fields(form: @questionnaire_type)
+
+    # Same shape and same caveat as @required_fields above: a
+    # {questionclass => Dentaku expression} Hash, resolved once per form
+    # and passed down to every section/question. Empty for any caller that
+    # only had a dbname to hand (no local:has-formulas on a dbname that
+    # isn't also a form class) - a calculated field's widget just never
+    # appears there, same graceful degradation as required_fields.
+    @formulas = CBGP::Dataset.form_formulas(form: @questionnaire_type)
     @sections = get_sections
     @questionnaireid = Time.now.to_i
   end
@@ -55,7 +63,8 @@ class Questionnaire
       sectionid = section.gsub(/.*\#/, '') # remove everything up to the hash in the URL
       warn "getting section #{section}" # new-publication-questions
       seclabel = res[:label].to_s
-      sects << QuestionnaireSection.new(sectionid: sectionid, sectionlabel: seclabel, required_fields: @required_fields)
+      sects << QuestionnaireSection.new(sectionid: sectionid, sectionlabel: seclabel,
+                                        required_fields: @required_fields, formulas: @formulas)
       # warn "QUESTIONNAIRE SECTIONS #{sects.inspect}"
     end
     sects
@@ -69,17 +78,18 @@ class QuestionnaireSection
   # form requires (built once in Questionnaire#initialize and passed down
   # to every section, since it's the same for the whole form - a field
   # doesn't become "required" or not depending on which section it's
-  # displayed in).
+  # displayed in). formulas: same idea, a {questionclass => expression}
+  # Hash for calculated fields.
   # sectionid comes in as identifier only e.g. new-publication-questions
-  def initialize(sectionid:, sectionlabel:, required_fields: Set.new)
+  def initialize(sectionid:, sectionlabel:, required_fields: Set.new, formulas: {})
     @sectionid = sectionid
     @sectionlabel = sectionlabel
-    @questions = get_questions(sectionid: @sectionid, required_fields: required_fields)
+    @questions = get_questions(sectionid: @sectionid, required_fields: required_fields, formulas: formulas)
     @wdo_comment = nil
     @center_response = nil
   end
 
-  def get_questions(sectionid:, required_fields: Set.new)
+  def get_questions(sectionid:, required_fields: Set.new, formulas: {})
     qs = []
     results = get_section_questions_query(sectionid: sectionid)
     # ?q (str(?qlab) as ?label) ?widget ?class ?method ?cardinality ?answers ?sequence
@@ -120,7 +130,14 @@ class QuestionnaireSection
         # qid is the questionclass fragment (e.g. "project_title") - exactly
         # what form_required_fields returns, so a plain Set#include? is all
         # that's needed to answer "does this form require this question?"
-        required: required_fields.include?(qid)
+        required: required_fields.include?(qid),
+        # nil for an ordinary field; a Dentaku expression string (e.g.
+        # "project_overheads * 0.05") for a calculated one. Presence of
+        # this, not the widget type, is what _question.erb gates the
+        # read-only _calculated.erb widget on - see form_formulas' doc
+        # comment in lib/dataset_classes.rb for why formulas live per-form
+        # rather than on the question class itself.
+        formula: formulas[qid]
       )
     end
     qs
@@ -130,11 +147,11 @@ end
 class QuestionnaireQuestion
   attr_accessor :questionid, :sequence, :objectclass, :objectmethod, :ablockid, :answertree, :question, :selected_answer,
                 :widget, :cardinality, :answerblock,
-                :references_target, :references_via_class, :references_label_method, :comment, :required
+                :references_target, :references_via_class, :references_label_method, :comment, :required, :formula
 
   def initialize(questionid:, sequence:, objectclass:, objectmethod:, ablockid:, question:,
                  widget:, cardinality:, references_target: nil, references_via_class: nil, references_label_method: nil,
-                 comment: nil, required: false)
+                 comment: nil, required: false, formula: nil)
     @question = question
     @comment = comment
     # required: true if THIS form (see Questionnaire#initialize) marks this
@@ -143,6 +160,13 @@ class QuestionnaireQuestion
     # actual enforcement (rejecting a save if it's blank) lives server-side
     # in CBGP::Dataset.load_from_params_and_write, this flag is display-only.
     @required = required
+    # formula: nil for an ordinary field; a Dentaku expression string for a
+    # calculated one (see local:has-formulas). Read by _question.erb to
+    # decide whether to render the read-only _calculated.erb widget instead
+    # of the field's ordinary one. Like +required+, this is display-only -
+    # the server-side computation in CBGP::Dataset.evaluate_calculated_fields
+    # is what's actually authoritative.
+    @formula = formula
     @questionid = questionid # this is the ontology class (e.g. cbgp:mem1  becomes questionid = "mem1")
     @sequence = sequence
     @widget = widget.downcase
@@ -169,6 +193,22 @@ class QuestionnaireQuestion
       node['children']&.each { |child| child['text'] = child['text'].gsub(/[“”‘’]/, '"') if child['text'] }
     end
     warn "Hierarchical Data: #{@answertree.inspect}"
+  end
+
+  # The questionclass fragments this question's formula references (e.g.
+  # +["project_overheads"]+ for "project_overheads * 0.05"), used by
+  # app/views/_calculated.erb to attach a live-preview JS listener to each
+  # dependency's input element. Just a bare identifier scan - deliberately
+  # NOT filtered against the form's real field list (nothing here needs
+  # that precision): the widget only ever uses this to look up DOM elements
+  # by ID, and a token that doesn't match a real field simply finds no
+  # element and is silently skipped. The one thing server-side evaluation
+  # (CBGP::Dataset.evaluate_calculated_fields) actually treats as
+  # authoritative never uses this method at all.
+  def formula_dependencies
+    return [] if @formula.to_s.strip.empty?
+
+    @formula.scan(/[A-Za-z_][A-Za-z0-9_]*/).uniq
   end
 end
 

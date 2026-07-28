@@ -195,6 +195,87 @@ module CBGP
       end
     end
 
+    # Builds a blank Dataset the same way +new+ does, then pre-populates any
+    # fields the given form declares a default for (see
+    # +get_form_defaults_query+ in lib/queries.rb) — e.g. a hidden
+    # discriminator field defaulting to "personnel-project" on one form and
+    # "research-project" on another, even though both forms share the same
+    # underlying question class.
+    #
+    # Only meaningful for a genuinely new/blank record — callers that load an
+    # existing record (+load_from_primary_id+, +load_from_graph+) should keep
+    # using plain +new+, since an existing record's real stored values (or
+    # genuine blanks) must never be silently overwritten by a default.
+    #
+    # @param type [String] dbname used for storage, e.g. "project" - same
+    #   meaning as +new+'s +type:+
+    # @param form [String] the specific form class, e.g. "personnel_project"
+    #   - this is what defaults are looked up by, and is deliberately a
+    #   separate parameter from +type:+ since several forms can share one
+    #   dbname
+    # @return [CBGP::Dataset]
+    def self.new_with_defaults(type:, form:)
+      dataset = new(type: type)
+      defaults = form_default_answers(form: form)
+      return dataset if defaults.empty?
+
+      dataset.fields.each do |field|
+        raw_default = field[:method] && defaults[field[:questionclass]]
+        apply_default_to_field(dataset, field, raw_default) if raw_default
+      end
+      dataset
+    end
+
+    # Coerces+applies one field's default the same way a real submitted value
+    # would be coerced, so a default is never treated more leniently than
+    # user input. Split out of +new_with_defaults+ purely to keep that
+    # method's branching shallow.
+    def self.apply_default_to_field(dataset, field, raw_default)
+      value_to_coerce = field[:cardinality].to_s.downcase == 'multiple' ? [raw_default] : raw_default
+      coerced = dataset.coerce_value(value_to_coerce, field[:class], field[:cardinality])
+      return if coerced.nil? || (coerced.is_a?(Array) ? coerced.empty? : coerced.to_s.empty?)
+
+      dataset.public_send("#{field[:method]}=", coerced)
+    end
+    private_class_method :apply_default_to_field
+
+    # Resolves a form's local:has-defaults branch into a plain
+    # +{questionclass => value}+ hash. Split out from +new_with_defaults+ so
+    # it's independently callable/testable without needing a Dataset
+    # instance.
+    #
+    # @param form [String] the specific form class, e.g. "personnel_project"
+    # @return [Hash{String => String}]
+    def self.form_default_answers(form:)
+      get_form_defaults_query(form_class: form).each_with_object({}) do |row, hash|
+        field_fragment = row[:field].to_s.split('#').last
+        hash[field_fragment] = row[:value].to_s
+      end
+    end
+
+    # Resolves a form's local:requires-field markers into a plain Set of
+    # questionclass fragment strings — e.g. +#<Set: {"project_title"}>+.
+    #
+    # Deliberately parallel in shape to +form_default_answers+ above (same
+    # "call the SPARQL query, strip each result URI down to its trailing
+    # #fragment" pattern) but returns a Set, not a Hash, because — as
+    # explained on local:requires-field in the .owl file — "required" has no
+    # second piece of data attached. There's no "value" to look up, only
+    # "is this questionclass in the set of fields this form requires?", and
+    # a Set answers exactly that question (fast +#include?+, no duplicates)
+    # without pretending there's a value where there isn't one.
+    #
+    # @param form [String] the specific form class, e.g. "personnel_project"
+    #   — same caveat as everywhere else in this file: must be the real form
+    #   class, not the shared dbname, or every form on that dbname would
+    #   appear to share one form's requirements.
+    # @return [Set<String>] questionclass fragments this form requires
+    def self.form_required_fields(form:)
+      get_form_required_fields_query(form_class: form).each_with_object(Set.new) do |row, set|
+        set << row[:field].to_s.split('#').last
+      end
+    end
+
     def coerce_value(value, klass, cardinality)
       klass = klass.to_s.downcase
       return '' if value.to_s.strip.empty?
@@ -501,8 +582,16 @@ module CBGP
     # @return [CBGP::Dataset] the saved dataset instance
     # @raise [ValidationError] if one or more fields fail coercion/validation
     # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
-    def self.load_from_params_and_write(params:)
+    # +form:+ is the specific FORM class this submission came from (e.g.
+    # "personnel_project"), threaded through from the hidden "form_class"
+    # field on dataset.erb/user_dataset.erb - NOT params['database'], which
+    # is only the shared dbname/table (e.g. "project") and can't tell two
+    # forms sharing one dbname apart. It defaults to params['database'] so
+    # that any caller which genuinely has no form/dbname split (a dbname
+    # with only one form) keeps working without having to pass anything new.
+    def self.load_from_params_and_write(params:, form: nil)
       warn "PARAMS: #{params.inspect}"
+      effective_form = form.to_s.strip.empty? ? params['database'] : form
       dataset = CBGP::Dataset.new(type: params['database'])
       errors = []
 
@@ -529,6 +618,33 @@ module CBGP
         rescue ArgumentError => e
           errors << { label: field[:label], message: e.message }
         end
+      end
+
+      # Second validation pass: form-scoped required fields (local:requires-
+      # field, see form_required_fields above). This is deliberately kept
+      # SEPARATE from the coercion loop above rather than folded into it,
+      # because the two loops check fundamentally different things: the
+      # first asks "for each value the user DID submit, is it well-formed?"
+      # (iterates dataset.fields); this one asks "for each field THIS FORM
+      # requires, did the user submit anything at all?" (iterates
+      # form_required_fields(form: ...)). A field can fail either, both, or
+      # neither check independently, so keeping them as two passes over two
+      # different lists is clearer than trying to interleave them.
+      #
+      # dataset.fields.each do |field| ... end above already ran
+      # coerce_value/public_send for every submitted value, so by this
+      # point required fields that WERE submitted already have their
+      # coerced value sitting on the dataset object - we just have to ask
+      # the dataset for it and see if it's blank.
+      form_required_fields(form: effective_form).each do |required_field|
+        field = dataset.fields.find { |f| f[:questionclass] == required_field }
+        # A required-field marker pointing at a field this dbname doesn't even have - ignore rather than crash.
+        next unless field
+
+        current_value = dataset.public_send(field[:method])
+        next unless current_value.nil? || (current_value.respond_to?(:empty?) && current_value.empty?)
+
+        errors << { label: field[:label], message: "#{field[:label]} is required" }
       end
 
       raise ValidationError.new(errors: errors) if errors.any?

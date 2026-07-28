@@ -122,6 +122,68 @@ GET_SECTION_QUESTIONS
   qs.execute($ontology)
 end
 
+# Fetches a form's pre-populated defaults: the local:has-defaults branch lets
+# a form assign a default answer to one of its fields *without* that default
+# living on the shared question class itself — necessary because the same
+# question class can be reused across multiple forms (e.g. a field shared by
+# both Research and Personnel projects), each of which may want a different
+# default, or none at all.
+#
+#   cbgp:personnel_project local:has-defaults cbgp:some_default_node .
+#   cbgp:some_default_node local:default-for-field cbgp:project_x ;
+#                           local:default-value    "some value" .
+#
+# @param form_class [String] the specific form class fragment, e.g.
+#   "personnel_project" - NOT the shared dbname ("project")
+# @return [SPARQL::Client::Solutions] rows with ?field (full URI) and ?value
+def get_form_defaults_query(form_class:)
+  qs = <<~GET_FORM_DEFAULTS
+    #{PREFIXES}
+    SELECT ?field ?value WHERE {
+      cbgp:#{form_class} local:has-defaults ?d .
+      ?d local:default-for-field ?field ;
+         local:default-value ?value .
+    }
+  GET_FORM_DEFAULTS
+  qs = SPARQL.parse(qs)
+  qs.execute($ontology)
+end
+
+# Fetches which of a FORM's fields are mandatory, per local:requires-field
+# (see the AnnotationProperty declaration in the .owl file for the full
+# rationale — short version: unlike local:has-defaults, "required" carries
+# no extra data beyond "yes, this field", so it's a single direct property
+# straight from the form to the question class, not a two-piece reified
+# node like a default is).
+#
+# This is a SIBLING query to get_form_defaults_query above, not a variant of
+# it — deliberately kept as its own small, single-purpose SPARQL string
+# (rather than, say, cramming an extra OPTIONAL onto some other query)
+# because it answers a genuinely different question: "does this exist for
+# this form?" rather than "what value does this have for this form?".
+#
+#   cbgp:personnel_project local:requires-field cbgp:project_annual_income .
+#
+# @param form_class [String] the specific form class fragment, e.g.
+#   "personnel_project" — the same "must be the real form, not the shared
+#   dbname" caveat as get_form_defaults_query applies here too: this has to
+#   be called with the actual form (e.g. "personnel_project"), never with
+#   the dbname ("project"), or every form sharing that dbname would appear
+#   to require the same fields.
+# @return [SPARQL::Client::Solutions] rows with a single ?field (full URI)
+#   binding per required field — there is no "value" column here, only
+#   presence/absence of a row for a given field
+def get_form_required_fields_query(form_class:)
+  qs = <<~GET_FORM_REQUIRED_FIELDS
+    #{PREFIXES}
+    SELECT ?field WHERE {
+      cbgp:#{form_class} local:requires-field ?field .
+    }
+  GET_FORM_REQUIRED_FIELDS
+  qs = SPARQL.parse(qs)
+  qs.execute($ontology)
+end
+
 def get_answer_block_query(ablockid:, language: current_language)
   a = <<GET_ANSWER_BLOCK
     #{PREFIXES}

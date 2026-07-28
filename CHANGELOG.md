@@ -12,6 +12,46 @@ here.
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-07-28
+### Added
+- Support for multiple ontology **Forms sharing one dbname/graph table**:
+  Research Project (`cbgp:project`) and Personnel Project
+  (`cbgp:personnel_project`) are now two distinct forms over the same
+  `project` table, each showing only its own relevant subset of the shared
+  question classes. The Personnel Project field list is a placeholder for
+  now, pending curation from the Admin team - this feature exists precisely
+  so that curation can happen entirely in the ontology, with no code changes
+  required, once they decide what they actually need.
+- **Per-form default answers**: a form can now declare a default value for
+  one of its fields via a new `local:has-defaults` branch pointing at
+  `pre-populated-answer` nodes (`local:default-for-field` +
+  `local:default-value`), so the same shared question class can default
+  differently depending on which form is used. Used to build a hidden,
+  multilingual `project_category` discriminator field (defaults to
+  "Research Project" / "Personnel Project" depending on which form created
+  the record), so records can be queried by project type without exposing
+  the field to the user.
+- **Per-form required fields**: a form can now mark one of its fields
+  mandatory via a new `local:requires-field` annotation, direct from the
+  form class to the question class (no reification needed, unlike
+  defaults, since "required" carries no value of its own). Enforced
+  server-side before anything is written to the database, reusing the
+  existing friendly-error/`ValidationError` machinery, and surfaced to
+  users as a bold red asterisk next to the field label on the form.
+- `HiddenField`, an existing but previously-unused ontology widget type, is
+  now exercised for the first time by the `project_category` field above.
+### Fixed
+- `GET /cbgp/dataset/:database` (and the equivalent user-facing route) built
+  the add/edit questionnaire from the record's shared dbname instead of its
+  specific form class, so two forms sharing one dbname would incorrectly
+  both render whichever form's fields happened to match the dbname string.
+  The admin `POST /cbgp/validate-dataset/:database` route had the same bug
+  on the validation-error redisplay path. Both are fixed by threading the
+  true form class through as a hidden `form_class` field on submission,
+  since the URL alone only ever carries the shared dbname.
+- Added `code10`, `consejo`, `genero`, and `cluster` to the members XML
+  export (`xmlmembers.erb`), which were missing from the exported fields.
+
 ## [0.10.0] - 2026-07-09
 ### Added
 - Full bilingual (English/Spanish) end-user documentation site, built from

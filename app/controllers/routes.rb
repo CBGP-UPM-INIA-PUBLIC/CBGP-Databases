@@ -175,7 +175,8 @@ def set_routes
     @database = get_dbname_for_form(form: @form)
     @mode = 'edit'
     @questionnaire = generate_questionnaire(questionnaire_type: @form) # questionnaire has all fields and possible answers
-    @entry = CBGP::Dataset.new(type: @database) # the object into which the data will be inserted (may have more fields than the form!)
+    # may have more fields than the form itself renders
+    @entry = CBGP::Dataset.new_with_defaults(type: @database, form: @form)
     halt erb :user_dataset, layout: :database_layout
   end
 
@@ -186,15 +187,19 @@ def set_routes
     # restricted UserFacing questionnaire code (e.g. "userproject"), so it
     # must not be used to rebuild @questionnaire: that would silently swap in
     # the full Admin field set on redisplay. The true form code is carried
-    # separately via the hidden user_form_type field (see user_dataset.erb).
+    # separately via the hidden form_class field (see user_dataset.erb).
     @database = params[:database]
-    @form = params['user_form_type'].to_s.strip
+    @form = params['form_class'].to_s.strip
     @form = @database if @form.empty? # defensive fallback for a stale/hand-crafted request missing the hidden field
     @questionnaire = generate_questionnaire(questionnaire_type: @form) # create the fields that will carry the answers provided
     @mode = 'edit' # the HTML form has a query mode and an edit mode.  Select the edit mode
 
     begin
-      @entry = CBGP::Dataset.load_from_params_and_write(params: params)
+      # form: @form (NOT @database) - this is what load_from_params_and_write
+      # uses to look up local:requires-field for THIS specific form, so
+      # "required" validation matches whichever form was actually used, not
+      # just whichever other form happens to share the same dbname.
+      @entry = CBGP::Dataset.load_from_params_and_write(params: params, form: @form)
     rescue CBGP::Dataset::ValidationError => e
       @validation_errors = e.errors
       @entry = CBGP::Dataset.new_from_raw_params(type: params['database'], params: params)
@@ -228,8 +233,13 @@ def set_routes
     @form = params[:database]
     @database = get_dbname_for_form(form: @form)
     @mode = 'edit'
-    @questionnaire = generate_questionnaire(questionnaire_type: @database) # questionnaire has all fields and possible answers
-    @entry = CBGP::Dataset.new(type: @database) # the object into which the data will be inserted
+    # @form (the specific form class, e.g. "personnel_project") drives which
+    # fields are shown - @database (the shared dbname, e.g. "project") must
+    # NOT be used here, or two forms sharing one dbname would both render
+    # whichever form's section happens to match the dbname string.
+    @questionnaire = generate_questionnaire(questionnaire_type: @form) # questionnaire has all fields and possible answers
+    # dbname (@database) for storage, form (@form) for which defaults apply
+    @entry = CBGP::Dataset.new_with_defaults(type: @database, form: @form)
     halt erb :dataset, layout: :database_layout
   end
 
@@ -287,13 +297,25 @@ def set_routes
   end
   # the form has been filled - now validate it
   post '/cbgp/validate-dataset/:database' do
-    @form = params[:database]
-    @database = get_dbname_for_form(form: @form)
+    # :database here is the dbname (e.g. "project"), NOT the specific form
+    # class (e.g. "personnel_project" vs "project") - dataset.erb's form
+    # action posts to /cbgp/validate-dataset/<%= @database %>, so this URL
+    # segment is always the dbname. Previously this line wrongly assigned it
+    # to @form directly (both happened to be the same string until a second
+    # form started sharing the "project" dbname) - now the true form class is
+    # carried separately via the hidden form_class field (see dataset.erb),
+    # the same fix already applied to the User-facing route above.
+    @database = params[:database]
+    @form = params['form_class'].to_s.strip
+    @form = @database if @form.empty? # defensive fallback for a stale/hand-crafted request missing the hidden field
     @questionnaire = generate_questionnaire(questionnaire_type: @form) # create the fields that will carry the answers provided
     @mode = 'edit' # the HTML form has a query mode and an edit mode.  Select the edit mode
 
     begin
-      @entry = CBGP::Dataset.load_from_params_and_write(params: params)
+      # form: @form (NOT @database) - see the comment on the User-facing
+      # route above for why this distinction matters for required-field
+      # validation.
+      @entry = CBGP::Dataset.load_from_params_and_write(params: params, form: @form)
     rescue CBGP::Dataset::ValidationError => e
       @validation_errors = e.errors
       @entry = CBGP::Dataset.new_from_raw_params(type: params['database'], params: params)
@@ -594,6 +616,11 @@ def set_routes
         pre_fetched_primary_id: primary_ids_by_graph[graphuri]
       )
     end
+    # Alphabetical by surname; unaccent first so e.g. "Álvarez" sorts with
+    # "A" rather than after "Z" (same helper used for accent-insensitive
+    # search, see lib/queries.rb).
+    @datasets.sort_by! { |ds| unaccent(ds.surname.to_s).downcase }
+
     content_type 'application/xml', charset: 'utf-8'
     #    content_type 'text/plain', charset: 'utf-8'
     halt erb :xmlmembers

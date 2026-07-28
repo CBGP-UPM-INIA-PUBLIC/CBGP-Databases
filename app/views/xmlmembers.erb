@@ -14,6 +14,10 @@
         <jefe_grupo><%= get_label_for_id(id: d.pi).strip  %></jefe_grupo>
         <sublinea><%= get_label_for_id(id: d.research_area).strip  %></sublinea>
         <institucion><%= get_label_for_id(id: d.institution).strip  %></institucion>
+        <code10><%= get_label_for_id(id: d.member_code10).strip  %></code10>
+        <consejo><%= get_label_for_id(id: d.member_cbgp_center_board).strip  %></consejo> 
+        <genero><%= get_label_for_id(id: d.member_gender).strip %></genero>
+        <cluster><%= get_label_for_id(id: d.member_cluster).strip %></cluster>
     </intermedia>
 <% end %>
 </Root>

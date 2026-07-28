@@ -23,6 +23,20 @@ class Questionnaire
     # GET THE LABELS HERE
     # @lang = lang.upcase
     @questionnaire_type = questionnaire_type # its GUID as only the #code
+
+    # NOTE: on required_fields, +questionnaire_type+ here is whatever the
+    # caller passed as "the form" (see app/controllers/routes.rb - the
+    # add/edit routes pass @form, the true form class, e.g.
+    # "personnel_project"; other routes, like search, pass @database, the
+    # shared dbname). CBGP::Dataset.form_required_fields(form: ...) only
+    # finds a form's local:requires-field markers if it's given the real
+    # form class - for callers that only had a dbname to hand, this just
+    # resolves to an empty Set (no requires-field marker on a dbname that
+    # isn't also a form class), so the asterisk simply never appears there.
+    # That's the correct behavior for those call sites (e.g. a search form
+    # has no "required" concept), not a bug - see form_required_fields'
+    # own doc comment in lib/dataset_classes.rb for the full rationale.
+    @required_fields = CBGP::Dataset.form_required_fields(form: @questionnaire_type)
     @sections = get_sections
     @questionnaireid = Time.now.to_i
   end
@@ -41,7 +55,7 @@ class Questionnaire
       sectionid = section.gsub(/.*\#/, '') # remove everything up to the hash in the URL
       warn "getting section #{section}" # new-publication-questions
       seclabel = res[:label].to_s
-      sects << QuestionnaireSection.new(sectionid: sectionid, sectionlabel: seclabel)
+      sects << QuestionnaireSection.new(sectionid: sectionid, sectionlabel: seclabel, required_fields: @required_fields)
       # warn "QUESTIONNAIRE SECTIONS #{sects.inspect}"
     end
     sects
@@ -51,15 +65,21 @@ end
 class QuestionnaireSection
   attr_accessor :sectionid, :questions, :sectionlabel, :lang, :wdo_comment, :center_response
 
-  def initialize(sectionid:, sectionlabel:) # sectionid comes in as identifier only e.g. new-publication-questions
+  # required_fields: the Set<String> of questionclass fragments the current
+  # form requires (built once in Questionnaire#initialize and passed down
+  # to every section, since it's the same for the whole form - a field
+  # doesn't become "required" or not depending on which section it's
+  # displayed in).
+  # sectionid comes in as identifier only e.g. new-publication-questions
+  def initialize(sectionid:, sectionlabel:, required_fields: Set.new)
     @sectionid = sectionid
     @sectionlabel = sectionlabel
-    @questions = get_questions(sectionid: @sectionid)
+    @questions = get_questions(sectionid: @sectionid, required_fields: required_fields)
     @wdo_comment = nil
     @center_response = nil
   end
 
-  def get_questions(sectionid:)
+  def get_questions(sectionid:, required_fields: Set.new)
     qs = []
     results = get_section_questions_query(sectionid: sectionid)
     # ?q (str(?qlab) as ?label) ?widget ?class ?method ?cardinality ?answers ?sequence
@@ -96,7 +116,11 @@ class QuestionnaireSection
         references_target: references_target,
         references_via_class: references_via_class,
         references_label_method: references_label_method,
-        comment: comment
+        comment: comment,
+        # qid is the questionclass fragment (e.g. "project_title") - exactly
+        # what form_required_fields returns, so a plain Set#include? is all
+        # that's needed to answer "does this form require this question?"
+        required: required_fields.include?(qid)
       )
     end
     qs
@@ -106,13 +130,19 @@ end
 class QuestionnaireQuestion
   attr_accessor :questionid, :sequence, :objectclass, :objectmethod, :ablockid, :answertree, :question, :selected_answer,
                 :widget, :cardinality, :answerblock,
-                :references_target, :references_via_class, :references_label_method, :comment
+                :references_target, :references_via_class, :references_label_method, :comment, :required
 
   def initialize(questionid:, sequence:, objectclass:, objectmethod:, ablockid:, question:,
                  widget:, cardinality:, references_target: nil, references_via_class: nil, references_label_method: nil,
-                 comment: nil)
+                 comment: nil, required: false)
     @question = question
     @comment = comment
+    # required: true if THIS form (see Questionnaire#initialize) marks this
+    # question's questionclass with local:requires-field. Read by
+    # app/views/_question.erb to render the red asterisk visual cue - the
+    # actual enforcement (rejecting a save if it's blank) lives server-side
+    # in CBGP::Dataset.load_from_params_and_write, this flag is display-only.
+    @required = required
     @questionid = questionid # this is the ontology class (e.g. cbgp:mem1  becomes questionid = "mem1")
     @sequence = sequence
     @widget = widget.downcase

@@ -868,7 +868,10 @@ module CBGP
       end
 
       oldid = primary_id_param.empty? ? nil : primary_id_param
-      write_dataset_to_db(dataset: dataset, oldid: oldid)
+      # form: effective_form, so the write path stamps dcterms:type with the
+      # TRUE form (e.g. "personnel_project"), never the shared dbname - see
+      # write_dataset_to_db_query's doc comment in lib/queries.rb.
+      write_dataset_to_db(dataset: dataset, oldid: oldid, form: effective_form)
       dataset
     end
     # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity

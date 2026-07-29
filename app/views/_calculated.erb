@@ -117,9 +117,24 @@
     return String(Math.round(result * 100) / 100);
   }
 
-  dependencies.forEach(function(dep) {
-    const el = document.getElementById(dep + '_ANSWER');
-    if (el) el.addEventListener('input', recompute);
+  // Deferred to DOMContentLoaded, not attached immediately: field order on
+  // the page comes from local:question-order in the ontology, and there's
+  // no guarantee a calculated field renders AFTER the fields it depends on
+  // - e.g. "CBGP overheads" (order 13) renders before "Annual income"
+  // (order 16) on the Personnel form. This script tag executes the instant
+  // the browser parses it, mid-page, so looking up a dependency's element
+  // right here would silently find nothing for any dependency that hasn't
+  // been parsed yet, and the listener would just never attach - which is
+  // exactly what happened before this fix (the live preview only ever
+  // worked when a calculated field happened to be positioned after every
+  // field it depends on). Waiting for DOMContentLoaded guarantees the
+  // whole page - every field's input, regardless of position - already
+  // exists before this looks any of them up.
+  document.addEventListener('DOMContentLoaded', function() {
+    dependencies.forEach(function(dep) {
+      const el = document.getElementById(dep + '_ANSWER');
+      if (el) el.addEventListener('input', recompute);
+    });
   });
 
   // Deliberately NOT calling recompute() here on page load. The value

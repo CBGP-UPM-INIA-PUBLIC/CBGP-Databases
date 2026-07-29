@@ -1,13 +1,15 @@
 <!-- _search_hiddenfield.erb
      A HiddenField (see _hiddenfield.erb) is invisible on the add/edit form
      - the user never sees or picks it, it's populated by local:has-defaults
-     (e.g. project_category, defaulted per-form to distinguish Research vs
-     Personnel Project records). But it's still a genuine controlled-
-     vocabulary field with a real answer-block, and searching/filtering
-     records BY that value (e.g. "show me all Personnel Project records")
-     is exactly the kind of thing a search form should support - so unlike
-     add/edit mode, search mode renders it as an ordinary dropdown, same
-     shape as _search_radio.erb, rather than hiding it. -->
+     (e.g. project_category was one such field: which of two forms sharing a
+     dbname created a record, before that use case was superseded by the
+     structural dcterms:type stamp every record now gets automatically -
+     see write_dataset_to_db_query in lib/queries.rb). But a HiddenField is
+     still a genuine controlled-vocabulary field with a real answer-block
+     whenever the ontology declares one, and searching/filtering records BY
+     that value is exactly the kind of thing a search form should support -
+     so unlike add/edit mode, search mode renders it as an ordinary
+     dropdown, same shape as _search_radio.erb, rather than hiding it. -->
 <div class="inputtype">
   <select name="<%= @question.questionid %>" id="<%= @answerblock.ablockid %>" width="70">
     <option value="">-- select an option --</option>

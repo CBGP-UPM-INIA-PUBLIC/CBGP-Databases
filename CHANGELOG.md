@@ -12,6 +12,44 @@ here.
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-07-29
+### Added
+- Every record, on every form, now automatically gets `dcterms:type
+  <form-class-uri>` written onto its graph at save time
+  (`write_dataset_to_db_query`), stamped from the true form (not the
+  shared dbname) - a real Dublin Core term ("the nature or genre of the
+  resource"), in the same default-graph provenance slot as the existing
+  `dcterms:created`/`dcterms:modified` triples. Display label resolves for
+  free from the form class's own existing bilingual `rdfs:label` - no new
+  answer-block or ontology configuration needed for this to work on any
+  current or future form.
+### Removed
+- `project_category`, the hand-declared hidden discriminator field
+  (shipped in 0.11.0) distinguishing Research vs Personnel Project
+  records, is gone - it was deployment-specific and only ever needed as a
+  form discriminator, a need the new universal `dcterms:type` stamp
+  covers generically for every form, not just these two. Its question
+  class, answer-block, both answers, and both `local:has-defaults` nodes
+  were removed from the ontology; existing sandbox records were migrated
+  by a one-off backfill utility (`utilities/backfill_dcterms_type.rb`).
+### Fixed
+- The calculated field's live-preview JavaScript only ever worked when a
+  calculated field happened to render (by `local:question-order`) after
+  every field it depends on - otherwise its dependency-listener setup ran
+  before the dependency's own input existed in the DOM and silently never
+  attached. Fixed by deferring listener attachment to `DOMContentLoaded`.
+- `HiddenField` questions (e.g. the now-removed `project_category`) still
+  rendered a label and an empty row on the add/edit form. Now fully
+  suppressed in add/edit mode; search mode is unaffected (still the
+  filterable dropdown added in 0.12.0).
+- Found while investigating the above: `local:has-defaults` is only ever
+  applied to a brand-new record (via `new_with_defaults`) - never
+  re-applied on edit, so a record that started without a default-derived
+  value keeps missing it forever, even across edits. No code change (the
+  new `dcterms:type` stamp is unconditional on every write and isn't
+  affected by this), but worth documenting as a general gotcha for any
+  future use of `local:has-defaults`.
+
 ## [0.12.0] - 2026-07-28
 ### Added
 - **Calculated fields**: a form can now declare that one of its fields is

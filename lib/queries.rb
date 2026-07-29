@@ -480,8 +480,8 @@ end
 #   pass the same value as +dataset.primary_id+ to replace an existing record
 #   while preserving its URI
 # @return [Object] raw response from the SPARQL update endpoint
-def write_dataset_to_db(dataset:, oldid: nil)
-  writequery = write_dataset_to_db_query(dataset: dataset, oldid: oldid)
+def write_dataset_to_db(dataset:, oldid: nil, form: nil)
+  writequery = write_dataset_to_db_query(dataset: dataset, oldid: oldid, form: form)
   warn "WRITE DATASET QUERY\n#{writequery}\n\n\n"
   resp = DATABASE_UPDATE.update(writequery)
   warn "write dataset response #{resp.inspect}"
@@ -501,6 +501,21 @@ end
 #       * dcterms:created  — always written; preserved from the prior version
 #         on an edit (via delete_dataset_query's return value) rather than
 #         reset, so creation date survives edits instead of being lost
+#       * dcterms:type — always written; the FORM CLASS that produced this
+#         record (e.g. cbgp:personnel_project), not the shared dbname. This
+#         is what replaced project_category (a real, ontology-declared
+#         field with its own default-per-form value) with something
+#         structural: every record on every form gets this automatically,
+#         with zero ontology configuration, because it's written directly
+#         from the +form:+ parameter that's already threaded through the
+#         whole save path (see CBGP::Dataset.load_from_params_and_write) -
+#         nothing for an ontology editor to remember to declare, and no
+#         "forgot to add has-defaults for the new form" gap possible. The
+#         object is the form class URI itself, not a string, so its
+#         display label resolves for free via get_label_for_id/
+#         cached_label_for_id (lib/core.rb) - already generic over any
+#         cbgp:<id> rdfs:label, and every form class already has one, so
+#         nothing new was needed for this to work.
 #
 # Multiple-cardinality fields produce one numbered attribute node per value:
 #   <dataset>/<questionclass>_1, <dataset>/<questionclass>_2, …
@@ -508,9 +523,15 @@ end
 # @param dataset [CBGP::Dataset] the dataset to serialise
 # @param oldid [String, nil] if present, the old graph is snapshotted+dropped
 #   before insert
+# @param form [String, nil] the specific FORM class that produced this
+#   write (e.g. "personnel_project") - NOT the shared dbname. Defaults to
+#   +dataset.form_type+ (the dbname) when not given, which is only correct
+#   for a dbname with exactly one form - callers that know the true form
+#   (i.e. +load_from_params_and_write+) must pass it explicitly.
 # @return [String] the complete SPARQL UPDATE query string
-def write_dataset_to_db_query(dataset:, oldid: nil)
+def write_dataset_to_db_query(dataset:, oldid: nil, form: nil)
   database = dataset.form_type
+  form = database if form.to_s.strip.empty?
   primary_id = dataset.primary_id
   warn "WRITE DATASET primary_id is #{primary_id}\n\n"
 
@@ -572,6 +593,7 @@ def write_dataset_to_db_query(dataset:, oldid: nil)
   created_value = captured&.dig(:created) || timestamp
   prov = "datasetgraph:#{primary_id} dcterms:modified \"#{timestamp}\"^^xsd:dateTime ."
   prov += "datasetgraph:#{primary_id} dcterms:created \"#{created_value}\"^^xsd:dateTime ."
+  prov += "datasetgraph:#{primary_id} dcterms:type cbgp:#{form} ."
 
   <<~WRITE_DATASET
     #{PREFIXES}

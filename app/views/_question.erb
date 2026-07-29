@@ -6,6 +6,23 @@
 
 <% label = @question.question %>
 <% comment = @question.respond_to?(:comment) ? @question.comment.to_s.strip : '' %>
+<% widget = @question.widget.match(/.*\#(\S+)/)[1] %>
+<!-- HiddenField in add/edit mode: no label, no row, no visible trace at
+     all - it's populated by local:has-defaults, never something a user
+     looks at or fills in themselves, so a label and an empty-looking row
+     in the layout is just visual noise/a stray gap. In SEARCH mode it's
+     the opposite: _search_hiddenfield.erb renders it as a genuine
+     filterable dropdown (still a real controlled-vocabulary field), so it
+     keeps its normal row/label there. -->
+<% if @mode != 'search' && widget == 'hiddenfield' %>
+  <% @value = @entry.public_send(@question.objectmethod) || (@question.cardinality == "Multiple" ? [""] : "") %>
+  <% @answerblock = @question.answerblock %>
+  <% @value = [@value] unless @value.is_a?(Array) %>
+  <% @value.each do |val| %>
+    <% @thisval = val %>
+    <%= erb "_#{widget}".to_sym %>
+  <% end %>
+<% else %>
 <!-- @question.required is set in lib/questionnaire.rb from the current
      form's local:requires-field markers (see form_required_fields in
      lib/dataset_classes.rb). It's only a VISUAL cue - the field is still
@@ -25,7 +42,6 @@
       <span class="field-help" tabindex="0" title="<%= CGI.escapeHTML(comment) %>">&#9432;</span>
     <% end %>
   </h4>
-  <% widget = @question.widget.match(/.*\#(\S+)/)[1] %>
   <% warn "Widget for #{@question.questionid}: #{@question.widget}" %>
   <% warn "Extracted widget: #{widget}" %>
   <% warn "Cardinality for #{@question.questionid}: #{@question.cardinality}" %>
@@ -82,3 +98,4 @@
     <% end %>
   <% end %>
 </div>
+<% end %>

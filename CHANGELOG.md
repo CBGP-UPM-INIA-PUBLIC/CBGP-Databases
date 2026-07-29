@@ -12,6 +12,21 @@ here.
 
 ## [Unreleased]
 
+## [0.13.1] - 2026-07-29
+### Added
+- `docs/source/data_model.md` (English + Spanish): a new architecture-
+  reference page explaining the two-layer shape every record actually has
+  on disk (graph-level metadata - `dcterms:created`/`dcterms:modified`/
+  `dcterms:type` - versus the SIO reified-attribute content inside the
+  named graph itself), how both connect back to the ontology's Forms/
+  Sections/Questions/Answers classes, and worked SPARQL examples for
+  writing a raw query against the triple store directly - including the
+  non-obvious two-hop indirection `local:has-formulas` and
+  `local:has-defaults` both use (Form → an intermediate node → the actual
+  field), contrasted with `local:requires-field`'s direct link. Linked
+  from [Philosophy & Design](philosophy.md) and the main table of
+  contents.
+
 ## [0.13.0] - 2026-07-29
 ### Added
 - Every record, on every form, now automatically gets `dcterms:type

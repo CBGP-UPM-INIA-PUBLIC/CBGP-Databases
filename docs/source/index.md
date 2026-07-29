@@ -10,6 +10,7 @@ code.
 :caption: Contents
 
 philosophy
+data_model
 installation
 configuration
 backup_and_migration

@@ -195,7 +195,9 @@ what this system needed on top of it:
   than a direct `?project cbgp:title "..."` triple — specifically so that
   the [history/"time machine" mechanism](admin/history_and_snapshots.md)
   can snapshot and later reconstruct a record's exact prior shape,
-  attribute node by attribute node. SHACL shapes are designed to validate
+  attribute node by attribute node (see the [Data Model](data_model.md)
+  page for the full shape, including the graph-level metadata that lives
+  alongside it). SHACL shapes are designed to validate
   the direct-triple style; adopting SHACL/DASH as the primary schema would
   have meant either abandoning that storage pattern (a much bigger
   redesign, touching the history mechanism along with everything else) or

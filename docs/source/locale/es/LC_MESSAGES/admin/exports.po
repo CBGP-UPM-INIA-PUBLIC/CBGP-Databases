@@ -37,11 +37,11 @@ msgid ""
 "results-<database>-<date>.tsv`."
 msgstr ""
 "Toda lista de resultados de búsqueda descrita en [Búsqueda y "
-"consultas](search_and_queries.md) tiene un enlace «Descargar a "
-"Excel» encima, que aparece en cuanto una búsqueda devuelve al menos "
+"consultas](search_and_queries.md) tiene un enlace \"Descargar como "
+"Excel\" encima, que aparece en cuanto una búsqueda devuelve al menos "
 "un resultado. Descarga todos los resultados mostrados en ese momento, "
 "con todas las columnas que se ven en pantalla, como un único archivo "
-"llamado `cbgp-search-results-<database>-<date>.tsv`."
+"llamado `cbgp-search-results-<base-de-datos>-<fecha>.tsv`."
 
 #: ../../source/admin/exports.md:13 da793602e44d4961b44c314d25267b53
 msgid ""
@@ -51,7 +51,7 @@ msgid ""
 msgstr ""
 "Captura de pantalla necesaria: "
 "`docs/source/_static/screenshots/admin-export-link.png` — una tabla de"
-" resultados de búsqueda con el enlace «Descargar a Excel» visible "
+" resultados de búsqueda con el enlace \"Descargar como Excel\" visible "
 "encima."
 
 #: ../../source/admin/exports.md:18 42f363bdd3684b0d95ba42a234cf2888
@@ -65,7 +65,7 @@ msgstr ""
 
 #: ../../source/admin/exports.md:18 62a8c99d88c544c99519697b20f72b6c
 msgid "Download to Excel link"
-msgstr "Enlace de descarga a Excel"
+msgstr "Enlace de descarga como Excel"
 
 #: ../../source/admin/exports.md:21 2d752cdd01444ff88147f94e92aa7146
 msgid ""
@@ -115,7 +115,7 @@ msgstr ""
 "para la misma regla de formato aplicada a la búsqueda). Cambiar el "
 "idioma y volver a descargar la misma búsqueda produce un archivo con "
 "los mismos números escritos de la otra manera — no cambia nada de los "
-"datos subyacentes, solo cómo se muestran."
+"datos subyacentes, sólo cómo se muestran."
 
 #: ../../source/admin/exports.md:45 3d6b67103ee1446d981a554af0ab2b16
 msgid ""

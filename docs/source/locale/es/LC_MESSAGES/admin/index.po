@@ -22,5 +22,5 @@ msgstr ""
 
 #: ../../source/admin/index.md:1 535bca304d1b4418b24ea543861a0495
 msgid "Admin Guide"
-msgstr ""
+msgstr "Guía del Administrador"
 

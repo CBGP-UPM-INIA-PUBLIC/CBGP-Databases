@@ -22,11 +22,11 @@ msgstr ""
 
 #: ../../source/index.md:8
 msgid "Contents"
-msgstr ""
+msgstr "Contenido"
 
 #: ../../source/index.md:1 9fcb6ad84e4a4a1e93105a42c96a509e
 msgid "CBGP-Databases"
-msgstr ""
+msgstr "Bases de datos del CBGP"
 
 #: ../../source/index.md:3 181dfd8cff0041d48294b2e16772b82c
 msgid ""
@@ -34,5 +34,5 @@ msgid ""
 "research institute's administration — projects, personnel, and "
 "publications — built so that the people who curate its data model day to "
 "day never need to touch code."
-msgstr ""
+msgstr "Una plataforma de base de datos basada en ontologías y metaprogramada para gestionar la administración de un instituto de investigación —proyectos, personal y publicaciones— diseñada para que las personas que se encargan de mantener su modelo de datos día a día nunca tengan que tocar el código."
 

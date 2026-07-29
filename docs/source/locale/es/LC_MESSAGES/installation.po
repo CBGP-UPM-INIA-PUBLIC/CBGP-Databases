@@ -331,4 +331,4 @@ msgstr ""
 "lo que realmente contiene una versión determinada."
 
 #~ msgid "This page is a placeholder — content coming soon."
-#~ msgstr ""
+#~ msgstr "Esta página es un marcador de posición - el contenido estará disponible próximamente."

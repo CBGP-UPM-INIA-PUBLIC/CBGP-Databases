@@ -12,6 +12,85 @@ here.
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-07-28
+### Added
+- **Calculated fields**: a form can now declare that one of its fields is
+  computed automatically from other field values, rather than typed in by
+  the user, via a new `local:has-formulas` ontology branch (Dentaku
+  expressions - a safe, sandboxed expression evaluator, not Ruby `eval`).
+  Like `local:has-defaults`/`local:requires-field`, this is declared
+  per-form: the same shared field can be calculated differently on two
+  different forms, or not calculated at all on a form that doesn't declare
+  a formula for it.
+  - Computation is server-side and authoritative, always run at save time
+    from that submission's other field values - nothing a user could type
+    or tamper with in a calculated field's own widget (which carries no
+    `name` attribute at all) ever reaches the database.
+  - **Dependency chains are supported**: one calculated field's formula can
+    reference another calculated field's result (e.g. a percentage
+    calculated *of* another percentage, rather than of a raw input
+    field), resolved automatically via a bounded fixed-point iteration -
+    no need to declare fields in dependency order.
+  - The widget (`_calculated.erb`) shows a greyed-out, read-only box with
+    the formula displayed underneath in plain text, plus a live
+    (non-authoritative) preview that recomputes as dependency fields
+    change and cascades correctly through a dependency chain.
+  - Demonstrated on the Research/Personnel Project forms' `project_overheads`
+    ("UPM overheads") / `project_cbgp_overheads` fields (a real two-step
+    chain), plus a disposable `project_test_*` sandbox chain for manual
+    testing - all percentages are explicitly-marked placeholders pending
+    real confirmation from CBGP/UPM administration.
+  - Documented (English + Spanish) in the Admin Guide's new "Calculated
+    fields" section, including the per-form declaration requirement for
+    ontology editors.
+### Fixed
+- `GET /cbgp/search-dataset/:database` 500'd for any form containing a
+  `HiddenField`-widget question (e.g. `project_category`, shipped in
+  0.11.0) because no `_search_hiddenfield.erb` partial existed. Added one:
+  since a HiddenField is still a genuine controlled-vocabulary field even
+  though it's invisible on the add/edit form, search mode now renders it
+  as an ordinary dropdown, letting records be filtered by that value.
+
+## [0.11.0] - 2026-07-28
+### Added
+- Support for multiple ontology **Forms sharing one dbname/graph table**:
+  Research Project (`cbgp:project`) and Personnel Project
+  (`cbgp:personnel_project`) are now two distinct forms over the same
+  `project` table, each showing only its own relevant subset of the shared
+  question classes. The Personnel Project field list is a placeholder for
+  now, pending curation from the Admin team - this feature exists precisely
+  so that curation can happen entirely in the ontology, with no code changes
+  required, once they decide what they actually need.
+- **Per-form default answers**: a form can now declare a default value for
+  one of its fields via a new `local:has-defaults` branch pointing at
+  `pre-populated-answer` nodes (`local:default-for-field` +
+  `local:default-value`), so the same shared question class can default
+  differently depending on which form is used. Used to build a hidden,
+  multilingual `project_category` discriminator field (defaults to
+  "Research Project" / "Personnel Project" depending on which form created
+  the record), so records can be queried by project type without exposing
+  the field to the user.
+- **Per-form required fields**: a form can now mark one of its fields
+  mandatory via a new `local:requires-field` annotation, direct from the
+  form class to the question class (no reification needed, unlike
+  defaults, since "required" carries no value of its own). Enforced
+  server-side before anything is written to the database, reusing the
+  existing friendly-error/`ValidationError` machinery, and surfaced to
+  users as a bold red asterisk next to the field label on the form.
+- `HiddenField`, an existing but previously-unused ontology widget type, is
+  now exercised for the first time by the `project_category` field above.
+### Fixed
+- `GET /cbgp/dataset/:database` (and the equivalent user-facing route) built
+  the add/edit questionnaire from the record's shared dbname instead of its
+  specific form class, so two forms sharing one dbname would incorrectly
+  both render whichever form's fields happened to match the dbname string.
+  The admin `POST /cbgp/validate-dataset/:database` route had the same bug
+  on the validation-error redisplay path. Both are fixed by threading the
+  true form class through as a hidden `form_class` field on submission,
+  since the URL alone only ever carries the shared dbname.
+- Added `code10`, `consejo`, `genero`, and `cluster` to the members XML
+  export (`xmlmembers.erb`), which were missing from the exported fields.
+
 ## [0.10.0] - 2026-07-09
 ### Added
 - Full bilingual (English/Spanish) end-user documentation site, built from

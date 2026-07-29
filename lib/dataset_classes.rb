@@ -1,6 +1,8 @@
 require_relative 'queries'
 require_relative 'core'
 require 'uuidtools'
+require 'dentaku'
+require 'bigdecimal'
 
 module CBGP
   # Represents a single database record of any form type (member, project,
@@ -194,6 +196,288 @@ module CBGP
         end
       end
     end
+
+    # Builds a blank Dataset the same way +new+ does, then pre-populates any
+    # fields the given form declares a default for (see
+    # +get_form_defaults_query+ in lib/queries.rb) — e.g. a hidden
+    # discriminator field defaulting to "personnel-project" on one form and
+    # "research-project" on another, even though both forms share the same
+    # underlying question class.
+    #
+    # Only meaningful for a genuinely new/blank record — callers that load an
+    # existing record (+load_from_primary_id+, +load_from_graph+) should keep
+    # using plain +new+, since an existing record's real stored values (or
+    # genuine blanks) must never be silently overwritten by a default.
+    #
+    # @param type [String] dbname used for storage, e.g. "project" - same
+    #   meaning as +new+'s +type:+
+    # @param form [String] the specific form class, e.g. "personnel_project"
+    #   - this is what defaults are looked up by, and is deliberately a
+    #   separate parameter from +type:+ since several forms can share one
+    #   dbname
+    # @return [CBGP::Dataset]
+    def self.new_with_defaults(type:, form:)
+      dataset = new(type: type)
+      defaults = form_default_answers(form: form)
+      return dataset if defaults.empty?
+
+      dataset.fields.each do |field|
+        raw_default = field[:method] && defaults[field[:questionclass]]
+        apply_default_to_field(dataset, field, raw_default) if raw_default
+      end
+      dataset
+    end
+
+    # Coerces+applies one field's default the same way a real submitted value
+    # would be coerced, so a default is never treated more leniently than
+    # user input. Split out of +new_with_defaults+ purely to keep that
+    # method's branching shallow.
+    def self.apply_default_to_field(dataset, field, raw_default)
+      value_to_coerce = field[:cardinality].to_s.downcase == 'multiple' ? [raw_default] : raw_default
+      coerced = dataset.coerce_value(value_to_coerce, field[:class], field[:cardinality])
+      return if coerced.nil? || (coerced.is_a?(Array) ? coerced.empty? : coerced.to_s.empty?)
+
+      dataset.public_send("#{field[:method]}=", coerced)
+    end
+    private_class_method :apply_default_to_field
+
+    # Resolves a form's local:has-defaults branch into a plain
+    # +{questionclass => value}+ hash. Split out from +new_with_defaults+ so
+    # it's independently callable/testable without needing a Dataset
+    # instance.
+    #
+    # @param form [String] the specific form class, e.g. "personnel_project"
+    # @return [Hash{String => String}]
+    def self.form_default_answers(form:)
+      get_form_defaults_query(form_class: form).each_with_object({}) do |row, hash|
+        field_fragment = row[:field].to_s.split('#').last
+        hash[field_fragment] = row[:value].to_s
+      end
+    end
+
+    # Resolves a form's local:requires-field markers into a plain Set of
+    # questionclass fragment strings — e.g. +#<Set: {"project_title"}>+.
+    #
+    # Deliberately parallel in shape to +form_default_answers+ above (same
+    # "call the SPARQL query, strip each result URI down to its trailing
+    # #fragment" pattern) but returns a Set, not a Hash, because — as
+    # explained on local:requires-field in the .owl file — "required" has no
+    # second piece of data attached. There's no "value" to look up, only
+    # "is this questionclass in the set of fields this form requires?", and
+    # a Set answers exactly that question (fast +#include?+, no duplicates)
+    # without pretending there's a value where there isn't one.
+    #
+    # @param form [String] the specific form class, e.g. "personnel_project"
+    #   — same caveat as everywhere else in this file: must be the real form
+    #   class, not the shared dbname, or every form on that dbname would
+    #   appear to share one form's requirements.
+    # @return [Set<String>] questionclass fragments this form requires
+    def self.form_required_fields(form:)
+      get_form_required_fields_query(form_class: form).each_with_object(Set.new) do |row, set|
+        set << row[:field].to_s.split('#').last
+      end
+    end
+
+    # Resolves a form's local:has-formulas branch into a plain
+    # +{questionclass => formula_expression}+ hash — a THIRD sibling of
+    # +form_default_answers+/+form_required_fields+ above, same "call the
+    # SPARQL query, strip URIs to their #fragment" shape as +
+    # form_default_answers+ (a formula, like a default, is TWO pieces of
+    # data per field: which one, and what — here a Dentaku expression
+    # string instead of a literal value).
+    #
+    # @param form [String] the specific form class, e.g. "project" — same
+    #   "must be the real form, never the shared dbname" caveat as its two
+    #   siblings.
+    # @return [Hash{String => String}] questionclass fragment => Dentaku
+    #   expression string, e.g. +{"project_cbgp_overheads" =>
+    #   "project_total_funding * 0.13"}+
+    def self.form_formulas(form:)
+      get_form_formulas_query(form_class: form).each_with_object({}) do |row, hash|
+        field_fragment = row[:field].to_s.split('#').last
+        hash[field_fragment] = row[:formula].to_s
+      end
+    end
+
+    # Server-side, AUTHORITATIVE computation of every calculated field this
+    # form declares (see local:has-formulas' doc comment in the .owl file
+    # for the full design rationale). Called from
+    # +load_from_params_and_write+ *after* the ordinary per-field coercion
+    # loop, so it always overwrites whatever a calculated field's own
+    # widget happened to submit (nothing, in practice — the widget's visible
+    # input carries no +name+ attribute, see app/views/_calculated.erb) with
+    # a value computed fresh from this submission's other field values.
+    # This is what makes the mechanism trustworthy: nothing a user could
+    # type or tamper with in the browser ever reaches the database directly
+    # for a calculated field — only this method's own output does.
+    #
+    # == Dependency CHAINS are supported (one calculated field can reference
+    #    another)
+    # A real example that forced this: "CBGP overheads" = 5% of "UPM
+    # overheads", which is itself 25% of Total funding. Dentaku only ever
+    # evaluates one flat expression at a time, so a chain like that can't be
+    # solved in a single pass — CBGP overheads' formula needs UPM
+    # overheads' value, which doesn't exist yet the first time we look.
+    #
+    # Solved with a straightforward FIXED-POINT ITERATION, not a real
+    # dependency graph/topological sort: repeatedly re-attempt whatever
+    # calculated fields haven't resolved yet, each pass with the
+    # freshly-widened set of already-computed values folded back in as
+    # available variables, until either everything resolves or a full pass
+    # makes no further progress. Bounded to +formulas.size+ passes — always
+    # enough for any acyclic chain (one field resolves per pass, worst
+    # case) — so a genuine circular reference (A needs B, needs A) just
+    # stops making progress and both stay blank, rather than looping
+    # forever. No explicit cycle detection/error for that case (yet) — it
+    # fails the same safe, silent way a missing base value does.
+    #
+    # == Building Dentaku's variable set (each pass)
+    # Every OTHER *scalar* (Single-cardinality) field's current value on
+    # +dataset+ becomes a Dentaku variable, keyed by its questionclass
+    # fragment — exactly the "ontology term ID" an ontology editor already
+    # writes formulas in terms of, so no separate ID scheme to learn. This
+    # naturally includes any calculated field that resolved in an EARLIER
+    # pass (it's no longer "pending", so it's no longer excluded) — that's
+    # what makes the chain resolve. Two things are still always excluded:
+    # * Multiple-cardinality fields — Dentaku variables must be scalar, and
+    #   this codebase does not yet support aggregating an array (e.g.
+    #   summing a not-yet-existing yearly-disbursement field) into one.
+    # * Calculated fields that HAVEN'T resolved yet this pass — see above.
+    #
+    # == Error handling
+    # A missing/blank dependency (Dentaku::UnboundVariableError) is treated
+    # as ordinary, not an error, on any given pass — the calculated field
+    # just stays pending and gets retried next pass (or, if nothing ever
+    # provides that dependency, stays blank at the end — same as if it had
+    # no formula at all). This is the expected, common case (e.g. an
+    # overheads formula needs Total funding, but Total funding is optional
+    # and was left blank). Anything else Dentaku raises (a malformed
+    # formula, division by zero) genuinely means something is wrong and IS
+    # surfaced as a friendly error, via the exact same {label:, message:}
+    # shape the required-fields pass uses, so it renders in the same error
+    # banner — and, unlike an unbound variable, is NOT retried on a later
+    # pass (retrying a genuinely malformed formula can't ever succeed).
+    #
+    # @param dataset [CBGP::Dataset] a dataset whose non-calculated fields
+    #   have already been coerced from submitted params
+    # @param form [String] the specific form class, e.g. "project"
+    # @return [Array<Hash>] any {label:, message:} errors to append to the
+    #   caller's own +errors+ array
+    def self.evaluate_calculated_fields(dataset:, form:)
+      formulas = form_formulas(form: form)
+      return [] if formulas.empty?
+
+      # Blank every calculated field BEFORE evaluation starts - not just
+      # "for safety", but because the fixed-point loop below relies on
+      # "does this field still hold a blank value?" to tell whether a
+      # formula has resolved yet. If a calculated field's own widget
+      # somehow arrived with a submitted value (it shouldn't — its input
+      # has no name attribute — but nothing stops a hand-crafted request),
+      # the earlier per-field coercion loop would already have written
+      # that value onto +dataset+, and an EARLY pass whose formula isn't
+      # resolvable yet (a chained field waiting on another calculated
+      # field) would wrongly read that leftover value as "already
+      # computed" and stop retrying it — silently keeping a tampered
+      # number instead of the real calculation. Clearing first makes
+      # "still blank" a trustworthy signal throughout.
+      formulas.each_key do |questionclass|
+        field = dataset.fields.find { |f| f[:questionclass] == questionclass }
+        dataset.public_send("#{field[:method]}=", '') if field
+      end
+
+      errors = []
+      pending = formulas.dup
+
+      formulas.size.times do
+        break if pending.empty?
+
+        resolved_this_pass = resolve_pending_formulas(dataset, pending, errors)
+        resolved_this_pass.each { |qc| pending.delete(qc) }
+        break if resolved_this_pass.empty? # no progress - remaining are unresolvable (missing data or a cycle)
+      end
+
+      errors
+    end
+    private_class_method :evaluate_calculated_fields
+
+    # Runs one pass over +pending+ (a {questionclass => expression} Hash,
+    # mutated by the caller afterward — this method only reads it), trying
+    # every formula that hasn't resolved yet against the variable set
+    # available RIGHT NOW. Returns the questionclasses that resolved (or
+    # errored, or point at a nonexistent/Multiple field) this pass — i.e.
+    # everything the caller should stop retrying.
+    def self.resolve_pending_formulas(dataset, pending, errors)
+      variables = dentaku_variables_for(dataset, exclude: pending.keys.to_set)
+      resolved = []
+
+      pending.each do |questionclass, expression|
+        field = dataset.fields.find { |f| f[:questionclass] == questionclass }
+        if field.nil? || field[:cardinality].to_s.downcase == 'multiple'
+          warn "[FORMULA] Skipping #{questionclass}: missing field, or not Single-cardinality" if field
+          resolved << questionclass
+          next
+        end
+
+        error = compute_and_store_formula_field(dataset, field, expression, variables)
+        if error
+          errors << error
+          resolved << questionclass # a real formula error - don't retry, it can't self-correct
+        elsif !dataset.public_send(field[:method]).to_s.strip.empty?
+          resolved << questionclass # computed successfully
+        end
+        # else: still unbound this pass - leave it in +pending+ to retry once more values are available
+      end
+      resolved
+    end
+    private_class_method :resolve_pending_formulas
+
+    # Builds the Dentaku variable set: every OTHER scalar field's current
+    # value on +dataset+, keyed by questionclass fragment. +exclude+ is the
+    # set of this form's OWN calculated-field questionclasses — see
+    # +evaluate_calculated_fields+'s doc comment for why they're kept out
+    # (no chained calculated-on-calculated fields in v1).
+    def self.dentaku_variables_for(dataset, exclude:)
+      dataset.fields.each_with_object({}) do |field, variables|
+        next if field[:method].nil?
+        next if field[:cardinality].to_s.downcase == 'multiple'
+        next if exclude.include?(field[:questionclass])
+
+        value = dataset.public_send(field[:method])
+        variables[field[:questionclass]] = value.to_s unless value.to_s.strip.empty?
+      end
+    end
+    private_class_method :dentaku_variables_for
+
+    # Evaluates one calculated field's formula and writes the coerced
+    # result onto +dataset+. Returns nil on success (including the ordinary
+    # "a dependency is blank right now" case), or a {label:, message:} error
+    # hash if Dentaku raised something other than a missing variable.
+    def self.compute_and_store_formula_field(dataset, field, expression, variables)
+      result = Dentaku::Calculator.new.evaluate!(expression, variables)
+
+      # A raw arithmetic result (e.g. 15000.50 * 0.13 = 1950.065) can easily
+      # land on more decimal places than a currency amount should ever have
+      # - coerce_value's currency parser correctly rejects that as not a
+      # valid typed amount (it expects money-shaped input, 2 decimals max).
+      # Round BEFORE stringifying, not after, so we round the real number
+      # rather than truncating its string form.
+      result = result.round(2) if field[:class].to_s.downcase == 'currency' && result.respond_to?(:round)
+
+      # Dentaku computes with BigDecimal internally; BigDecimal#to_s (no
+      # args) defaults to scientific notation ("0.8e2" for 80.0), which
+      # coerce_value's currency parser would also reject. #to_s('F') forces
+      # plain fixed-point ("80.0") instead - the form every other numeric
+      # string in this codebase is already in.
+      result_str = result.is_a?(BigDecimal) ? result.to_s('F') : result.to_s
+      coerced = dataset.coerce_value(result_str, field[:class], field[:cardinality])
+      dataset.public_send("#{field[:method]}=", coerced)
+      nil
+    rescue Dentaku::UnboundVariableError
+      nil
+    rescue Dentaku::Error, ZeroDivisionError, ArgumentError => e
+      { label: field[:label], message: "could not be calculated (#{e.message})" }
+    end
+    private_class_method :compute_and_store_formula_field
 
     def coerce_value(value, klass, cardinality)
       klass = klass.to_s.downcase
@@ -501,8 +785,16 @@ module CBGP
     # @return [CBGP::Dataset] the saved dataset instance
     # @raise [ValidationError] if one or more fields fail coercion/validation
     # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
-    def self.load_from_params_and_write(params:)
+    # +form:+ is the specific FORM class this submission came from (e.g.
+    # "personnel_project"), threaded through from the hidden "form_class"
+    # field on dataset.erb/user_dataset.erb - NOT params['database'], which
+    # is only the shared dbname/table (e.g. "project") and can't tell two
+    # forms sharing one dbname apart. It defaults to params['database'] so
+    # that any caller which genuinely has no form/dbname split (a dbname
+    # with only one form) keeps working without having to pass anything new.
+    def self.load_from_params_and_write(params:, form: nil)
       warn "PARAMS: #{params.inspect}"
+      effective_form = form.to_s.strip.empty? ? params['database'] : form
       dataset = CBGP::Dataset.new(type: params['database'])
       errors = []
 
@@ -529,6 +821,42 @@ module CBGP
         rescue ArgumentError => e
           errors << { label: field[:label], message: e.message }
         end
+      end
+
+      # Third(-ish) pass: server-side, authoritative computation of every
+      # calculated field this form declares (local:has-formulas — see
+      # evaluate_calculated_fields' doc comment above for the full design).
+      # Deliberately runs BEFORE the required-fields pass below, so that if
+      # a calculated field is ever also marked required, it's checked
+      # against its just-computed value, not against whatever (nothing) its
+      # own read-only widget submitted.
+      errors.concat(evaluate_calculated_fields(dataset: dataset, form: effective_form))
+
+      # Second validation pass: form-scoped required fields (local:requires-
+      # field, see form_required_fields above). This is deliberately kept
+      # SEPARATE from the coercion loop above rather than folded into it,
+      # because the two loops check fundamentally different things: the
+      # first asks "for each value the user DID submit, is it well-formed?"
+      # (iterates dataset.fields); this one asks "for each field THIS FORM
+      # requires, did the user submit anything at all?" (iterates
+      # form_required_fields(form: ...)). A field can fail either, both, or
+      # neither check independently, so keeping them as two passes over two
+      # different lists is clearer than trying to interleave them.
+      #
+      # dataset.fields.each do |field| ... end above already ran
+      # coerce_value/public_send for every submitted value, so by this
+      # point required fields that WERE submitted already have their
+      # coerced value sitting on the dataset object - we just have to ask
+      # the dataset for it and see if it's blank.
+      form_required_fields(form: effective_form).each do |required_field|
+        field = dataset.fields.find { |f| f[:questionclass] == required_field }
+        # A required-field marker pointing at a field this dbname doesn't even have - ignore rather than crash.
+        next unless field
+
+        current_value = dataset.public_send(field[:method])
+        next unless current_value.nil? || (current_value.respond_to?(:empty?) && current_value.empty?)
+
+        errors << { label: field[:label], message: "#{field[:label]} is required" }
       end
 
       raise ValidationError.new(errors: errors) if errors.any?

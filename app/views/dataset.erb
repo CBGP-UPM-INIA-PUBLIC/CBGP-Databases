@@ -19,6 +19,15 @@
           <tr><td>
             <input type="submit" value="Submit <%= @database.capitalize %> Record"/>
             <input type="hidden" name="primary_id" value="<%= @entry.primary_id %>">
+            <!-- @database (used in the URL/action above) is the dbname (e.g. "project") the
+                 record is stored/looked up under; @form is the *specific* form class (e.g.
+                 "personnel_project" vs "project") that was actually used to open this form.
+                 Several forms can share one dbname, so the dbname alone can't tell the
+                 server which one this was - only @form can. It's carried here, separately
+                 from the URL, so the route can rebuild the right restricted questionnaire
+                 on redisplay AND look up the right required-fields/defaults for THIS form,
+                 not accidentally some other form that happens to share the same dbname. -->
+            <input type="hidden" name="form_class" value="<%= @form %>">
           </td></tr>
           <tr> <td>
           <%= erb :_questionnaire %> 

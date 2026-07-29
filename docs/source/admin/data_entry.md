@@ -75,6 +75,58 @@ banner listing every problem found, and everything already typed is still
 there to fix and resubmit. Nothing is written to the database until every
 field passes.
 
+Since several record types can share the same underlying field (Research
+Project and Personnel Project both use a "Title" field, for example), a
+field being required is a property of the **form**, not of the field
+itself — Title might be required on one form and optional, or absent
+entirely, on another that happens to reuse it. Required fields are shown
+with a red asterisk next to their label so this is visible before you
+submit, not only after.
+
+## Calculated fields
+
+A few fields aren't typed in at all — they're computed automatically from
+other fields on the same form, at the moment you save. These are shown
+greyed out, marked "(calculated automatically)", with the formula that
+produced them displayed underneath in plain text (e.g.
+`project_total_funding * 0.25`) so it's never a mystery where the number
+came from. A live preview updates as you fill in the fields it depends on,
+but that preview is only a convenience — the number that actually gets
+saved is always recalculated on the server at the moment you submit,
+**never** whatever happened to be showing on screen. That also means
+there's no way to type over a calculated field's value, even by accident.
+
+```{note}
+Screenshot needed: `docs/source/_static/screenshots/admin-calculated-field.png`
+— a form showing a calculated field's greyed-out box, its formula text,
+and the plain (non-calculated) fields it depends on.
+```
+
+![Calculated field](../_static/screenshots/admin-calculated-field.png)
+*A calculated field, showing its formula and a live preview.*
+
+Occasionally one calculated field is itself used in another calculated
+field's formula (for example, an institutional overhead percentage
+calculated from the total award, and then a second overhead calculated as
+a percentage *of that first overhead*, rather than of the total award
+directly). This works automatically — you don't need to fill anything in
+a particular order, and the calculation resolves correctly regardless.
+
+**For the ontology editor:** like required fields, a calculated field's
+formula is declared per **form**, not on the shared field itself — the
+same field can be calculated differently on two different forms, or not
+calculated at all on a form that doesn't declare a formula for it. This
+means that if a calculated field is reused on a new form, that form needs
+its *own* formula declaration too — nothing carries over automatically
+from wherever else the field is used, even if the formula you want happens
+to be identical. It can feel repetitive to declare the same formula twice
+for two forms that want the same calculation, but this is deliberate: the
+alternative (a formula living on the shared field) would make it
+impossible for two forms to ever calculate that field differently, which
+is the entire reason this exists as a per-form declaration in the first
+place. See `local:has-formulas` in the ontology file for the exact
+mechanism.
+
 ```{note}
 Screenshot needed: `docs/source/_static/screenshots/admin-validation-error.png`
 — a form redisplayed after a validation error, showing the error banner.

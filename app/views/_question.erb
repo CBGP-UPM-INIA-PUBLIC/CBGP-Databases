@@ -6,9 +6,21 @@
 
 <% label = @question.question %>
 <% comment = @question.respond_to?(:comment) ? @question.comment.to_s.strip : '' %>
+<!-- @question.required is set in lib/questionnaire.rb from the current
+     form's local:requires-field markers (see form_required_fields in
+     lib/dataset_classes.rb). It's only a VISUAL cue - the field is still
+     just as blockable/skippable in the raw HTML as any other; the real
+     enforcement happens server-side, after submit, in
+     CBGP::Dataset.load_from_params_and_write. We only show it in add/edit
+     mode - "required" has no meaning on a search form (@mode == "search"),
+     where every field is optional by definition. -->
+<% required = @mode != 'search' && @question.respond_to?(:required) && @question.required %>
 <div id="<%= label %>" class="field-row" style="clear: both;">
   <h4 class="question-label">
     <%= label %>
+    <% if required %>
+      <span class="required-marker" style="color: red; font-weight: bold;" title="This field is required">*</span>
+    <% end %>
     <% unless comment.empty? %>
       <span class="field-help" tabindex="0" title="<%= CGI.escapeHTML(comment) %>">&#9432;</span>
     <% end %>
@@ -56,6 +68,13 @@
         <% if @question.respond_to?(:references_target) && @question.references_target %>   <!-- new field in @question from questionnaire -->
           <%# Render enhanced widget %>
           <%= erb :_reference_typeahead, locals: { question: @question, value: @thisval, target: @question.references_target } %>
+        <% elsif @question.respond_to?(:formula) && @question.formula %>
+          <!-- Calculated field (local:has-formulas) - gated on formula
+               presence, not widget type, same pattern as the xref check
+               above. Single-cardinality only: evaluate_calculated_fields
+               (lib/dataset_classes.rb) never computes a Multiple field, so
+               there's no calculated equivalent of the Multiple branch. -->
+          <%= erb :_calculated %>
         <% else %>
           <%= erb "_#{widget}".to_sym %>
         <% end %>

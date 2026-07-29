@@ -24,8 +24,11 @@
                  questionnaire code (e.g. "userproject"). Carried separately so that if this
                  form gets redisplayed after a validation error, the route can rebuild the
                  restricted User questionnaire again instead of falling back to the dbname
-                 and accidentally generating the full Admin field set. -->
-            <input type="hidden" name="user_form_type" value="<%= @form %>">
+                 and accidentally generating the full Admin field set - and so required-field/
+                 default lookups use the right form too. Named "form_class" to match the same
+                 hidden field on the Admin form (dataset.erb) - one shared name, since both
+                 ultimately feed the same lib/dataset_classes.rb methods. -->
+            <input type="hidden" name="form_class" value="<%= @form %>">
           </td></tr>
           <tr> <td>
           <%= erb :_questionnaire %> 

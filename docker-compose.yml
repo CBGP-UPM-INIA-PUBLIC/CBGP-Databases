@@ -11,7 +11,7 @@ services:
       - cbgp-default
 
   cbgp-databases:
-    image: markw/cbgp-databases:0.10.0
+    image: markw/cbgp-databases:0.12.0
     restart: always
     hostname: databases
     # Everything else (CBGP_SECRET, CBGP_USERS, NOTIFY_*, GRAPHDB_DBNAME,

@@ -45,7 +45,11 @@ RSpec.describe CBGP::Dataset do
   end
 
   describe '.load_from_params_and_write' do
-    let(:base_params) { { 'database' => 'project', 'primary_id' => '' } }
+    # project_title is required on the "project" form (local:requires-field),
+    # so it must be submitted here too - otherwise every case in this
+    # describe block would also fail with an unrelated "Title is required"
+    # error, on top of whatever currency behavior is actually under test.
+    let(:base_params) { { 'database' => 'project', 'primary_id' => '', 'project_title' => 'Test Project' } }
 
     context 'with an invalid currency amount' do
       let(:params) { base_params.merge(currency_questionclass => 'fifteen thousand') }

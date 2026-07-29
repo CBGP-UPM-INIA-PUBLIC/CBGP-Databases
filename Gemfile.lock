@@ -59,6 +59,9 @@ GEM
     csv (3.3.0)
     daemons (1.4.1)
     date (3.4.1)
+    dentaku (3.5.7)
+      bigdecimal
+      concurrent-ruby
     diff-lcs (1.5.1)
     domain_name (0.6.20240107)
     dotenv (3.1.8)
@@ -414,6 +417,7 @@ PLATFORMS
 
 DEPENDENCIES
   compass (~> 1.0)
+  dentaku (~> 3.5)
   dotenv (~> 3.1)
   httparty (~> 0.23.1)
   json-canonicalization (~> 1.0.0)

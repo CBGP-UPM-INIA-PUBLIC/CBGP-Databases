@@ -12,6 +12,26 @@ here.
 
 ## [Unreleased]
 
+## [0.14.1] - 2026-07-30
+### Added
+- A live, working example of `local:has-defaults` in the ontology:
+  `project_test_default_field`, a disposable sandbox field (visible, not
+  hidden this time) that pre-fills with different text on the Research
+  vs. Personnel Project forms. `local:has-defaults` lost its only real
+  example when `project_category` was removed in 0.13.0, leaving the
+  mechanism entirely undemonstrated in the ontology.
+### Fixed
+- `docs/source/data_model.md`'s "Worked example" section covered
+  `local:requires-field` and `local:has-formulas` but had **zero**
+  example of `local:has-defaults` itself, despite that being the section
+  the surrounding prose introduced - flagged directly by the user.
+  Rewritten (English + Spanish) to walk through all three per-form
+  mechanisms with accurate, distinct real fields for each. Also fixed a
+  subtler inaccuracy caught in the same pass: the old `has-formulas`
+  example queried `project_annual_income` as if it were the calculated
+  field, when it's actually the *input* to the real calculated field
+  (`project_cbgp_overheads`).
+
 ## [0.14.0] - 2026-07-30
 ### Changed
 - Reworked the add/edit form layout to be significantly more compact.

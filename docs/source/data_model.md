@@ -167,26 +167,64 @@ also drives.
 The three per-form mechanisms mentioned above (`local:has-defaults`,
 `local:has-formulas`, `local:requires-field`) are all declared on the
 **Form**, not on the Question — because the same shared Question can
-behave differently depending on which Form is using it. To find out how
-`cbgp:project_annual_income` behaves specifically on the Personnel
-Project form:
+behave differently depending on which Form is using it. Each one below
+uses a different real field from the Personnel/Research Project forms, on
+purpose - the field that actually demonstrates that mechanism, rather
+than pretending all three apply to one field they don't.
 
 ### `local:requires-field` — direct
 
-This one links the Form straight to the Question, no node in between:
+This one links the Form straight to the Question, no node in between.
+Personnel Project requires Annual income:
 
 ```turtle
 cbgp:personnel_project local:requires-field cbgp:project_annual_income .
 ```
 
-`local:has-defaults` is *not* this simple — a default needs two pieces of
-information (which field, and what value), so it needs somewhere to hold
-both. `local:has-formulas` needs exactly the same two things (which
-field, and what formula), for exactly the same reason. Both go through an
-**intermediate node** instead of a direct link — this is the part that
-isn't obvious just from skimming a triple like `local:requires-field
-cbgp:project_annual_income`, because there is no equivalent single triple
-for a formula. There are two:
+`local:has-defaults` and `local:has-formulas` are *not* this simple —
+each needs **two** pieces of information (which field, and what
+value/formula), not one, so each needs somewhere to hold both. Both go
+through an **intermediate node** instead of a direct link - this is the
+part that isn't obvious just from skimming a triple like
+`local:requires-field cbgp:project_annual_income`, because there is no
+equivalent single triple for a default or a formula.
+
+### `local:has-defaults` — via an intermediate node
+
+Research Project and Personnel Project each give a *different* starting
+value to the same shared demo field, `project_test_default_field` (a
+disposable sandbox field kept in the ontology specifically so this has
+something real to point at):
+
+```turtle
+cbgp:project
+    local:has-defaults cbgp:project_test_default_field_research_default .
+
+cbgp:project_test_default_field_research_default
+    rdfs:subClassOf     cbgp:pre-populated-answer ;
+    local:default-for-field cbgp:project_test_default_field ;
+    local:default-value     "This defaulted from the Research Project form" .
+```
+
+Personnel Project points at its *own* intermediate node, with its own
+different `local:default-value`, for the exact same
+`local:default-for-field`:
+
+```turtle
+cbgp:personnel_project
+    local:has-defaults cbgp:project_test_default_field_personnel_default .
+
+cbgp:project_test_default_field_personnel_default
+    rdfs:subClassOf     cbgp:pre-populated-answer ;
+    local:default-for-field cbgp:project_test_default_field ;
+    local:default-value     "This defaulted from the Personnel Project form" .
+```
+
+### `local:has-formulas` — the same shape, one field computed from another
+
+Personnel Project's CBGP overheads field is calculated *from* Annual
+income (not the other way around - Annual income is the input, CBGP
+overheads is what gets computed):
 
 ```turtle
 cbgp:personnel_project
@@ -194,31 +232,38 @@ cbgp:personnel_project
 
 cbgp:project_cbgp_overheads_personnel_formula
     rdfs:subClassOf     cbgp:formula-definition ;
-    local:formula-for-field  cbgp:project_annual_income ;
+    local:formula-for-field  cbgp:project_cbgp_overheads ;
     local:formula-expression "project_annual_income * 0.08" .
 ```
 
-The Form never points at the Question directly — it points at this
-in-between node (an ordinary class, `<form>_<field>_<form-again>_formula`
-by convention, but the name itself carries no meaning to the code), and
-*that* node is what names the actual field via `local:formula-for-field`.
-The same shape, one level simpler (only one piece of information instead
-of two), is what `local:has-defaults` uses via `cbgp:pre-populated-answer`
-nodes. Querying which field a formula node is *for* always means one hop
-through the node, never a direct Form-to-Question triple:
+In both cases the Form never points at the Question directly - it points
+at an in-between node (an ordinary class, named `<form>_<field>_<form-
+again>_default`/`_formula` by convention, but the name itself carries no
+meaning to the code), and *that* node is what names the actual field via
+`local:default-for-field`/`local:formula-for-field`. Querying "what does
+this form do with this field" always means one hop through the node,
+never a direct Form-to-Question triple:
 
 ```sparql
 PREFIX cbgp: <https://w3id.org/CBGP-App#>
 PREFIX local: <urn:local:>
 
-# Is it required on this form?
+# Is Annual income required on the Personnel form?
 ASK { cbgp:personnel_project local:requires-field cbgp:project_annual_income }
 
-# Does this form calculate it automatically? (two hops: Form -> formula
-# node -> the field the formula node is actually for)
+# What does the Research form default project_test_default_field to?
+# (two hops: Form -> default node -> the field the node is actually for)
+SELECT ?value WHERE {
+  cbgp:project local:has-defaults ?d .
+  ?d local:default-for-field cbgp:project_test_default_field ;
+     local:default-value     ?value .
+}
+
+# Does the Personnel form calculate CBGP overheads automatically?
+# (same two-hop shape: Form -> formula node -> the field it's actually for)
 SELECT ?formula WHERE {
   cbgp:personnel_project local:has-formulas ?f .
-  ?f local:formula-for-field cbgp:project_annual_income ;
+  ?f local:formula-for-field cbgp:project_cbgp_overheads ;
      local:formula-expression ?formula .
 }
 ```

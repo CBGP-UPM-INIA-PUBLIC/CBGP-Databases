@@ -12,6 +12,8 @@ here.
 
 ## [Unreleased]
 
+_(Housekeeping trigger commit — see git log for context; nothing user-facing changed.)_
+
 ## [0.14.1] - 2026-07-30
 ### Added
 - A live, working example of `local:has-defaults` in the ontology:

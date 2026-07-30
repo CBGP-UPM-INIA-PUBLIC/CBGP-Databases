@@ -156,7 +156,14 @@ h3 {
   background-color: #E8F5E9;
 }
 
-#new-publication-questions h4.question-label {
+/* Was previously scoped to #new-publication-questions only, so every OTHER
+   form's label (Project, Personnel, Member, ...) fell through to the
+   generic "H1, H2, H3, H4 { text-align: center; }" rule above AND kept the
+   browser's default <h4> margin (roughly 1.33em above and below) - the
+   single biggest contributor to rows being much taller than intended, on
+   every form except Publications. Un-scoped so every form gets the same,
+   correct, compact treatment. */
+.question-label {
   text-align: left;
   margin: 0;
   font-size: 18px;

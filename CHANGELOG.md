@@ -12,6 +12,35 @@ here.
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-07-30
+### Changed
+- Reworked the add/edit form layout to be significantly more compact.
+  Root causes fixed rather than papered over:
+  - `.question-label`'s left-aligned, zero-margin styling was scoped only
+    to the Publications form; every other form's labels fell through to a
+    generic centered `H1-H4` rule and the browser's default `<h4>` margin,
+    compounding with `.field-row`'s own spacing into rows roughly 3x taller
+    than intended. Un-scoped so every form gets the same compact treatment.
+  - `_section.erb`/`_questionnaire.erb` padded every section and the end
+    of the whole form with seven stacked `<br>` tags - removed; row
+    spacing already comes from `.field-row` itself.
+  - Removed a dead jsTree CDN theme stylesheet loaded on every page for a
+    library nothing in this app actually uses (the tree-select widget is
+    fully hand-rolled) - also removed an empty leftover `<style>` block.
+### Fixed
+- **Data loss bug**: `_textfield.erb`/`_field.erb`/`_smallfield.erb` (the
+  widgets behind `honorific_title`, `project_application_reference`,
+  `project_call_for_proposal`, `project_end_date_extension`,
+  `project_partner_institutions`) rendered an always-empty box regardless
+  of the field's actual stored value. Saving *any* edit to a record with
+  one of these fields already filled in silently wiped it, since the
+  blank-looking box submitted as blank. Fixed by actually displaying the
+  current value; the field now correctly round-trips through an edit.
+  Found live, root-caused, and fixed in the same session.
+- `honorific_title` was mistakenly declared `Multiple`-cardinality in the
+  ontology (CBGP-Ontology) even though the widget only ever supported one
+  value - corrected to `Single`, matching actual behavior.
+
 ## [0.13.1] - 2026-07-29
 ### Added
 - `docs/source/data_model.md` (English + Spanish): a new architecture-

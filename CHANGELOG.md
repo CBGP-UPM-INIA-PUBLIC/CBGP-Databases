@@ -10,9 +10,50 @@ the rest are grouped by theme/date as a best-effort mapping. From this point
 forward, every release ships with a matching `VERSION` file bump and an entry
 here.
 
-## [Unreleased]
-
-_(Housekeeping trigger commit — see git log for context; nothing user-facing changed.)_
+## [0.15.0] - 2026-08-17
+### Added
+- `publication_cbgp_authors` ontology field: an ORCID cross-reference to
+  `member` (mirrors `project_pi_orcid`'s `references`/`references-via`/
+  `references-label` shape), so publications can finally identify which
+  authors are CBGP personnel the same way projects identify their PI.
+- `lib/doi_registration_agency.rb`: resolves a DOI's registration agency
+  (DataCite/Crossref/etc.) via `doi.org/doiRA/`, ported (not taken on as a
+  gem dependency) from `fair_champion_harvester`'s
+  `DOI.resolve_doi_to_registration_agency`, used by Community-FAIR-Tests.
+- `lib/crossref_parser.rb`: a direct `api.crossref.org` parser, so
+  Crossref-registered DOIs no longer have to go via OpenAIRE's aggregation.
+- `lib/personnel_matcher.rb`: matches a publication's parsed authors against
+  existing `member` records - by exact ORCID, or otherwise by an exact,
+  accent-insensitive given+family name match - and records confirmed
+  matches' ORCIDs on `publication_cbgp_authors`. Deliberately exact-only,
+  never fuzzy: a false positive would misattribute an outside co-author's
+  identity to a CBGP member, which is worse than an occasional missed match.
+### Changed
+- `lib/loaders.rb`'s DOI loader now resolves the registration agency first
+  and dispatches straight to `datacite_parser`/`crossref_parser`, falling
+  back to `openaire_parser` only when the agency is unknown or the
+  preferred parser comes back empty - instead of always trying DataCite
+  first and blindly retrying on any error.
+### Fixed
+- `datacite_parser`/`openaire_parser` parsed each author's ORCID and then
+  discarded it, keeping only the bare name string - the ORCID is now
+  returned alongside the dataset so it can feed personnel matching.
+- `datacite_parser`'s HTTP retry loop retried up to 5 times immediately
+  with no backoff on *any* `StandardError`, including permanent failures
+  like a bad DOI; capped at 2 attempts.
+- `openaire_parser` shadowed its own `doi:` parameter with a re-extraction
+  loop that unconditionally raised `TypeError` on real OpenAIRE responses
+  (`Array#[]` called with a String key) - removed; the already-known input
+  DOI is used directly, like `datacite_parser`/`crossref_parser` already do.
+- `openaire_parser`'s `journal`/`title` extraction was missing the `.first`
+  its sibling parsers use, so it stored literal `["Journal of Things"]`-style
+  bracketed strings instead of the plain value.
+### Removed
+- `lib/params_parsers.rb`: dead code left over from before the
+  `Dataset`/ontology-driven refactor - referenced a `CBGP::Publication`/
+  `CBGP::Publication::Author` class pair that no longer exists, and ontology
+  field IDs (`newpub2_*`) that only exist in a `_BACKUP2` ontology snapshot,
+  not the live one. Nothing in the app called any method in this file.
 
 ## [0.14.1] - 2026-07-30
 ### Added

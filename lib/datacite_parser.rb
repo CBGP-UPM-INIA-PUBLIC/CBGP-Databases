@@ -14,18 +14,18 @@ module CBGP
       rescue StandardError => e
         warn "error #{e.inspect}"
         retry_attempts += 1
-        if retry_attempts < 5
+        if retry_attempts < 2
           retry
         else
           warn 'failed.  next'
-          return false
+          return { pub: false, authors: [] }
         end
       end
 
       jpath = JsonPath.new('["container-title"]')
       journal = jpath.on(dcite).first
-      return false unless journal
-      return false if journal.empty?
+      return { pub: false, authors: [] } unless journal
+      return { pub: false, authors: [] } if journal.empty?
 
       # not provided by datacite
       affiliations = []
@@ -34,22 +34,25 @@ module CBGP
       title = jpath.on(dcite).first
       title = Sanitize.fragment(title)
 
-      authors = []
+      raw_authors = []
+      names_only = []
       jpath = JsonPath.new('author[*]')
       results = jpath.on(dcite)
-      results.each_with_index do |author, index|
-        aname = 'Authorship not found in record'
+      results.each do |author|
+        given = ''
+        family = ''
         orcid = ''
+        aname = 'Authorship not found in record'
         if author.respond_to? '[]'
           orcid = author['ORCID'].gsub(%r{https?://orcid.org/}, '') if author['ORCID']
           orcid = Sanitize.fragment(orcid)
-          aname = "#{author['given']} #{author['family']}"
-          aname = Sanitize.fragment(aname)
+          given = Sanitize.fragment(author['given'].to_s)
+          family = Sanitize.fragment(author['family'].to_s)
+          aname = "#{given} #{family}"
         end
 
-        # aut = CBGP::Publication::Author.new(name: aname, orcid: orcid,
-        #                                     rank: "#{index.to_i + 1}") # start rank at 1 not 0
-        authors << aname
+        raw_authors << { name: aname, given: given, family: family, orcid: orcid }
+        names_only << aname
       end
 
       jpath = JsonPath.new('created["date-time"]')
@@ -81,16 +84,13 @@ module CBGP
       dataset = CBGP::Dataset.new(type: 'publication')
 
       dataset.doi = doi
-      dataset.authors = authors # make it a list of lists so that only one instance is sent to the widget
+      dataset.authors = names_only # make it a list of lists so that only one instance is sent to the widget
       dataset.affiliations = affiliations
       dataset.title = title
       dataset.journal = journal
       dataset.date = date
 
-      # abort "affiliations #{affiliations.inspect} pub: #{pub.affiliations}"
-      # warn "PUB = #{pub.inspect}"
-
-      dataset
+      { pub: dataset, authors: raw_authors }
     end
   end
 end

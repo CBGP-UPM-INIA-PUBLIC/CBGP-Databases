@@ -58,12 +58,21 @@ def current_language
 end
 
 require 'json' # normally pulled in by application_controller.rb before configuration.rb
+require 'jsonpath'
+require 'sanitize'
+require 'rest-client'
 require_relative '../app/controllers/configuration'
 require_relative '../lib/core'
 require_relative '../lib/queries'
 require_relative '../lib/dataset_classes'
 require_relative '../lib/questionnaire'
 require_relative '../lib/history_queries'
+require_relative '../lib/doi_registration_agency'
+require_relative '../lib/datacite_parser'
+require_relative '../lib/crossref_parser'
+require_relative '../lib/openaire_parser'
+require_relative '../lib/personnel_matcher'
+require_relative '../lib/loaders'
 
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|

@@ -63,24 +63,40 @@ module CBGP
         return { pub: pub, existing: true }
       end
 
-      # 2. Not found → try to parse
-      pub = CBGP::Parsers.datacite_parser(doi: doi) # returns false on fail
+      # 2. Not found → parse. Ask doi.org which agency registered this DOI so
+      # we go straight to the richest matching source instead of guessing:
+      # DataCite-registered DOIs go to datacite_parser, Crossref-registered
+      # ones to crossref_parser. OpenAIRE aggregates both (and more), so it
+      # remains the fallback when the agency is unknown or the preferred
+      # parser comes back empty.
+      agency = CBGP::Parsers.resolve_doi_registration_agency(doi: doi)
+      result = case agency
+               when 'DataCite'
+                 CBGP::Parsers.datacite_parser(doi: doi)
+               when 'Crossref'
+                 CBGP::Parsers.crossref_parser(doi: doi)
+               else
+                 { pub: false, authors: [] }
+               end
 
-      if pub
-        # enrich affiliations
-        CBGP::Parsers.openaire_affiliations(pub: pub, doi: doi)
-      else
-        # Fallback to openaire full parse
-        pub = CBGP::Parsers.openaire_parser(doi: doi)
-      end
+      result = CBGP::Parsers.openaire_parser(doi: doi) unless result[:pub]
 
-      # 3. If we got something, save it
-      if pub
-        pub.write_to_db
-        { pub: pub, existing: false }
-      else
-        { pub: nil, existing: false }
-      end
+      pub = result[:pub]
+      return { pub: nil, existing: false } unless pub
+
+      # enrich affiliations regardless of which parser found the core record
+      CBGP::Parsers.openaire_affiliations(pub: pub, doi: doi)
+
+      # Cross-reference authors against existing CBGP personnel by ORCID (when
+      # the source gave us one) or exact accent-insensitive name match
+      # otherwise - never fuzzy, to avoid mis-attributing an outside
+      # co-author's identity to a CBGP member.
+      matched_orcids = CBGP::Parsers.match_authors_to_personnel(authors: result[:authors])
+      pub.cbgp_author_orcids = matched_orcids if pub.respond_to?(:cbgp_author_orcids=)
+
+      # 3. Save it
+      pub.write_to_db
+      { pub: pub, existing: false }
     end
   end
 end

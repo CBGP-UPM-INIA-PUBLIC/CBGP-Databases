@@ -13,8 +13,7 @@ start working — no other changes needed.
 
 | Filename | Used on page | What it should show |
 |---|---|---|
-| `graphdb-create-repository.png` | installation.md | The GraphDB Workbench's "Create new repository" form, showing where the repository ID is entered |
-| `docker-compose-up.png` | installation.md | A terminal showing `docker compose up -d` completing successfully with both containers started/healthy |
+| `docker-compose-up.png` | installation.md | A terminal showing `docker compose up -d` completing successfully with all three containers started/healthy |
 | `admin-dashboard.png` | admin/data_entry.md | The admin dashboard showing the list of record types |
 | `admin-add-form.png` | admin/data_entry.md | An add/edit form showing a mix of field types (text, dropdown, currency, a cross-reference lookup) |
 | `admin-validation-error.png` | admin/data_entry.md | A form redisplayed after a validation error, showing the error banner |

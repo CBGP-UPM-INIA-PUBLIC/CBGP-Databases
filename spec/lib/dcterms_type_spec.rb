@@ -17,7 +17,12 @@
 # ontology.
 RSpec.describe 'dcterms:type provenance stamp' do
   let(:dataset) do
-    ds = CBGP::Dataset.new(type: 'project')
+    # 'project' itself is no longer a valid form type - Sara's 2026-08
+    # restructuring split it into per-funding-type forms; personnel_project
+    # is used here as a stand-in real form, but the dcterms:type stamp under
+    # test is driven entirely by the `form:` string passed to
+    # write_dataset_to_db_query, not by this dataset's own type.
+    ds = CBGP::Dataset.new(type: 'personnel_project')
     ds.primary_id = 'abc-123'
     ds.title = 'A Project'
     ds
@@ -39,7 +44,7 @@ RSpec.describe 'dcterms:type provenance stamp' do
 
     it 'falls back to the dataset\'s dbname when no form: is given, same fallback as its siblings' do
       query = write_dataset_to_db_query(dataset: dataset, oldid: nil)
-      expect(query).to include('dcterms:type cbgp:project') # dataset.form_type == "project" (the dbname here)
+      expect(query).to include('dcterms:type cbgp:personnel_project') # dataset.form_type == "personnel_project"
     end
 
     it 'writes dcterms:type in the same default-graph provenance block as dcterms:created/dcterms:modified' do

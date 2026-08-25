@@ -1,104 +1,87 @@
 # Installation
 
 This page covers getting a working copy of the application running, end
-to end: the two-repository database it needs, the Docker images, and how
+to end: the two-store database it needs, the Docker images, and how
 to choose a version. It assumes Docker is already installed on the machine
 that will run this. Configuring *what the application does once it's
 running* (the `.env` file) is the next page,
 [Configuration](configuration.md) — do this page first, since the database
 needs to exist before the application can start.
 
-## The two-repository database
+## The two-store database
 
-This application stores data in [GraphDB](https://www.ontotext.com/products/graphdb/),
-a graph database, and it needs **two separate repositories inside the same
-GraphDB instance**, not one:
+This application stores data in [Virtuoso](https://vos.openlink.co.uk/),
+a graph database, and it needs **two separate Virtuoso instances**, not one:
 
-- A **current-state repository** — every record as it exists right now.
+- A **current-state store** — every record as it exists right now.
   This is the one the application reads and writes for ordinary use.
-- A **history repository** — a permanent, append-only record of every
+- A **history store** — a permanent, append-only record of every
   prior version of every record, written automatically whenever something
   is edited or deleted. See
   [History & Snapshots](admin/history_and_snapshots.md) for what this
   means in practice; for installation purposes, it's enough to know it's a
-  second, separate repository that must exist before the application can
+  second, separate store that must exist before the application can
   start.
 
-They're kept physically separate — two repositories, not one repository
+They're kept physically separate — two Virtuoso processes, not one process
 with the history mixed in — specifically so that an ordinary search can
-never accidentally turn up old, superseded data. Nothing about installing
-or running the application differs between the two; GraphDB simply needs
-both to exist, with names the application is told about
-(see [Configuration](configuration.md)).
-
-### Creating the two repositories
-
-GraphDB itself doesn't come with these repositories pre-created — that's a
-one-time setup step, done through GraphDB's own web interface (the
-"Workbench"), not through this application:
-
-1. Start GraphDB (see [Running via Docker](#running-via-docker) below) and
-   open its Workbench in a browser — by default,
-   `http://localhost:7200`.
-2. Go to **Setup → Repositories → Create new repository**, choose the plain
-   **GraphDB Repository** type (no reasoning/inference profile is needed;
-   this application does its own querying), and give it an ID — this ID
-   becomes the `GRAPHDB_DBNAME` value on the [Configuration](configuration.md)
-   page. Repeat for the second repository, whose ID becomes `GRAPHDB_HISTORY`.
-3. Leave the rest of the repository settings at their defaults unless
-   there's a specific reason to change them.
+never accidentally turn up old, superseded data. This is also *why* it's
+two whole Virtuoso instances rather than two repositories inside one, the
+way the application's previous database (GraphDB) worked: a single
+Virtuoso process is one graph store, with no separate-repository concept to
+lean on instead.
 
 ```{note}
-Screenshot needed: `docs/source/_static/screenshots/graphdb-create-repository.png`
-— the GraphDB Workbench's "Create new repository" form, showing where the
-repository ID is entered.
+Before 2026-08-25 this application used GraphDB instead. The switch was
+made because GraphDB's free/open tier returned to requiring periodic
+license re-registration, which Virtuoso Open Source doesn't. If a
+pre-2026-08-25 instance needs to keep running on GraphDB rather than
+migrate, `docker-compose-graphdb.yml` in the repository still reflects
+that setup, kept as a reference/rollback point rather than removed
+outright — nothing in the running code depends on it, and it isn't
+maintained going forward.
 ```
 
-![GraphDB create-repository screen](_static/screenshots/graphdb-create-repository.png)
-*The GraphDB Workbench's repository-creation screen.*
+### No repository-creation step needed
 
-The two repository IDs are just names — they don't have to be any
-particular value — but whatever they are, they need to match exactly what
-gets written into `.env` as `GRAPHDB_DBNAME` and `GRAPHDB_HISTORY` on the
-[Configuration](configuration.md) page. A mismatch here is the single most
-common reason a freshly-installed instance fails to start or shows no data.
+Unlike GraphDB, Virtuoso doesn't ask for a one-time "create a repository"
+step through a web console before it can be used — each Virtuoso container
+*is* a store, ready to use the moment it starts. Standing up the two
+containers (next section) is the entire setup step; there's nothing further
+to click through.
 
 ## Running via Docker
 
-The application ships as a Docker image; this repository includes two
-different Docker Compose files, for two different situations:
-
-- **`docker-compose-graphdb.yml`** — GraphDB *only*, nothing else. Useful
-  for the one-time repository-creation step above, or if GraphDB is meant
-  to run somewhere separate from the application itself.
-- **`docker-compose.yml`** — GraphDB *and* the application together, the
-  normal way to run a complete instance.
-
-Both expect a Docker volume named `cbgp-graphdb` to already exist (so
-GraphDB's data survives container restarts/upgrades independently of the
-containers themselves) — create it once, before the first start:
-
-```bash
-docker volume create cbgp-graphdb
-```
-
-Then, having created `.env` per the [Configuration](configuration.md) page
-(the application container reads it via `env_file: .env` in
-`docker-compose.yml`):
+The application ships as a Docker image; `docker-compose.yml` in this
+repository runs all three containers together — the current-state Virtuoso,
+the history Virtuoso, and the application itself:
 
 ```bash
 docker compose up -d
 ```
 
-This starts GraphDB on `localhost:7200` (the Workbench) and the
-application on `localhost:8000`. The very first time, GraphDB will be
-empty — that's when you do the one-time repository-creation step above,
-before the application can do anything useful.
+Both Virtuoso containers are configured with **bind-mounted** host
+directories (`./virtuoso-data/current` and `./virtuoso-data/history`,
+created automatically on first start if they don't already exist) rather
+than a named Docker volume — so each store's data files (`virtuoso.db`,
+`virtuoso.log`, ...) *and* its configuration (`virtuoso.ini`) sit together
+in one place directly on the host filesystem, easy to find without going
+through `docker volume inspect`. One thing to know: those files are written
+by the container's own internal user, not whichever user ran
+`docker compose up`, so editing or deleting them by hand from the host
+needs `sudo` (or another container mounting the same path) rather than
+working as your normal user.
+
+Each Virtuoso container's `dba` superuser password comes from `.env`
+(`VIRTUOSO_PASS`/`HISTORY_PASS` — see [Configuration](configuration.md)),
+so create `.env` with real values *before* the first `docker compose up`,
+not after — the password is set the first time each container starts and
+isn't automatically changed by editing `.env` later.
 
 ```{note}
 Screenshot needed: `docs/source/_static/screenshots/docker-compose-up.png`
 — a terminal showing `docker compose up -d` completing successfully with
-both containers reported as started/healthy.
+all three containers reported as started/healthy.
 ```
 
 ![docker compose up succeeding](_static/screenshots/docker-compose-up.png)

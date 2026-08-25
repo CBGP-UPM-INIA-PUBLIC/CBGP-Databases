@@ -1,6 +1,6 @@
 # Configuration
 
-Once the two GraphDB repositories exist (see [Installation](installation.md)),
+Once the two Virtuoso containers exist (see [Installation](installation.md)),
 the application needs a `.env` file telling it how to reach them and a few
 other things. Copy the template and fill it in:
 
@@ -64,35 +64,34 @@ manual refresh). The public default shown above is correct for this
 institute's normal deployment; there's no reason to change it unless
 running a separate, private fork of the ontology for testing.
 
-## GraphDB connection
+## Virtuoso connection
 
 ```
-GRAPHDB_HOST=localhost:7200
-GRAPHDB_USER=change-me
-GRAPHDB_PASS=change-me
-GRAPHDB_DBNAME=kbdatabase2
-GRAPHDB_HISTORY=kbhistory
+VIRTUOSO_HOST=localhost:18890
+VIRTUOSO_USER=dba
+VIRTUOSO_PASS=change-me
+VIRTUOSO_HISTORY_HOST=localhost:18891
 ```
 
-`GRAPHDB_HOST` is where GraphDB itself listens — `localhost:7200` is
-correct when running the application directly on the same machine as
-GraphDB; running via `docker compose` overrides this automatically to
-reach the `graphdb` container by its service name instead, so it's safe to
-leave this at the default even in a Docker deployment (see
-[Installation](installation.md)'s note about this).
+`VIRTUOSO_HOST`/`VIRTUOSO_HISTORY_HOST` are where each of the two Virtuoso
+containers listens — `localhost:18890`/`localhost:18891` are correct when
+running the application directly on the same machine as Virtuoso; running
+via `docker compose` overrides both automatically to reach the
+`virtuoso-current`/`virtuoso-history` containers by their service names
+instead, so it's safe to leave these at the defaults even in a Docker
+deployment (see [Installation](installation.md)'s note about this).
 
-`GRAPHDB_USER`/`GRAPHDB_PASS` are the credentials GraphDB itself was
-configured with (set up separately, in GraphDB's own security settings, if
-GraphDB security is enabled — this isn't something `.env` controls).
+`VIRTUOSO_USER` is almost always `dba` — Virtuoso's built-in superuser;
+this application doesn't currently provision a separate least-privilege
+SPARQL role. `VIRTUOSO_PASS` is that account's password — set once, the
+first time each Virtuoso container starts (see
+[Installation](installation.md)); editing it in `.env` later doesn't
+retroactively change a running container's actual password.
 
-`GRAPHDB_DBNAME` and `GRAPHDB_HISTORY` must exactly match the two
-repository IDs created during [Installation](installation.md) — one
-mismatched character here is the most common reason a freshly-installed
-instance shows no data or won't start. Two optional variables,
-`HISTORY_USER`/`HISTORY_PASS`, exist only for the unusual case where the
-history repository needs *different* credentials than the current-state
-one — leave them unset (the normal case) and they quietly reuse
-`GRAPHDB_USER`/`GRAPHDB_PASS`.
+Two optional variables, `HISTORY_USER`/`HISTORY_PASS`, exist only for the
+unusual case where the history store needs *different* credentials than
+the current-state one — leave them unset (the normal case) and they
+quietly reuse `VIRTUOSO_USER`/`VIRTUOSO_PASS`.
 
 ## Admin email notifications
 
@@ -120,10 +119,10 @@ any other application to send mail through it.
 ## A note on security
 
 Every password and secret on this page — login passwords inside
-`CBGP_USERS`, `GRAPHDB_PASS`, `NOTIFY_PW`, `CBGP_SECRET` — lives *only* as
+`CBGP_USERS`, `VIRTUOSO_PASS`, `NOTIFY_PW`, `CBGP_SECRET` — lives *only* as
 an environment variable the application reads once at startup. There is no
 user/password database inside the application itself: no table of
-accounts, no password hashes, nothing stored in GraphDB or anywhere else
+accounts, no password hashes, nothing stored in Virtuoso or anywhere else
 the application controls. There's nothing there for someone to break into
 and steal, because none of it is stored there in the first place.
 

@@ -13,6 +13,20 @@ emergency server migration, that nobody backed up the database — this
 page exists so that never happens here.
 ```
 
+```{important}
+**This page still describes the retired GraphDB-based backup procedure**
+(native GraphDB backup API, GraphDB repository dumps, GraphDB Workbench
+steps) from before the 2026-08-25 switch to Virtuoso (see
+[Installation](installation.md)). The underlying *concept* below - two
+physically separate stores, both non-disposable, both needing a real
+backup - is still accurate; the concrete commands are not, and copying them
+verbatim against a Virtuoso instance will not work and should not be
+trusted. A Virtuoso-specific rewrite, verified against a real
+backup/restore round-trip the same way the rest of the Virtuoso migration
+was, is planned but not done yet - until then, treat this page as a
+description of the backup *shape* needed, not a runbook to execute as-is.
+```
+
 ## What actually needs backing up
 
 Almost everything about this application is disposable and can be
@@ -25,7 +39,7 @@ unique to this server, and none of it needs backing up.
 **Exactly two things are not disposable:**
 
 1. **The GraphDB data** — the current-state and history repositories
-   described in [Installation](installation.md#the-two-repository-database).
+   described in [Installation](installation.md#the-two-store-database).
    This is the institute's actual data: every record, and (per
    [History & Snapshots](admin/history_and_snapshots.md)) every past
    version of every record. It lives in the `cbgp-graphdb` Docker
@@ -66,7 +80,7 @@ This creates a single file (named automatically, like
 GraphDB instance — both the current-state and history databases — in one
 atomic operation, without needing to stop GraphDB or interrupt anyone
 using the application. If GraphDB's own security is enabled (see
-[Configuration](configuration.md#graphdb-connection)), add credentials:
+[Configuration](configuration.md#virtuoso-connection)), add credentials:
 
 ```bash
 curl -f -X POST -OJ -u "$GRAPHDB_USER:$GRAPHDB_PASS" \
@@ -110,7 +124,7 @@ curl -f -H 'Accept: text/x-nquads' \
 ```
 
 (`$GRAPHDB_DBNAME`/`$GRAPHDB_HISTORY` are the same repository IDs from
-[Configuration](configuration.md#graphdb-connection) — one dump per
+[Configuration](configuration.md#virtuoso-connection) — one dump per
 repository, since they're two separate GraphDB repositories, not two
 graphs inside one.) Each command produces a single N-Quads file — a
 plain-text, line-per-triple format that preserves which named graph

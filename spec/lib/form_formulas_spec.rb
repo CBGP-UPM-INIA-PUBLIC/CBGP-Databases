@@ -5,45 +5,47 @@
 # branch (Dentaku expressions, safe/sandboxed - not Ruby eval), rather than
 # asking the user to do the arithmetic themselves and type in the result.
 #
-# Same form-scoped reification shape as spec/lib/form_defaults_spec.rb (a
-# formula is TWO pieces of data per field: which one, and the expression),
-# NOT the direct-property shape spec/lib/form_required_fields_spec.rb uses -
-# see local:has-formulas' own doc comment in the .owl file for why.
-#
-# Exercised against the real demo fields (not synthetic ones), which also
-# happen to be a genuine DEPENDENCY CHAIN - the actual motivating case that
-# forced this feature past a single flat pass:
-#   - cbgp:project (Research):  project_overheads      = total_funding * 0.25 ("UPM overheads")
-#                                project_cbgp_overheads = project_overheads * 0.05 (chained - depends on the line above)
-#   - cbgp:personnel_project:   project_cbgp_overheads = annual_income * 0.08 (same shared field, unrelated formula)
-# All percentages are explicitly-marked placeholders pending real
-# institutional confirmation - see the .owl file - so this spec asserts the
-# MECHANISM works correctly, not that these are the final business numbers.
+# Sara's 2026-08 project-fields restructuring removed the sandbox
+# project_test_* formula chain this spec used to anchor to (a deliberate
+# "clean test fields" pass). While rebuilding this spec around real content,
+# found (and fixed directly in the ontology, since the fix was unambiguous -
+# see CBGP-Ontology commit history) three dangling formula-variable
+# references that meant these formulas never actually resolved:
+#   - european_research_project_overheads_formula referenced a variable name
+#     that matched no real field at all (typo/naming drift).
+#   - a single formula-definition resource was shared verbatim by both
+#     european_research_project and private_research_project, but each
+#     form's own "total overheads" input field has a different name - no
+#     single variable name could ever be correct for both, so it was split
+#     into two per-form formula-definition resources.
+#   - national_regional_research_project's year1-4 overheads formulas
+#     referenced over-prefixed variable names that matched no real field.
+# A useful side effect of the european_research_project fix: total_funding
+# -> total_overheads -> project_cbgp_overheads is now a genuine, real
+# two-step dependency CHAIN (a calculated field whose own formula depends on
+# another calculated field) - exercised directly below, no synthetic/stubbed
+# formula hash needed.
 RSpec.describe 'per-form calculated fields' do
   before do
-    %w[project_overheads project_cbgp_overheads project_total_funding project_annual_income].each do |qc|
-      field = CBGP::Dataset.fields_for('project').find { |f| f[:questionclass] == qc }
-      raise "fixture ontology no longer has '#{qc}' - update this spec" unless field
+    %w[project_cbgp_overheads european_research_project_total_overheads
+       european_private_research_project_total_funding].each do |qc|
+      field = CBGP::Dataset.fields_for('european_research_project').find { |f| f[:questionclass] == qc }
+      raise "fixture ontology no longer has '#{qc}' on european_research_project - update this spec" unless field
     end
   end
 
   describe '#get_form_formulas_query / .form_formulas' do
-    # `include`, not `eq`: both forms also carry a separate sandbox
-    # project_test_* formula chain (added for manual testing, see the .owl
-    # file) alongside the real overheads ones asserted here - this spec
-    # only needs to prove THESE two resolve correctly, not that nothing
-    # else is declared on the form.
-    it 'resolves the Research form to its two-step chain' do
-      formulas = CBGP::Dataset.form_formulas(form: 'project')
-      expect(formulas).to include(
-        'project_overheads' => 'project_total_funding * 0.25',
-        'project_cbgp_overheads' => 'project_overheads * 0.05'
+    it 'resolves European Research Projects to its own formulas' do
+      formulas = CBGP::Dataset.form_formulas(form: 'european_research_project')
+      expect(formulas).to eq(
+        'project_cbgp_overheads' => 'european_research_project_total_overheads * 0.6',
+        'european_research_project_total_overheads' => 'european_private_research_project_total_funding * 0.25'
       )
     end
 
-    it 'resolves the Personnel form to a different, unrelated formula for the same shared field' do
-      formulas = CBGP::Dataset.form_formulas(form: 'personnel_project')
-      expect(formulas).to include('project_cbgp_overheads' => 'project_annual_income * 0.08')
+    it 'resolves Private Research Projects to the same shared formula for project_cbgp_overheads, independently declared' do
+      formulas = CBGP::Dataset.form_formulas(form: 'private_research_project')
+      expect(formulas).to eq('project_cbgp_overheads' => 'private_research_project_total_overheads * 0.6')
     end
 
     it 'returns an empty hash for a form with no local:has-formulas at all' do
@@ -55,17 +57,70 @@ RSpec.describe 'per-form calculated fields' do
     end
   end
 
-  describe '.load_from_params_and_write calculated-field evaluation' do
-    let(:base_params) { { 'database' => 'project', 'primary_id' => '', 'project_title' => 'Chain Test Project' } }
+  describe 'Questionnaire#formula / #formula_dependencies (drives the read-only _calculated.erb widget)' do
+    def find_question(questionnaire, questionid)
+      questionnaire.sections.flat_map(&:questions).find { |q| q.questionid == questionid }
+    end
 
-    before { allow(CBGP::Dataset).to receive(:write_dataset_to_db) }
+    it "exposes European Research Projects' own formula, with correctly-extracted dependencies" do
+      questionnaire = Questionnaire.new(questionnaire_type: 'european_research_project')
+
+      total_overheads = find_question(questionnaire, 'european_research_project_total_overheads')
+      expect(total_overheads.formula).to eq('european_private_research_project_total_funding * 0.25')
+      expect(total_overheads.formula_dependencies).to eq(%w[european_private_research_project_total_funding])
+    end
+
+    it 'exposes the same shared formula independently on Private Research Projects' do
+      questionnaire = Questionnaire.new(questionnaire_type: 'private_research_project')
+      cbgp_overheads = find_question(questionnaire, 'project_cbgp_overheads')
+      expect(cbgp_overheads.formula).to eq('private_research_project_total_overheads * 0.6')
+      expect(cbgp_overheads.formula_dependencies).to eq(%w[private_research_project_total_overheads])
+    end
+
+    it 'has no european_research_project_total_overheads question at all on Private Research Projects' do
+      questionnaire = Questionnaire.new(questionnaire_type: 'private_research_project')
+      expect(find_question(questionnaire, 'european_research_project_total_overheads')).to be_nil
+    end
+
+    it 'leaves formula nil for an ordinary (non-calculated) question' do
+      questionnaire = Questionnaire.new(questionnaire_type: 'european_research_project')
+      expect(find_question(questionnaire, 'project_title').formula).to be_nil
+    end
+  end
+
+  describe '.load_from_params_and_write calculated-field evaluation (real two-step chain)' do
+    # european_research_project's real formulas (fixed above): total_funding
+    # * 0.25 -> total_overheads, then total_overheads * 0.6 -> cbgp_overheads
+    # - exercising evaluate_calculated_fields' actual recomputation/
+    # tamper-resistance/dependency-ordering logic against real ontology
+    # content, no stub needed.
+    let(:base_params) do
+      {
+        'database' => 'european_research_project',
+        'primary_id' => '',
+        'project_title' => 'Chain Test Project',
+        'european_private_research_project_funding_institution' => 'funding_institutions_european_commision',
+        'project_application_code' => 'TEST-CODE',
+        'project_call_for_proposal_title' => 'Test Call',
+        'project_dni_nie_pas' => '12345678A',
+        'project_internal_code' => 'TEST-INTERNAL',
+        'project_pi_orcid' => '0000-0001-2345-6789',
+        'project_start_date' => '2026-01-01',
+        'project_end_date' => '2026-12-31'
+      }
+    end
+
+    before do
+      allow(CBGP::Dataset).to receive(:write_dataset_to_db)
+      allow(CBGP::Dataset).to receive(:get_primary_id).and_return(nil)
+    end
 
     it 'resolves the full chain from a single submission of the base field' do
-      params = base_params.merge('project_total_funding' => '10000.00')
-      dataset = CBGP::Dataset.load_from_params_and_write(params: params, form: 'project')
+      params = base_params.merge('european_private_research_project_total_funding' => '10000.00')
+      dataset = CBGP::Dataset.load_from_params_and_write(params: params, form: 'european_research_project')
 
-      expect(dataset.overheads).to eq('2500.00') # 10000 * 0.25
-      expect(dataset.cbgp_overheads).to eq('125.00') # 2500  * 0.05 - depends on the line above
+      expect(dataset.total_overheads).to eq('2500.00') # 10000 * 0.25
+      expect(dataset.cbgp_overheads).to eq('1500.00') # 2500  * 0.6 - depends on the line above
     end
 
     it 'never lets the client-submitted value for a calculated field survive - it is always server-recomputed' do
@@ -73,63 +128,21 @@ RSpec.describe 'per-form calculated fields' do
       # completely ignored, since load_from_params_and_write always
       # overwrites them - this is the core trust property of the mechanism.
       params = base_params.merge(
-        'project_total_funding' => '10000.00',
-        'project_overheads' => '999999.99',
+        'european_private_research_project_total_funding' => '10000.00',
+        'european_research_project_total_overheads' => '999999.99',
         'project_cbgp_overheads' => '999999.99'
       )
-      dataset = CBGP::Dataset.load_from_params_and_write(params: params, form: 'project')
+      dataset = CBGP::Dataset.load_from_params_and_write(params: params, form: 'european_research_project')
 
-      expect(dataset.overheads).to eq('2500.00')
-      expect(dataset.cbgp_overheads).to eq('125.00')
+      expect(dataset.total_overheads).to eq('2500.00')
+      expect(dataset.cbgp_overheads).to eq('1500.00')
     end
 
     it 'leaves the whole chain blank when the base dependency is missing, rather than raising or partially computing' do
-      dataset = CBGP::Dataset.load_from_params_and_write(params: base_params, form: 'project')
+      dataset = CBGP::Dataset.load_from_params_and_write(params: base_params, form: 'european_research_project')
 
-      expect(dataset.overheads).to be_nil.or eq('')
+      expect(dataset.total_overheads).to be_nil.or eq('')
       expect(dataset.cbgp_overheads).to be_nil.or eq('')
-    end
-
-    it 'computes the Personnel form field independently of the Research chain' do
-      params = { 'database' => 'project', 'primary_id' => '', 'project_annual_income' => '1000.00' }
-      dataset = CBGP::Dataset.load_from_params_and_write(params: params, form: 'personnel_project')
-
-      expect(dataset.cbgp_overheads).to eq('80.00') # 1000 * 0.08
-      expect(dataset.overheads).to be_nil.or eq('') # no formula for it on this form
-    end
-  end
-
-  describe 'Questionnaire#formula / #formula_dependencies (drives the read-only _calculated.erb widget)' do
-    def find_question(questionnaire, questionid)
-      questionnaire.sections.flat_map(&:questions).find { |q| q.questionid == questionid }
-    end
-
-    it 'exposes the Research chain formulas, with correctly-extracted dependencies' do
-      questionnaire = Questionnaire.new(questionnaire_type: 'project')
-
-      overheads = find_question(questionnaire, 'project_overheads')
-      expect(overheads.formula).to eq('project_total_funding * 0.25')
-      expect(overheads.formula_dependencies).to eq(%w[project_total_funding])
-
-      cbgp_overheads = find_question(questionnaire, 'project_cbgp_overheads')
-      expect(cbgp_overheads.formula).to eq('project_overheads * 0.05')
-      expect(cbgp_overheads.formula_dependencies).to eq(%w[project_overheads])
-    end
-
-    it "exposes the Personnel form's own unrelated formula for the same shared field" do
-      questionnaire = Questionnaire.new(questionnaire_type: 'personnel_project')
-      cbgp_overheads = find_question(questionnaire, 'project_cbgp_overheads')
-      expect(cbgp_overheads.formula).to eq('project_annual_income * 0.08')
-    end
-
-    it 'has no project_overheads question at all on the Personnel questionnaire (not one of its fields)' do
-      questionnaire = Questionnaire.new(questionnaire_type: 'personnel_project')
-      expect(find_question(questionnaire, 'project_overheads')).to be_nil
-    end
-
-    it 'leaves formula nil for an ordinary (non-calculated) question' do
-      questionnaire = Questionnaire.new(questionnaire_type: 'project')
-      expect(find_question(questionnaire, 'project_title').formula).to be_nil
     end
   end
 end

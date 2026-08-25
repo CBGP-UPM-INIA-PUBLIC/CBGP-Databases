@@ -20,6 +20,9 @@ gem 'httparty', '~> 0.23.1'
 gem 'json-canonicalization', '~> 1.0.0'
 gem 'jsonpath', '~> 1.1'
 gem 'linkeddata', '~> 3.2.0'
+# HTTP Digest auth for Virtuoso's SPARQL Update endpoint (/sparql-auth) -
+# see lib/virtuoso_update_client.rb.
+gem 'net-http-digest_auth', '~> 1.4'
 gem 'parseconfig', '~> 1.1.2'
 gem 'pony', '~> 1.13'
 gem 'rdf-raptor', '~> 3.1.0'

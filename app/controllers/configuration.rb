@@ -4,7 +4,7 @@ require 'dotenv/load'
 Dotenv.load unless ENV['RACK_ENV'] == 'production'
 
 # Set default values if not provided by .env or Docker Compose
-ENV['GRAPHDB_HOST'] ||= 'localhost:7200'
+ENV['VIRTUOSO_HOST'] ||= 'localhost:8890'
 
 # Validate required environment variables
 abort 'Missing NOTIFY_PW in environment variables or .env file' unless ENV['NOTIFY_PW']
@@ -32,18 +32,25 @@ NOTIFY_SMTP_ADDRESS = ENV.fetch('NOTIFY_SMTP_ADDRESS', 'mail.fairdata.systems')
 NOTIFY_SMTP_PORT = ENV.fetch('NOTIFY_SMTP_PORT', '587')
 NOTIFY_SMTP_STARTTLS = ENV.fetch('NOTIFY_SMTP_STARTTLS', 'true') == 'true'
 NOTIFY_SMTP_AUTH = ENV.fetch('NOTIFY_SMTP_AUTH', 'login') # :plain, :login, :cram_md5, or "none" for no auth
-GRAPHDB_HOST = ENV.fetch('GRAPHDB_HOST', nil)
-GRAPHDB_USER = ENV.fetch('GRAPHDB_USER', nil)
-GRAPHDB_PASS = ENV.fetch('GRAPHDB_PASS', nil)
-GRAPHDB_DBNAME = ENV.fetch('GRAPHDB_DBNAME', 'kbdatabase')
-# SCD Type 2 history: a separate GraphDB repository dedicated to snapshots of
-# superseded/deleted records (see lib/queries.rb delete_dataset_query). Kept
-# physically separate from GRAPHDB_DBNAME rather than a namespaced graph in
-# the same repository, so current-state queries can never accidentally match
-# a history graph.
-GRAPHDB_HISTORY = ENV.fetch('GRAPHDB_HISTORY', "#{GRAPHDB_DBNAME}_history")
-HISTORY_USER = ENV.fetch('HISTORY_USER', GRAPHDB_USER)
-HISTORY_PASS = ENV.fetch('HISTORY_PASS', GRAPHDB_PASS)
+# Virtuoso, not GraphDB, as of 2026-08-25 (see CHANGELOG) - GraphDB's licensing
+# requiring periodic re-registration even for the free tier was the trigger;
+# Virtuoso Open Source has no such requirement.
+#
+# Unlike GraphDB, which hosts multiple named "repositories" inside one server
+# process, a single Virtuoso process is one quad store. To keep the SCD Type
+# 2 history store (see lib/queries.rb delete_dataset_query) *physically*
+# separate from the current-state store - so current-state queries can never
+# accidentally match a history graph, the same reasoning as before - this
+# project runs two separate Virtuoso containers/processes, one per store,
+# rather than one Virtuoso instance with the two separated by named graph
+# alone. VIRTUOSO_HOST/VIRTUOSO_HISTORY_HOST are therefore two different
+# host:port pairs, not a shared host with two dbnames.
+VIRTUOSO_HOST = ENV.fetch('VIRTUOSO_HOST', nil)
+VIRTUOSO_USER = ENV.fetch('VIRTUOSO_USER', nil)
+VIRTUOSO_PASS = ENV.fetch('VIRTUOSO_PASS', nil)
+VIRTUOSO_HISTORY_HOST = ENV.fetch('VIRTUOSO_HISTORY_HOST', nil)
+HISTORY_USER = ENV.fetch('HISTORY_USER', VIRTUOSO_USER)
+HISTORY_PASS = ENV.fetch('HISTORY_PASS', VIRTUOSO_PASS)
 CBGP_KB = ENV.fetch('CBGP_KB', 'https://w3id.org/CBGP-App')
 BASE_URI = 'http://admin.cbgp.upm.es/graphs/datasets/'
 

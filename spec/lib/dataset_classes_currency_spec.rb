@@ -5,16 +5,21 @@
 # as opposed to spec/lib/currency_spec.rb which tests the pure parse/format
 # helpers in isolation.
 RSpec.describe CBGP::Dataset do
-  # project_total_funding is the one field currently wired to the currency
-  # widget (local:object-class Currency / local:widget-type currency in the
-  # ontology fixture). If that ever gets renamed/removed/repointed to a
-  # different class in the ontology, these specs should fail loudly rather
-  # than silently stop testing anything real.
-  let(:currency_questionclass) { 'project_total_funding' }
+  # personnel_project_total_funding is a field currently wired to the
+  # currency widget (local:object-class Currency / local:widget-type
+  # currency in the ontology fixture). If that ever gets renamed/removed/
+  # repointed to a different class in the ontology, these specs should fail
+  # loudly rather than silently stop testing anything real.
+  #
+  # 'project' itself is no longer a valid form type - Sara's 2026-08
+  # restructuring split it into per-funding-type forms (european_research_
+  # project, national_regional_research_project, private_research_project,
+  # personnel_project); personnel_project is used throughout this file.
+  let(:currency_questionclass) { 'personnel_project_total_funding' }
   let(:currency_method) { :total_funding }
 
   before do
-    field = described_class.fields_for('project').find { |f| f[:questionclass] == currency_questionclass }
+    field = described_class.fields_for('personnel_project').find { |f| f[:questionclass] == currency_questionclass }
     raise "fixture ontology no longer has a '#{currency_questionclass}' field - update this spec" unless field
 
     unless field[:class] == 'currency'
@@ -23,7 +28,7 @@ RSpec.describe CBGP::Dataset do
   end
 
   describe '#coerce_value with class "currency"' do
-    subject(:dataset) { described_class.new(type: 'project') }
+    subject(:dataset) { described_class.new(type: 'personnel_project') }
 
     it 'coerces valid US-style input to the canonical decimal form' do
       expect(dataset.coerce_value('15,000.5', 'currency', 'Single')).to eq('15000.50')
@@ -45,11 +50,37 @@ RSpec.describe CBGP::Dataset do
   end
 
   describe '.load_from_params_and_write' do
-    # project_title is required on the "project" form (local:requires-field),
-    # so it must be submitted here too - otherwise every case in this
-    # describe block would also fail with an unrelated "Title is required"
-    # error, on top of whatever currency behavior is actually under test.
-    let(:base_params) { { 'database' => 'project', 'primary_id' => '', 'project_title' => 'Test Project' } }
+    # personnel_project's required fields include real ORCID cross-references
+    # to member (beneficiary_orcid, personnel_project_responsible_pi_orcid) -
+    # unlike the old "project" form's required fields, which were plain
+    # strings. validate_references only warns on a no-match (doesn't raise),
+    # but the underlying lookup still hits execute_search -> a live SPARQL
+    # endpoint, which this suite must never depend on. Stub it out so a
+    # missing/unreachable triplestore can't fail these currency-focused specs for
+    # an unrelated reason.
+    before { allow(described_class).to receive(:get_primary_id).and_return(nil) }
+
+    # personnel_project requires several other fields besides the currency
+    # one under test here (local:requires-field) - all must be submitted too,
+    # otherwise every case in this describe block would also fail with
+    # unrelated "X is required" errors on top of whatever currency behavior
+    # is actually under test.
+    let(:base_params) do
+      {
+        'database' => 'personnel_project',
+        'primary_id' => '',
+        'project_title' => 'Test Project',
+        'beneficiary_orcid' => '0000-0001-2345-6789',
+        'personnel_project_responsible_pi_orcid' => '0000-0001-2345-6789',
+        'project_funding_entity' => 'Test Funding Entity',
+        'project_affiliation' => 'affiliation_upm',
+        'project_application_code' => 'TEST-CODE',
+        'project_dni_nie_pas' => '12345678A',
+        'project_start_date' => '2026-01-01',
+        'project_end_date' => '2026-12-31',
+        'project_internal_code' => 'TEST-INTERNAL'
+      }
+    end
 
     context 'with an invalid currency amount' do
       let(:params) { base_params.merge(currency_questionclass => 'fifteen thousand') }
@@ -62,8 +93,13 @@ RSpec.describe CBGP::Dataset do
       it 'reports the failing field by its human label, not its internal method name' do
         described_class.load_from_params_and_write(params: params)
       rescue described_class::ValidationError => e
+        # personnel_project_total_funding is also required, so an unparseable
+        # value triggers two errors on the same field: the coercion failure
+        # itself, and "required" once the unparseable value is treated as
+        # blank - both must still use the human label, never the method name.
         expect(e.errors).to contain_exactly(
-          hash_including(label: 'Total funding', message: a_string_matching(/doesn't look like a valid amount/))
+          hash_including(label: 'Total funding', message: a_string_matching(/doesn't look like a valid amount/)),
+          hash_including(label: 'Total funding', message: a_string_matching(/is required/))
         )
       end
 
@@ -93,8 +129,8 @@ RSpec.describe CBGP::Dataset do
 
   describe '.new_from_raw_params' do
     it 'echoes back exactly what was submitted, unvalidated, for redisplay after a ValidationError' do
-      params = { 'database' => 'project', 'primary_id' => '', currency_questionclass => 'fifteen thousand' }
-      dataset = described_class.new_from_raw_params(type: 'project', params: params)
+      params = { 'database' => 'personnel_project', 'primary_id' => '', currency_questionclass => 'fifteen thousand' }
+      dataset = described_class.new_from_raw_params(type: 'personnel_project', params: params)
       expect(dataset.public_send(currency_method)).to eq('fifteen thousand')
     end
   end
@@ -108,19 +144,26 @@ RSpec.describe CBGP::Dataset do
   # and lib/queries.rb's currency branch in build_search_query). Every field
   # semantically representing a monetary amount must carry class "currency" so
   # none of that happens by accident again.
+  #
+  # Field list refreshed for Sara's 2026-08 project-fields restructuring
+  # (personnel_project's own currency fields, since generic "project" no
+  # longer exists). NOTE: while refreshing this list, national_regional_
+  # research_project's year4_direct_costs field was found still mistagged
+  # (local:widget-type points at "https://w3id.org/cbgp-app#currency" -
+  # lowercase "cbgp-app", not "CBGP-App" - so it doesn't match "currency"
+  # here) - the same class of bug this spec exists to catch, flagged to Sara
+  # separately rather than silently added to this personnel_project-only list.
   describe 'monetary field coverage' do
     monetary_questionclasses = %w[
-      project_total_funding
+      personnel_project_total_funding
       project_annual_cbgp_overheads
       project_annual_income
-      project_annual_overheads
       project_cbgp_overheads
-      project_overheads
     ]
 
     monetary_questionclasses.each do |qc|
       it "tags #{qc} as a currency field in the ontology" do
-        field = described_class.fields_for('project').find { |f| f[:questionclass] == qc }
+        field = described_class.fields_for('personnel_project').find { |f| f[:questionclass] == qc }
         raise "fixture ontology no longer has a '#{qc}' field - update this spec" unless field
 
         expect(field[:class]).to eq('currency')

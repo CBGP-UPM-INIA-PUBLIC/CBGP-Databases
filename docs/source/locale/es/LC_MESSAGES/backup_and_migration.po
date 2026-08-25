@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CBGP-Databases 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-09 20:30+0200\n"
+"POT-Creation-Date: 2026-08-25 12:32+0200\n"
 "PO-Revision-Date: 2026-07-09 20:30+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es\n"
@@ -51,11 +51,26 @@ msgstr ""
 "una copia de seguridad de la base de datos — esta página existe "
 "precisamente para que eso no ocurra aquí."
 
-#: ../../source/backup_and_migration.md:16 49abbf59d808433fbdc8399f21e0bfd4
+#: ../../source/backup_and_migration.md:17 8a983a701927428e8d2e896164abd49f
+msgid ""
+"**This page still describes the retired GraphDB-based backup procedure** "
+"(native GraphDB backup API, GraphDB repository dumps, GraphDB Workbench "
+"steps) from before the 2026-08-25 switch to Virtuoso (see "
+"[Installation](installation.md)). The underlying *concept* below - two "
+"physically separate stores, both non-disposable, both needing a real "
+"backup - is still accurate; the concrete commands are not, and copying "
+"them verbatim against a Virtuoso instance will not work and should not be"
+" trusted. A Virtuoso-specific rewrite, verified against a real "
+"backup/restore round-trip the same way the rest of the Virtuoso migration"
+" was, is planned but not done yet - until then, treat this page as a "
+"description of the backup *shape* needed, not a runbook to execute as-is."
+msgstr ""
+
+#: ../../source/backup_and_migration.md:30 49abbf59d808433fbdc8399f21e0bfd4
 msgid "What actually needs backing up"
 msgstr "Qué es lo que realmente hay que respaldar"
 
-#: ../../source/backup_and_migration.md:18 d59e63b944964cb6b9a5c6cd6642433c
+#: ../../source/backup_and_migration.md:32 d59e63b944964cb6b9a5c6cd6642433c
 msgid ""
 "Almost everything about this application is disposable and can be "
 "recreated from scratch: the Docker images are pulled fresh from a "
@@ -67,19 +82,20 @@ msgstr ""
 "Casi todo lo relativo a esta aplicación es prescindible y se puede "
 "recrear desde cero: las imágenes Docker se descargan de nuevo desde un "
 "registro, el código es este repositorio Git, y la ontología que controla "
-"cada formulario y cada campo se obtiene en directo desde la red cada vez que"
-" hace falta (véase [Filosofía y diseño](philosophy.md)). Nada de eso es "
-"exclusivo de este servidor, y nada de eso necesita copia de seguridad."
+"cada formulario y cada campo se obtiene en directo desde la red cada vez "
+"que hace falta (véase [Filosofía y diseño](philosophy.md)). Nada de eso "
+"es exclusivo de este servidor, y nada de eso necesita copia de seguridad."
 
-#: ../../source/backup_and_migration.md:25 0cbd8dbe183b45dea9e9c721978b6490
+#: ../../source/backup_and_migration.md:39 0cbd8dbe183b45dea9e9c721978b6490
 msgid "**Exactly two things are not disposable:**"
 msgstr "**Solo hay dos cosas que no son prescindibles:**"
 
-#: ../../source/backup_and_migration.md:27 0788896df6124af58a66ed840272e0a0
+#: ../../source/backup_and_migration.md:41 0788896df6124af58a66ed840272e0a0
+#, fuzzy
 msgid ""
 "**The GraphDB data** — the current-state and history repositories "
-"described in [Installation](installation.md#the-two-repository-database)."
-" This is the institute's actual data: every record, and (per [History & "
+"described in [Installation](installation.md#the-two-store-database). This"
+" is the institute's actual data: every record, and (per [History & "
 "Snapshots](admin/history_and_snapshots.md)) every past version of every "
 "record. It lives in the `cbgp-graphdb` Docker volume, entirely separate "
 "from the application's own containers or code — deleting or recreating "
@@ -98,7 +114,7 @@ msgstr ""
 "forma permanente, sin ninguna manera de reconstruirlos a partir de "
 "ninguna otra cosa de esta lista."
 
-#: ../../source/backup_and_migration.md:36 310a4dd656d546b5897805028dd04244
+#: ../../source/backup_and_migration.md:50 310a4dd656d546b5897805028dd04244
 msgid ""
 "**The `.env` file** — not data, but the credentials and settings needed "
 "to bring the application back up (see [Configuration](configuration.md))."
@@ -111,7 +127,7 @@ msgstr ""
 " así que existe en un único lugar a menos que alguien lo haya copiado a "
 "algún sitio seguro."
 
-#: ../../source/backup_and_migration.md:43 535302838eab4051be623676707fd08d
+#: ../../source/backup_and_migration.md:57 535302838eab4051be623676707fd08d
 msgid ""
 "Running `docker compose up -d` on a brand-new machine, using nothing but "
 "a fresh checkout of this Git repository, will start a **completely "
@@ -124,17 +140,18 @@ msgstr ""
 "en marcha una base de datos **completamente vacía** — la imagen Docker "
 "contiene la aplicación, no los datos del instituto. Si el volumen `cbgp-"
 "graphdb` no se traslada también (restaurando una copia de seguridad, "
-"según se indica en esta página), todos los registros simplemente desaparecen."
+"según se indica en esta página), todos los registros simplemente "
+"desaparecen."
 
-#: ../../source/backup_and_migration.md:50 609092674b164ebaa6d8c9f9105805a3
+#: ../../source/backup_and_migration.md:64 609092674b164ebaa6d8c9f9105805a3
 msgid "Making a backup"
 msgstr "Hacer una copia de seguridad"
 
-#: ../../source/backup_and_migration.md:52 383476f14fc440638a3ddf867649628c
+#: ../../source/backup_and_migration.md:66 383476f14fc440638a3ddf867649628c
 msgid "The native GraphDB backup"
 msgstr "La copia de seguridad nativa de GraphDB"
 
-#: ../../source/backup_and_migration.md:54 a7346390603a412da484a519c5778ef8
+#: ../../source/backup_and_migration.md:68 a7346390603a412da484a519c5778ef8
 msgid ""
 "GraphDB has a built-in backup mechanism, reachable over the same "
 "connection as its Workbench — run these commands on the server itself (or"
@@ -148,14 +165,15 @@ msgstr ""
 " el puerto de GraphDB solo se publica en la propia dirección de bucle "
 "local del servidor (`127.0.0.1:7200` en `docker-compose.yml`):"
 
-#: ../../source/backup_and_migration.md:64 4ed662347a734c97b92776e5ff3ae420
+#: ../../source/backup_and_migration.md:78 4ed662347a734c97b92776e5ff3ae420
+#, fuzzy
 msgid ""
 "This creates a single file (named automatically, like "
 "`backup-2026-07-09-14-30-00.tar`) containing **every repository** in this"
 " GraphDB instance — both the current-state and history databases — in one"
 " atomic operation, without needing to stop GraphDB or interrupt anyone "
 "using the application. If GraphDB's own security is enabled (see "
-"[Configuration](configuration.md#graphdb-connection)), add credentials:"
+"[Configuration](configuration.md#virtuoso-connection)), add credentials:"
 msgstr ""
 "Esto crea un único archivo (con nombre automático, como "
 "`backup-2026-07-09-14-30-00.tar`) que contiene **todos los repositorios**"
@@ -166,7 +184,7 @@ msgstr ""
 "[Configuración](configuration.md#graphdb-connection)), añada las "
 "credenciales."
 
-#: ../../source/backup_and_migration.md:77 a2d08e8e31074a9fae228f6605db7369
+#: ../../source/backup_and_migration.md:91 a2d08e8e31074a9fae228f6605db7369
 msgid ""
 "The `-f` flag matters: without it, curl treats an HTTP error response "
 "from GraphDB (for example, GraphDB not being up yet) as \"success\" and "
@@ -174,15 +192,14 @@ msgid ""
 "failure that looks exactly like a working backup until the day someone "
 "actually needs it. `-f` makes curl fail loudly instead."
 msgstr ""
-"El indicador `-f` importa: sin él, curl trata una respuesta de error "
-"HTTP de GraphDB (por ejemplo, si GraphDB todavía no está en marcha) "
-"como un «éxito» y guarda alegremente la página de error como si fuera "
-"un archivo de copia de seguridad real — un fallo silencioso que "
-"parece exactamente una copia de seguridad funcional hasta el día en "
-"que alguien realmente la necesita. `-f` hace que curl falle "
-"de manera evidente en su lugar."
+"El indicador `-f` importa: sin él, curl trata una respuesta de error HTTP"
+" de GraphDB (por ejemplo, si GraphDB todavía no está en marcha) como un "
+"«éxito» y guarda alegremente la página de error como si fuera un archivo "
+"de copia de seguridad real — un fallo silencioso que parece exactamente "
+"una copia de seguridad funcional hasta el día en que alguien realmente la"
+" necesita. `-f` hace que curl falle de manera evidente en su lugar."
 
-#: ../../source/backup_and_migration.md:85 3d0c7453ca9849119a9e6d19f35d01c0
+#: ../../source/backup_and_migration.md:99 3d0c7453ca9849119a9e6d19f35d01c0
 msgid ""
 "By default this backup does **not** include GraphDB's own user accounts "
 "(a separate thing from this application's `CBGP_USERS` — see "
@@ -199,11 +216,11 @@ msgstr ""
 " se guarde `.env`), ya que restaurar esta copia en otro sitio no recreará"
 " esa cuenta por usted."
 
-#: ../../source/backup_and_migration.md:93 3d7c3cbfab8e443796fe33ed62ee41e3
+#: ../../source/backup_and_migration.md:107 3d7c3cbfab8e443796fe33ed62ee41e3
 msgid "A vendor-neutral quads dump"
 msgstr "Un volcado de cuádruplas independiente del proveedor"
 
-#: ../../source/backup_and_migration.md:95 7182a8ffcb0f4185978f8f8a15f14d25
+#: ../../source/backup_and_migration.md:109 7182a8ffcb0f4185978f8f8a15f14d25
 msgid ""
 "The native backup above is fast to create and restore, but it's tied to "
 "GraphDB — restoring it requires another GraphDB instance, of a compatible"
@@ -215,16 +232,16 @@ msgstr ""
 "La copia de seguridad nativa anterior es rápida de crear y restaurar, "
 "pero está ligada a GraphDB — restaurarla requiere otra instancia de "
 "GraphDB, de una versión compatible. Como una segunda red de seguridad "
-"independiente, merece la pena exportar también los datos en bruto en "
-"un formato RDF abierto, estándar del W3C, que **cualquier** almacén de"
-" tripletes pueda leer — no solo GraphDB, sino Virtuoso, Fuseki o lo "
-"que el instituto pudiera usar en el futuro, si alguna vez lo "
-"necesitara."
+"independiente, merece la pena exportar también los datos en bruto en un "
+"formato RDF abierto, estándar del W3C, que **cualquier** almacén de "
+"tripletes pueda leer — no solo GraphDB, sino Virtuoso, Fuseki o lo que el"
+" instituto pudiera usar en el futuro, si alguna vez lo necesitara."
 
-#: ../../source/backup_and_migration.md:112 9a9410044f754f859184de8a9fb2208b
+#: ../../source/backup_and_migration.md:126 9a9410044f754f859184de8a9fb2208b
+#, fuzzy
 msgid ""
 "(`$GRAPHDB_DBNAME`/`$GRAPHDB_HISTORY` are the same repository IDs from "
-"[Configuration](configuration.md#graphdb-connection) — one dump per "
+"[Configuration](configuration.md#virtuoso-connection) — one dump per "
 "repository, since they're two separate GraphDB repositories, not two "
 "graphs inside one.) Each command produces a single N-Quads file — a "
 "plain-text, line-per-triple format that preserves which named graph every"
@@ -234,20 +251,19 @@ msgid ""
 "tool in existence can read. Add `-u \"$GRAPHDB_USER:$GRAPHDB_PASS\"` to "
 "either command if GraphDB security is enabled, the same as above."
 msgstr ""
-"(`$GRAPHDB_DBNAME`/`$GRAPHDB_HISTORY` son los mismos identificadores de"
-" repositorio de [Configuración](configuration.md#graphdb-connection) —"
-" un volcado por repositorio, ya que son dos repositorios de GraphDB "
-"separados, no dos grafos dentro de uno. Cada comando produce un único"
-" archivo N-Quads — un formato de texto plano, un triplete por línea,"
-" que conserva a qué grafo con nombre pertenece cada triplete "
-"(importante para esta aplicación, ya que el mecanismo de historial "
-"depende de ello — véase [Historial e "
-"instantáneas](admin/history_and_snapshots.md)) y que prácticamente "
-"cualquier herramienta RDF existente puede leer. Añada `-u "
-"\"$GRAPHDB_USER:$GRAPHDB_PASS\"` a cualquiera de los dos comandos si "
-"la seguridad de GraphDB está activada, igual que arriba."
+"(`$GRAPHDB_DBNAME`/`$GRAPHDB_HISTORY` son los mismos identificadores de "
+"repositorio de [Configuración](configuration.md#graphdb-connection) — un "
+"volcado por repositorio, ya que son dos repositorios de GraphDB "
+"separados, no dos grafos dentro de uno. Cada comando produce un único "
+"archivo N-Quads — un formato de texto plano, un triplete por línea, que "
+"conserva a qué grafo con nombre pertenece cada triplete (importante para "
+"esta aplicación, ya que el mecanismo de historial depende de ello — véase"
+" [Historial e instantáneas](admin/history_and_snapshots.md)) y que "
+"prácticamente cualquier herramienta RDF existente puede leer. Añada `-u "
+"\"$GRAPHDB_USER:$GRAPHDB_PASS\"` a cualquiera de los dos comandos si la "
+"seguridad de GraphDB está activada, igual que arriba."
 
-#: ../../source/backup_and_migration.md:124 9dfcf57c03d144ab8dc8d877df44b264
+#: ../../source/backup_and_migration.md:138 9dfcf57c03d144ab8dc8d877df44b264
 msgid ""
 "This isn't a replacement for the native backup — restoring from N-Quads "
 "means creating fresh repositories and re-importing the data, which is "
@@ -258,15 +274,15 @@ msgid ""
 "failure — that's what the section above is for."
 msgstr ""
 "Esto no sustituye a la copia de seguridad nativa — restaurar desde "
-"N-Quads implica crear repositorios nuevos y volver a importar los "
-"datos, lo cual es más lento y pierde los ajustes específicos del "
-"repositorio de GraphDB. Piensa en ello como un seguro frente a que el"
-" propio formato de copia de seguridad nativo se convierta algún día "
-"en un problema (una futura versión incompatible de GraphDB, o "
-"abandonar GraphDB por completo), no como la forma principal de "
-"recuperarse de un fallo ordinario — para eso está la sección anterior."
+"N-Quads implica crear repositorios nuevos y volver a importar los datos, "
+"lo cual es más lento y pierde los ajustes específicos del repositorio de "
+"GraphDB. Piensa en ello como un seguro frente a que el propio formato de "
+"copia de seguridad nativo se convierta algún día en un problema (una "
+"futura versión incompatible de GraphDB, o abandonar GraphDB por "
+"completo), no como la forma principal de recuperarse de un fallo "
+"ordinario — para eso está la sección anterior."
 
-#: ../../source/backup_and_migration.md:133 f548407dc25f47e9a7f968dd2fb873c0
+#: ../../source/backup_and_migration.md:147 f548407dc25f47e9a7f968dd2fb873c0
 msgid ""
 "Move the resulting files — both the `.tar` backup and the `.nq` quad "
 "dumps — somewhere **other than this server** — external storage, another "
@@ -274,18 +290,18 @@ msgid ""
 "generally. A backup that only exists on the same machine it's protecting "
 "against isn't a real backup."
 msgstr ""
-"Traslada los archivos resultantes — tanto la copia de seguridad `.tar`"
-" como los volcados `.nq` — a algún sitio **distinto de este servidor**"
-" — almacenamiento externo, otra máquina, almacenamiento en la nube, "
-"lo que el instituto ya use habitualmente para copias de seguridad. "
-"Una copia de seguridad que solo existe en la misma máquina de la que "
-"protege no es una copia de seguridad real."
+"Traslada los archivos resultantes — tanto la copia de seguridad `.tar` "
+"como los volcados `.nq` — a algún sitio **distinto de este servidor** — "
+"almacenamiento externo, otra máquina, almacenamiento en la nube, lo que "
+"el instituto ya use habitualmente para copias de seguridad. Una copia de "
+"seguridad que solo existe en la misma máquina de la que protege no es una"
+" copia de seguridad real."
 
-#: ../../source/backup_and_migration.md:139 383476f14fc440638a3ddf867649628c
+#: ../../source/backup_and_migration.md:153 383476f14fc440638a3ddf867649628c
 msgid "Scheduling automatic backups"
 msgstr "Programar copias de seguridad automáticas"
 
-#: ../../source/backup_and_migration.md:141 1278e6cb667d4f1d9f570d6fbe37b676
+#: ../../source/backup_and_migration.md:155 1278e6cb667d4f1d9f570d6fbe37b676
 msgid ""
 "Rather than remembering to run the commands above by hand, have `cron` do"
 " it on a schedule. This wrapper script does both the native GraphDB "
@@ -296,16 +312,16 @@ msgid ""
 " the next morning, not the day of an actual disaster:"
 msgstr ""
 "En lugar de tener que acordarse de ejecutar a mano los comandos "
-"anteriores, deja que `cron` lo haga según una programación. Este "
-"script hace cada noche tanto la copia de seguridad nativa de GraphDB "
-"como el volcado de cuádruplas independiente del proveedor, comprueba "
-"que cada uno realmente ha tenido éxito (no solo que curl no se haya "
-"caído), envía una alerta por correo si algo ha ido mal, y solo "
-"elimina archivos antiguos una vez que sabe que las copias de esta "
-"noche son buenas — de modo que un fallo es algo de lo que te enteras a la "
-"mañana siguiente, no el día de un desastre real."
+"anteriores, deja que `cron` lo haga según una programación. Este script "
+"hace cada noche tanto la copia de seguridad nativa de GraphDB como el "
+"volcado de cuádruplas independiente del proveedor, comprueba que cada uno"
+" realmente ha tenido éxito (no solo que curl no se haya caído), envía una"
+" alerta por correo si algo ha ido mal, y solo elimina archivos antiguos "
+"una vez que sabe que las copias de esta noche son buenas — de modo que un"
+" fallo es algo de lo que te enteras a la mañana siguiente, no el día de "
+"un desastre real."
 
-#: ../../source/backup_and_migration.md:220 4739a7ccf76f429a8e273d8daf8a6a1b
+#: ../../source/backup_and_migration.md:234 4739a7ccf76f429a8e273d8daf8a6a1b
 msgid ""
 "If GraphDB security is enabled, add `-u \"$GRAPHDB_USER:$GRAPHDB_PASS\"` "
 "to both `curl` calls that talk to GraphDB (the backup request and the two"
@@ -316,7 +332,7 @@ msgstr ""
 "GraphDB (la solicitud de copia de seguridad y las dos solicitudes de "
 "volcado de cuádruplas), igual que en los comandos manuales anteriores."
 
-#: ../../source/backup_and_migration.md:225 43d5e3a1e3444f2d9199329e5e4990d5
+#: ../../source/backup_and_migration.md:239 43d5e3a1e3444f2d9199329e5e4990d5
 msgid ""
 "Make it executable (`chmod +x /opt/cbgp-databases/backup.sh`), then add "
 "it to the server's crontab (`crontab -e`) to run every night at 2 AM:"
@@ -325,7 +341,7 @@ msgstr ""
 "después al crontab del servidor (`crontab -e`) para que se ejecute cada "
 "noche a las 2:00 h."
 
-#: ../../source/backup_and_migration.md:233 add107cd360547a883f3bcedd9d2083b
+#: ../../source/backup_and_migration.md:247 add107cd360547a883f3bcedd9d2083b
 msgid ""
 "Why nightly, and not more often? Records in this application are "
 "transcribed from paper originals that continue to exist independently "
@@ -338,21 +354,20 @@ msgid ""
 "that has no paper (or other) backstop, that calculus changes and a "
 "tighter schedule would be worth revisiting."
 msgstr ""
-"¿Por qué cada noche, y no más a menudo? Los registros de esta "
-"aplicación se transcriben a partir de originales en papel que siguen "
-"existiendo de forma independiente (véase [Entrada de "
-"datos](admin/data_entry.md)) — así que en el peor caso, si un desastre "
-"ocurre justo antes de la siguiente copia de seguridad, es perder "
-"unas pocas horas de trabajo de *reintroducción*, no perder la "
-"información subyacente en sí. Dado lo poco frecuentes que son en "
-"realidad los cambios aquí (este sistema se usa a un ritmo horario, no"
-" de minuto a minuto), las copias de seguridad nocturnas ya son "
-"generosas, no un compromiso a la baja. Si esta aplicación llegara a "
-"usarse alguna vez para datos que no tienen un respaldo en papel (u "
-"otro tipo), ese cálculo cambia y merecería la pena revisar una "
-"programación más ajustada."
+"¿Por qué cada noche, y no más a menudo? Los registros de esta aplicación "
+"se transcriben a partir de originales en papel que siguen existiendo de "
+"forma independiente (véase [Entrada de datos](admin/data_entry.md)) — así"
+" que en el peor caso, si un desastre ocurre justo antes de la siguiente "
+"copia de seguridad, es perder unas pocas horas de trabajo de "
+"*reintroducción*, no perder la información subyacente en sí. Dado lo poco"
+" frecuentes que son en realidad los cambios aquí (este sistema se usa a "
+"un ritmo horario, no de minuto a minuto), las copias de seguridad "
+"nocturnas ya son generosas, no un compromiso a la baja. Si esta "
+"aplicación llegara a usarse alguna vez para datos que no tienen un "
+"respaldo en papel (u otro tipo), ese cálculo cambia y merecería la pena "
+"revisar una programación más ajustada."
 
-#: ../../source/backup_and_migration.md:246 ddb5b664d5ad406f865dfe29ce93ad44
+#: ../../source/backup_and_migration.md:260 ddb5b664d5ad406f865dfe29ce93ad44
 msgid ""
 "This only protects against database corruption or accidental deletion — "
 "backups written to `/var/backups` on the **same server** are lost right "
@@ -368,14 +383,14 @@ msgstr ""
 "demás si ese servidor se pierde o se da de baja. Copie periódicamente "
 "`$BACKUP_DIR` a algún sitio físicamente separado (`rsync`/`scp` a otra "
 "máquina, un contenedor de almacenamiento en la nube, lo que el instituto "
-"ya use para copias de seguridad externas) — una tarea cron que únicamente "
-"escribe en disco local da una falsa sensación de seguridad."
+"ya use para copias de seguridad externas) — una tarea cron que únicamente"
+" escribe en disco local da una falsa sensación de seguridad."
 
-#: ../../source/backup_and_migration.md:255 f3e2a93392b2455db7211a657500d520
+#: ../../source/backup_and_migration.md:269 f3e2a93392b2455db7211a657500d520
 msgid "Restoring from a backup (disaster recovery)"
 msgstr "Restaurar desde una copia de seguridad (recuperación ante desastres)"
 
-#: ../../source/backup_and_migration.md:257 1b3182e1bf4f443a88dd7d093c5e5d8a
+#: ../../source/backup_and_migration.md:271 1b3182e1bf4f443a88dd7d093c5e5d8a
 msgid ""
 "This is for when something has gone wrong on the **same** server — an "
 "accidental bulk deletion, a corrupted repository, a failed upgrade — and "
@@ -388,15 +403,15 @@ msgstr ""
 "seguridad que se sabe correcta, no trasladarse a otro hardware (eso es la"
 " siguiente sección)."
 
-#: ../../source/backup_and_migration.md:262 ca95ae337875469f8057360823814fd9
+#: ../../source/backup_and_migration.md:276 ca95ae337875469f8057360823814fd9
 msgid ""
 "**Stop the application** (not GraphDB itself) so nobody can write new "
 "data while the restore is in progress:"
 msgstr ""
-"**Detenga la aplicación** (no GraphDB en sí) para que nadie pueda escribir "
-"datos nuevos mientras la restauración está en curso:"
+"**Detenga la aplicación** (no GraphDB en sí) para que nadie pueda "
+"escribir datos nuevos mientras la restauración está en curso:"
 
-#: ../../source/backup_and_migration.md:267 948f6c8e671a41b6b8a16a09cbab8a9c
+#: ../../source/backup_and_migration.md:281 948f6c8e671a41b6b8a16a09cbab8a9c
 msgid ""
 "**Find the backup to restore** — the most recent `.tar` file in "
 "`$BACKUP_DIR` (or wherever backups were copied off-server to, if the "
@@ -407,27 +422,28 @@ msgstr ""
 "fuera del servidor, si el problema es lo bastante grave como para que las"
 " copias locales también sean sospechosas)."
 
-#: ../../source/backup_and_migration.md:270 49fb341392234211aecc3b042910de70
+#: ../../source/backup_and_migration.md:284 49fb341392234211aecc3b042910de70
 msgid ""
 "**Restore it**, telling GraphDB to replace whatever is currently in each "
 "repository rather than erroring out because they already exist:"
 msgstr ""
-"**Restáurela**, indicándole a GraphDB que reemplace lo que haya actualmente"
-" en cada repositorio, en lugar de generar un error porque ya existen:"
+"**Restáurela**, indicándole a GraphDB que reemplace lo que haya "
+"actualmente en cada repositorio, en lugar de generar un error porque ya "
+"existen:"
 
-#: ../../source/backup_and_migration.md:277 8262d1826c4142c0a5a46b6008f8c04f
+#: ../../source/backup_and_migration.md:291 8262d1826c4142c0a5a46b6008f8c04f
 msgid ""
 "(substitute the real filename). `removeStaleRepositories: true` is the "
 "important difference from a migration restore — it tells GraphDB this is "
 "a deliberate overwrite of existing, currently-broken repositories, not a "
 "mistake."
 msgstr ""
-"(Sustituya el nombre real del archivo). `removeStaleRepositories: "
-"true` es la diferencia importante respecto a una restauración de "
-"migración — le indica a GraphDB que se trata de una sobrescritura deliberada "
-"de repositorios existentes que actualmente no funcionan, y no de un error."
+"(Sustituya el nombre real del archivo). `removeStaleRepositories: true` "
+"es la diferencia importante respecto a una restauración de migración — le"
+" indica a GraphDB que se trata de una sobrescritura deliberada de "
+"repositorios existentes que actualmente no funcionan, y no de un error."
 
-#: ../../source/backup_and_migration.md:281 7cd6f18c59e340aeb331a2cb14fb5357
+#: ../../source/backup_and_migration.md:295 7cd6f18c59e340aeb331a2cb14fb5357
 msgid ""
 "**Restart the application** and confirm the data looks right — check a "
 "few familiar records via [Search & Queries](admin/search_and_queries.md) "
@@ -438,7 +454,7 @@ msgstr ""
 "consultas](admin/search_and_queries.md) antes de dar el incidente por "
 "resuelto."
 
-#: ../../source/backup_and_migration.md:289 c04e4c0fc26f4d4a8508d6ddc85968b9
+#: ../../source/backup_and_migration.md:303 c04e4c0fc26f4d4a8508d6ddc85968b9
 msgid ""
 "Restoring a backup rolls the **entire** GraphDB instance back to exactly "
 "how it was at backup time — both repositories, current state and history "
@@ -449,18 +465,18 @@ msgid ""
 msgstr ""
 "Restaurar una copia de seguridad devuelve **toda** la instancia de "
 "GraphDB exactamente a como estaba en el momento de la copia — ambos "
-"repositorios por igual, tanto el de estado actual como el de historial. Todo lo"
-" escrito después de esa copia (cualquier registro añadido, editado o "
-"eliminado desde entonces) se pierde, no se combina con los datos "
+"repositorios por igual, tanto el de estado actual como el de historial. "
+"Todo lo escrito después de esa copia (cualquier registro añadido, editado"
+" o eliminado desde entonces) se pierde, no se combina con los datos "
 "restaurados. Por eso importa la programación de copias de seguridad de la"
 " sección anterior: la copia más reciente es lo máximo que se podrá "
 "recuperar."
 
-#: ../../source/backup_and_migration.md:297 46a80917b72f4c7d8b8c7da1f6c2ce4b
+#: ../../source/backup_and_migration.md:311 46a80917b72f4c7d8b8c7da1f6c2ce4b
 msgid "Migrating to a new server"
 msgstr "Migrar a un nuevo servidor"
 
-#: ../../source/backup_and_migration.md:299 4a9e17fe933b447da349cd7dc3810560
+#: ../../source/backup_and_migration.md:313 4a9e17fe933b447da349cd7dc3810560
 msgid ""
 "This is the procedure for moving the whole application — and, critically,"
 " **all of its data** — from one machine to another (for example, because "
@@ -470,18 +486,18 @@ msgstr ""
 "fundamentalmente, **todos sus datos** — de una máquina a otra (por "
 "ejemplo, porque el servidor actual se va a dar de baja)."
 
-#: ../../source/backup_and_migration.md:303 de55895bca0b4a92b05c4db4a63c9b6a
+#: ../../source/backup_and_migration.md:317 de55895bca0b4a92b05c4db4a63c9b6a
 msgid ""
 "**On the old server**, make a fresh backup right before migrating (see "
 "\"Making a backup\" above), so it reflects the most current data, not "
 "last night's cron run."
 msgstr ""
-"**En el servidor antiguo**, haga una copia de seguridad nueva justo antes "
-"de migrar (véase «Hacer una copia de seguridad» más arriba), para que "
+"**En el servidor antiguo**, haga una copia de seguridad nueva justo antes"
+" de migrar (véase «Hacer una copia de seguridad» más arriba), para que "
 "refleje los datos más actuales y no la ejecución de cron de la noche "
 "anterior."
 
-#: ../../source/backup_and_migration.md:306 87495f69793044898f0e185e840929e4
+#: ../../source/backup_and_migration.md:320 87495f69793044898f0e185e840929e4
 msgid ""
 "**Copy two files to the new server**: the backup `.tar` file, and the "
 "`.env` file (transfer `.env` carefully — it contains real passwords; "
@@ -489,10 +505,10 @@ msgid ""
 msgstr ""
 "**Copie dos archivos al nuevo servidor**: el archivo `.tar` de la copia "
 "de seguridad y el archivo `.env` (transfiera `.env` con cuidado — "
-"contiene contraseñas reales; `scp` por SSH está bien, pero mediante correo "
-"electrónico o chat, no)."
+"contiene contraseñas reales; `scp` por SSH está bien, pero mediante "
+"correo electrónico o chat, no)."
 
-#: ../../source/backup_and_migration.md:309 3efa8fe2a5a4457499cc8c1f05e79792
+#: ../../source/backup_and_migration.md:323 3efa8fe2a5a4457499cc8c1f05e79792
 msgid ""
 "**On the new server**, install Docker, check out this repository, and "
 "create the empty volume exactly as in [Installation](installation.md"
@@ -502,7 +518,7 @@ msgstr ""
 "cree el volumen vacío exactamente como en [Instalación](installation.md"
 "#running-via-docker):"
 
-#: ../../source/backup_and_migration.md:315 087c7498db3d4728886baefd02fe2e9e
+#: ../../source/backup_and_migration.md:329 087c7498db3d4728886baefd02fe2e9e
 msgid ""
 "**Start GraphDB only** (not the full application yet), using `docker-"
 "compose-graphdb.yml` as described in [Installation](installation.md"
@@ -512,7 +528,7 @@ msgstr ""
 "`docker-compose-graphdb.yml` como se describe en "
 "[Instalación](installation.md#running-via-docker):"
 
-#: ../../source/backup_and_migration.md:321 acd197101dc447069389b3128b1114d3
+#: ../../source/backup_and_migration.md:335 acd197101dc447069389b3128b1114d3
 msgid ""
 "Unlike a normal fresh install, **do not** create the two repositories by "
 "hand this time — restoring the backup recreates them automatically, with "
@@ -522,13 +538,13 @@ msgstr ""
 "dos repositorios a mano — restaurar la copia de seguridad los recrea "
 "automáticamente, con sus identificadores y ajustes originales intactos."
 
-#: ../../source/backup_and_migration.md:324 b4900fb316334f4baed8ee1d9f3c1c1b
+#: ../../source/backup_and_migration.md:338 b4900fb316334f4baed8ee1d9f3c1c1b
 msgid "**Restore the backup** into this brand-new, still-empty GraphDB instance:"
 msgstr ""
 "**Restaure la copia de seguridad** en esta instancia de GraphDB "
 "totalmente nueva y aún vacía."
 
-#: ../../source/backup_and_migration.md:331 e7b6a456701a49d0bacdc22b1100e0cf
+#: ../../source/backup_and_migration.md:345 e7b6a456701a49d0bacdc22b1100e0cf
 msgid ""
 "(substitute the real backup filename). This recreates both repositories "
 "with all their data — current state and full history — exactly as they "
@@ -542,7 +558,7 @@ msgstr ""
 "los valores `GRAPHDB_DBNAME`/`GRAPHDB_HISTORY` ya presentes en el `.env` "
 "copiado siguen siendo válidos sin necesidad de cambiarlos."
 
-#: ../../source/backup_and_migration.md:336 f4db6798d43648d09977bb7cd194d799
+#: ../../source/backup_and_migration.md:350 f4db6798d43648d09977bb7cd194d799
 msgid ""
 "**If GraphDB security was enabled on the old server**, recreate the same "
 "GraphDB user account on the new instance (Workbench → **Setup → Users**) "
@@ -555,13 +571,13 @@ msgstr ""
 "presentes en `GRAPHDB_USER`/`GRAPHDB_PASS`, ya que (según la nota "
 "anterior) la copia de seguridad no incluía esa cuenta."
 
-#: ../../source/backup_and_migration.md:341 212530d4074c4b2b9dc27ca3a6e5b247
+#: ../../source/backup_and_migration.md:355 212530d4074c4b2b9dc27ca3a6e5b247
 msgid "**Start the full application** and confirm the data is really there:"
 msgstr ""
 "**Arranque la aplicación completa** y confirme que los datos realmente "
 "están ahí."
 
-#: ../../source/backup_and_migration.md:345 0d542346f2544ccc8087a91677079e07
+#: ../../source/backup_and_migration.md:359 0d542346f2544ccc8087a91677079e07
 msgid ""
 "Log in and check that familiar records appear in a search (see [Search & "
 "Queries](admin/search_and_queries.md)) before treating the old server as "
@@ -571,7 +587,7 @@ msgstr ""
 "búsqueda (véase [Búsqueda y consultas](admin/search_and_queries.md)) "
 "antes de considerar seguro dar de baja el servidor antiguo."
 
-#: ../../source/backup_and_migration.md:350 3dfed383abf94d3d852793832ea6a683
+#: ../../source/backup_and_migration.md:364 3dfed383abf94d3d852793832ea6a683
 msgid ""
 "A tempting shortcut is to skip all of the above and just copy the `cbgp-"
 "graphdb` Docker volume's files directly (stop GraphDB, `tar` up the "
@@ -593,3 +609,4 @@ msgstr ""
 "la API REST de esta página es el que el propio fabricante de GraphDB "
 "documenta, prueba y admite — prefiéralo salvo que haya una razón concreta"
 " para no hacerlo."
+

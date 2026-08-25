@@ -8,9 +8,16 @@
 RSpec.describe 'controlled-vocabulary display resolution' do
   # project_type is a real controlled-vocabulary field in the fixture
   # ontology (answers block "project-type", not FREE/NUM/DATE/HIDDEN).
-  let(:controlled_field) { CBGP::Dataset.fields_for('project').find { |f| f[:questionclass] == 'project_type' } }
-  let(:free_text_field) { CBGP::Dataset.fields_for('project').find { |f| f[:questionclass] == 'project_title' } }
-  let(:currency_field) { CBGP::Dataset.fields_for('project').find { |f| f[:questionclass] == 'project_total_funding' } }
+  # Sara's 2026-08 project-fields restructuring split the old shared
+  # "project" form into per-funding-type forms (european_research_project,
+  # national_regional_research_project, private_research_project,
+  # personnel_project) plus a separate "userproject" (user-facing) form -
+  # project_type itself is unused/deprecated on the Core forms now (see its
+  # ontology comment) but survives as a userproject field, so that's used as
+  # the example here instead.
+  let(:controlled_field) { CBGP::Dataset.fields_for('userproject').find { |f| f[:questionclass] == 'project_type' } }
+  let(:free_text_field) { CBGP::Dataset.fields_for('userproject').find { |f| f[:questionclass] == 'project_title' } }
+  let(:currency_field) { CBGP::Dataset.fields_for('userproject').find { |f| f[:questionclass] == 'personnel_project_total_funding' } }
 
   before do
     raise "fixture ontology no longer has 'project_type' - update this spec" unless controlled_field

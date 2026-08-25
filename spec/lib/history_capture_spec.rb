@@ -83,14 +83,18 @@ RSpec.describe 'SCD Type 2 history capture' do
       { method: :title, questionclass: 'project_title', label: 'Title', class: 'string', answers: "#{CBGP_KB}#FREE" }
     end
     let(:currency_field) do
-      { method: :total_funding, questionclass: 'project_total_funding', label: 'Total funding', class: 'currency',
+      # personnel_project_total_funding: 'project' itself is no longer a
+      # valid form type (Sara's 2026-08 restructuring split it into
+      # per-funding-type forms); personnel_project is used here as a real
+      # stand-in form with a currency field.
+      { method: :total_funding, questionclass: 'personnel_project_total_funding', label: 'Total funding', class: 'currency',
         answers: "#{CBGP_KB}#NUM" }
     end
     # A real Dataset, not a double: its field getters are per-instance
     # singleton methods (defined in #initialize), not real methods on the
     # class, so RSpec's verifying doubles can't confirm they exist.
     let(:new_dataset) do
-      ds = CBGP::Dataset.new(type: 'project')
+      ds = CBGP::Dataset.new(type: 'personnel_project')
       ds.title = 'New Title'
       ds.total_funding = '20000.00'
       ds
@@ -108,7 +112,7 @@ RSpec.describe 'SCD Type 2 history capture' do
     it 'reports changed fields as "label: old → new", formatted through resolve_display_value' do
       summary = summarize_field_changes(
         fields: [string_field, currency_field],
-        old_values: { project_title: 'Old Title', project_total_funding: '15000.00' },
+        old_values: { project_title: 'Old Title', personnel_project_total_funding: '15000.00' },
         new_dataset: new_dataset
       )
       expect(summary).to eq('Title: Old Title → New Title; Total funding: 15,000.00 → 20,000.00')
@@ -126,7 +130,7 @@ RSpec.describe 'SCD Type 2 history capture' do
 
   describe 'write_dataset_to_db_query (edit path wiring)' do
     let(:dataset) do
-      ds = CBGP::Dataset.new(type: 'project')
+      ds = CBGP::Dataset.new(type: 'personnel_project')
       ds.primary_id = 'abc-123'
       ds.title = 'New Title'
       ds
@@ -140,9 +144,9 @@ RSpec.describe 'SCD Type 2 history capture' do
       query = write_dataset_to_db_query(dataset: dataset, oldid: 'abc-123')
 
       expect(self).to have_received(:delete_dataset_query).with(
-        oldid: "#{BASE_URI}project/context/abc-123",
+        oldid: "#{BASE_URI}personnel_project/context/abc-123",
         reason: 'superseded',
-        detail: 'Title: Old Title → New Title'
+        detail: 'Title of the project: Old Title → New Title'
       )
       expect(query).to include('dcterms:created "2020-01-01T00:00:00Z"')
     end

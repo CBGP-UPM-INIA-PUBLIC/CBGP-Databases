@@ -4,22 +4,30 @@ require 'linkeddata'
 require 'sparql'
 require 'sparql/client'
 require 'securerandom'
+require_relative 'virtuoso_update_client'
 # require 'unicode' # If not already available; Ruby stdlib has String#unicode_normalize, but ensure it's loaded if needed
 
-host = GRAPHDB_HOST || 'localhost:7200'
-GRAPHDB_USER || 'cbgp'
-GRAPHDB_PASS || 'cbgp'
-GRAPHDB_DBNAME || 'kbdatabase'
+host = VIRTUOSO_HOST || 'localhost:8890'
+history_host = VIRTUOSO_HISTORY_HOST || 'localhost:8891'
 
 $ontology = RDF::Repository.load(CBGP_KB) # set in configuration.rb and/or in docker-compose
-DATABASE = SPARQL::Client.new("http://#{GRAPHDB_USER}:#{GRAPHDB_PASS}@#{host}/repositories/#{GRAPHDB_DBNAME}")
-DATABASE_UPDATE = SPARQL::Client.new("http://#{GRAPHDB_USER}:#{GRAPHDB_PASS}@#{host}/repositories/#{GRAPHDB_DBNAME}/statements")
 
-# SCD Type 2 history repository — a separate GraphDB repository (not a
+# Reads: plain SPARQL::Client against Virtuoso's /sparql endpoint - Virtuoso
+# allows anonymous SELECT/CONSTRUCT there by default (same as GraphDB's
+# /repositories/<name> did, just without needing credentials in the URL).
+DATABASE = SPARQL::Client.new("http://#{host}/sparql")
+# Writes: Virtuoso's /sparql-auth requires HTTP Digest auth and rejects Basic
+# outright - confirmed live against a real Virtuoso 07.20 container, no
+# virtuoso.ini setting in that build offers a way around it - hence the
+# dedicated client in lib/virtuoso_update_client.rb instead of SPARQL::Client
+# (which has no Digest support).
+DATABASE_UPDATE = CBGP::VirtuosoUpdateClient.new(endpoint: "http://#{host}/sparql-auth", user: VIRTUOSO_USER, password: VIRTUOSO_PASS)
+
+# SCD Type 2 history store — a separate Virtuoso container/process (not a
 # namespaced graph in DATABASE) that holds snapshots of superseded/deleted
 # records. See delete_dataset_query.
-HISTORY_DATABASE = SPARQL::Client.new("http://#{HISTORY_USER}:#{HISTORY_PASS}@#{host}/repositories/#{GRAPHDB_HISTORY}")
-HISTORY_DATABASE_UPDATE = SPARQL::Client.new("http://#{HISTORY_USER}:#{HISTORY_PASS}@#{host}/repositories/#{GRAPHDB_HISTORY}/statements")
+HISTORY_DATABASE = SPARQL::Client.new("http://#{history_host}/sparql")
+HISTORY_DATABASE_UPDATE = CBGP::VirtuosoUpdateClient.new(endpoint: "http://#{history_host}/sparql-auth", user: HISTORY_USER, password: HISTORY_PASS)
 
 PREFIXES = "PREFIX cbgp: <https://w3id.org/CBGP-App#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
@@ -27,7 +35,6 @@ PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX xml:<http://www.w3.org/XML/1998/namespace>
 PREFIX xsd:<http://www.w3.org/2001/XMLSchema#>
 PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#>
-PREFIX onto: <http://www.ontotext.com/>
 PREFIX sio: <http://semanticscience.org/resource/>
 PREFIX schema: <http://schema.org/>
 PREFIX edam: <http://edamontology.org/>

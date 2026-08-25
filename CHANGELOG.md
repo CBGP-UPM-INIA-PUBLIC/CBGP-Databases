@@ -10,6 +10,94 @@ the rest are grouped by theme/date as a best-effort mapping. From this point
 forward, every release ships with a matching `VERSION` file bump and an entry
 here.
 
+## [0.17.0] - 2026-08-25
+### Fixed
+- Test fixtures updated to match Sara's project-fields ontology
+  restructuring (the old shared `project` form, distinguished by
+  `dcterms:type`, replaced by `european_research_project`/
+  `national_regional_research_project`/`private_research_project`/
+  `personnel_project`): `display_labels_spec.rb`, `dcterms_type_spec.rb`,
+  `history_capture_spec.rb`, `dataset_classes_currency_spec.rb`,
+  `search_accent_spec.rb`, `form_required_fields_spec.rb`,
+  `form_defaults_spec.rb`, `form_formulas_spec.rb` all re-anchored to real
+  fields on the new forms. Confirmed the application itself has zero
+  hardcoded field names anywhere in `lib/`/`app/` - only these test
+  fixtures needed updating; the ontology-driven design held.
+- A project-wide ontology sanity/validation pass ahead of the beta
+  release, checking every form's `local:requires-field`/`local:has-formulas`/
+  `local:has-defaults` targets actually resolve, plus every formula's
+  Dentaku variable names against real fields. Found and fixed 5 real,
+  entirely silent bugs directly in `CBGP-Ontology` (`59d1a2f`, `8870fc7`) -
+  none of these ever raised an error, which is exactly why a systematic
+  audit was needed rather than relying on the test suite alone:
+  - `project_funding_entity` (required on Personnel Project) was missing
+    `local:question-order`, so it never rendered or got enforced.
+  - Private Research Projects' required-field list pointed at National/
+    Regional Research Projects' funding-institution field instead of its
+    own - could never have been satisfied as written.
+  - European Research Projects' overheads formula referenced a variable
+    name matching no real field (naming drift).
+  - One formula-definition resource was shared verbatim by European and
+    Private Research Projects for `project_cbgp_overheads`, but each
+    form's own "total overheads" field has a different name - split into
+    two per-form formula resources. Side effect: European Research
+    Projects now has a genuine two-step calculation chain
+    (`total_funding → total_overheads → project_cbgp_overheads`), which
+    `form_formulas_spec.rb` exercises directly with no mocking.
+  - National/Regional Research Projects' year 1-4 overheads formulas
+    referenced over-prefixed variable names matching no real field.
+- `form_defaults_spec.rb`: the ontology's last real `local:has-defaults`
+  example was removed by Sara's "clean test fields" pass, leaving that
+  mechanism with zero live users. Rather than reintroduce a disposable
+  sandbox field purely to keep a test anchored to "real" content (which is
+  what kept breaking across two ontology restructuring passes), this spec
+  now tests the SPARQL query layer against a small synthetic in-memory
+  ontology and the application layer against real fields with a stubbed
+  default - decoupling it from future ontology churn permanently.
+
+Full suite: 203 examples, 0 failures, stable across multiple random seeds.
+
+## [0.16.0] - 2026-08-25
+### Changed
+- **Switched from GraphDB to Virtuoso** as the triplestore, both for the
+  current-state store and the SCD history store. Trigger: GraphDB's
+  free/open tier returned to requiring periodic license re-registration.
+  Verified live against a real Virtuoso 07.20 container (write, read-back,
+  and history-snapshot round trips) before committing to the switch.
+  - Unlike GraphDB (one server process hosting multiple named
+    repositories), a single Virtuoso process is one quad store - so the
+    current-state and history stores, kept *physically* separate on
+    purpose (see `configuration.rb`), are now two separate Virtuoso
+    containers/processes rather than two repositories in one GraphDB
+    instance. `docker-compose.yml` runs both, each bind-mounted (not a
+    named Docker volume) to `./virtuoso-data/{current,history}` so
+    `virtuoso.ini` and the data/log files sit together on the host,
+    directly accessible without `docker volume inspect`.
+  - `GRAPHDB_HOST`/`GRAPHDB_USER`/`GRAPHDB_PASS`/`GRAPHDB_DBNAME`/
+    `GRAPHDB_HISTORY` are replaced by `VIRTUOSO_HOST`/`VIRTUOSO_USER`/
+    `VIRTUOSO_PASS`/`VIRTUOSO_HISTORY_HOST` (no dbname concept needed -
+    each Virtuoso instance's endpoint is a distinct host:port instead).
+  - New `lib/virtuoso_update_client.rb` (`CBGP::VirtuosoUpdateClient`):
+    Virtuoso's SPARQL Update endpoint (`/sparql-auth`) requires HTTP
+    Digest auth and rejects Basic outright (confirmed live; no
+    `virtuoso.ini` setting in this build offers a way around it), and the
+    `sparql-client` gem has no Digest support - this class covers exactly
+    the write path with a small Digest handshake, exposing the same
+    `#update`/`#insert_data` shape `DATABASE_UPDATE`/
+    `HISTORY_DATABASE_UPDATE` already had. Reads are untouched: plain
+    `SPARQL::Client` against Virtuoso's unauthenticated `/sparql` endpoint,
+    same as before.
+  - Added `net-http-digest_auth` as a dependency.
+  - Dropped the `onto:` (Ontotext/GraphDB) SPARQL prefix, declared in every
+    query but never actually used in any query body.
+- `docs/source/installation.md`/`configuration.md` rewritten for the
+  Virtuoso setup (no repository-creation step needed at all now - each
+  container already is a store). `docker-compose-graphdb.yml` kept as a
+  reference/rollback point for the retired GraphDB setup, not maintained
+  going forward. `docs/source/backup_and_migration.md` still describes the
+  old GraphDB backup procedure - flagged prominently as stale pending a
+  Virtuoso-specific rewrite, rather than left looking authoritative.
+
 ## [0.15.0] - 2026-08-17
 ### Added
 - `publication_cbgp_authors` ontology field: an ORCID cross-reference to

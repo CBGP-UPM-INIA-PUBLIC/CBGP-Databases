@@ -43,10 +43,10 @@ ENV['CBGP_SECRET']    ||= 'test-secret-not-for-production'
 ENV['NOTIFY_TO']      ||= 'test@example.invalid'
 ENV['NOTIFY_UN']      ||= 'test-user'
 ENV['NOTIFY_PW']      ||= 'test-pass'
-ENV['GRAPHDB_HOST']   ||= 'localhost:7200'
-ENV['GRAPHDB_USER']   ||= 'test'
-ENV['GRAPHDB_PASS']   ||= 'test'
-ENV['GRAPHDB_DBNAME'] ||= 'test'
+ENV['VIRTUOSO_HOST']         ||= 'localhost:8890'
+ENV['VIRTUOSO_USER']         ||= 'test'
+ENV['VIRTUOSO_PASS']         ||= 'test'
+ENV['VIRTUOSO_HISTORY_HOST'] ||= 'localhost:8891'
 ENV['CBGP_KB'] ||= resolve_ontology_source
 
 # Normally defined in app/controllers/application_controller.rb; redefined
@@ -58,6 +58,7 @@ def current_language
 end
 
 require 'json' # normally pulled in by application_controller.rb before configuration.rb
+require 'cgi'
 require 'jsonpath'
 require 'sanitize'
 require 'rest-client'

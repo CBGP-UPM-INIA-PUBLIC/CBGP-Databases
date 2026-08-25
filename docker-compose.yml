@@ -1,37 +1,70 @@
 services:
-  graphdb:
-    image: ontotext/graphdb:10.8.0
+  # Virtuoso, not GraphDB, as of 2026-08-25 (see CHANGELOG) - GraphDB's
+  # licensing requiring periodic re-registration even for the free tier was
+  # the trigger. Two separate containers/processes, not one Virtuoso with two
+  # named graphs, because a single Virtuoso process is one quad store (unlike
+  # GraphDB, which hosts multiple named "repositories" per server) - keeping
+  # the SCD Type 2 history store physically separate from the current-state
+  # store is a deliberate design choice (see configuration.rb), preserved
+  # here rather than collapsed into graph-level separation.
+  #
+  # Bind-mounted (not a named Docker volume) so virtuoso.ini and the .db/.log
+  # files are all directly visible/editable from the host. Files inside are
+  # owned by the container's internal uid, so use `docker exec` (or a
+  # throwaway container) rather than editing them directly as your host user.
+  virtuoso-current:
+    image: openlink/virtuoso-opensource-7:latest
     restart: always
-    hostname: graphdb
+    hostname: virtuoso-current
+    environment:
+      - DBA_PASSWORD=${VIRTUOSO_PASS}
     ports:
-      - 127.0.0.1:7200:7200
+      - 127.0.0.1:18890:8890
+      - 127.0.0.1:11111:1111
     volumes:
-      - cbgp-graphdb:/opt/graphdb/home
+      - ./virtuoso-data/current:/database
+    networks:
+      - cbgp-default
+
+  virtuoso-history:
+    image: openlink/virtuoso-opensource-7:latest
+    restart: always
+    hostname: virtuoso-history
+    environment:
+      # Falls back to VIRTUOSO_PASS when HISTORY_PASS isn't set in .env,
+      # same default the app itself uses (see configuration.rb) - keeps the
+      # common case (one shared password) to one line in .env.
+      - DBA_PASSWORD=${HISTORY_PASS:-${VIRTUOSO_PASS}}
+    ports:
+      - 127.0.0.1:18891:8890
+      - 127.0.0.1:11112:1111
+    volumes:
+      - ./virtuoso-data/history:/database
     networks:
       - cbgp-default
 
   cbgp-databases:
-    image: markw/cbgp-databases:0.15.0
+    image: markw/cbgp-databases:0.17.0
     restart: always
     hostname: databases
-    # Everything else (CBGP_SECRET, CBGP_USERS, NOTIFY_*, GRAPHDB_DBNAME,
-    # GRAPHDB_HISTORY, HISTORY_USER/PASS, ...) comes from .env - see
-    # configuration.md. GRAPHDB_HOST is overridden below because inside
-    # Docker's network the app must reach GraphDB by its service hostname
-    # (graphdb:7200), not whatever GRAPHDB_HOST says in .env (typically
-    # localhost:7200, correct for running the app natively instead).
+    depends_on:
+      - virtuoso-current
+      - virtuoso-history
+    # Everything else (CBGP_SECRET, CBGP_USERS, NOTIFY_*, VIRTUOSO_USER,
+    # VIRTUOSO_PASS, HISTORY_USER/PASS, ...) comes from .env - see
+    # configuration.md. VIRTUOSO_HOST/VIRTUOSO_HISTORY_HOST are overridden
+    # below because inside Docker's network the app must reach each Virtuoso
+    # by its service hostname on Virtuoso's internal port 8890, not whatever
+    # .env says (typically localhost:18890/18891, correct for running the
+    # app natively instead).
     env_file: .env
     environment:
-      - GRAPHDB_HOST=graphdb:7200
+      - VIRTUOSO_HOST=virtuoso-current:8890
+      - VIRTUOSO_HISTORY_HOST=virtuoso-history:8890
     ports:
       - 127.0.0.1:8000:4567
     networks:
       - cbgp-default
-
-      
-volumes:
-  cbgp-graphdb:
-    external: true
 
 networks:
   cbgp-default:

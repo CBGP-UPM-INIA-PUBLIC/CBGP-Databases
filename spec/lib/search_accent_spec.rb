@@ -79,8 +79,11 @@ RSpec.describe 'accent-insensitive search' do
         params: { 'publication_title' => 'genetica' } },
       { dataset_type: 'publication', questionclass: 'publication_affiliations',
         params: { 'publication_affiliations' => 'nino' } },
-      { dataset_type: 'project', questionclass: 'project_partner_institutions',
-        params: { 'project_partner_institutions' => 'espana' } }
+      # project_partner_institutions no longer exists (Sara's 2026-08
+      # project-fields restructuring); project_internal_code is another
+      # Multiple/FREE text field, on personnel_project.
+      { dataset_type: 'personnel_project', questionclass: 'project_internal_code',
+        params: { 'project_internal_code' => 'espana' } }
     ]
 
     free_text_cases.each do |c|
@@ -101,7 +104,7 @@ RSpec.describe 'accent-insensitive search' do
     end
 
     it 'still matches a currency field with the dedicated numeric CONTAINS filter, unaffected by the accent change' do
-      query = build_search_query(search_params: { 'project_total_funding' => '15,000.5' }, dataset_type: 'project')
+      query = build_search_query(search_params: { 'personnel_project_total_funding' => '15,000.5' }, dataset_type: 'personnel_project')
 
       expect(query).to include('FILTER(CONTAINS(STR(?value), "15000.50"))')
       expect(query).not_to include('FILTER regex(')

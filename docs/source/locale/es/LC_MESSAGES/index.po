@@ -34,5 +34,6 @@ msgid ""
 "research institute's administration — projects, personnel, and "
 "publications — built so that the people who curate its data model day to "
 "day never need to touch code."
-msgstr "Una plataforma de base de datos basada en ontologías y metaprogramada para gestionar la administración de un instituto de investigación —proyectos, personal y publicaciones— diseñada para que las personas que se encargan de mantener su modelo de datos día a día nunca tengan que tocar el código."
+msgstr ""
+"Una plataforma de base de datos basada en ontologías y metaprogramada para gestionar la administración de un instituto de investigación —proyectos, personal y publicaciones— diseñada para que las personas que se encargan de mantener su modelo de datos día a día nunca tengan que tocar el código."
 

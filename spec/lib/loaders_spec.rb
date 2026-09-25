@@ -20,7 +20,7 @@ RSpec.describe 'CBGP::Loaders.load_or_fetch_doi' do
   context 'when a graph for this DOI already exists' do
     it 'loads and returns the existing record without calling any parser or the agency lookup' do
       allow(CBGP::Loaders).to receive(:execute_search)
-        .with(hash_including(search_params: { 'newpub4' => doi }))
+        .with(hash_including(search_params: { 'publication_doi' => doi }))
         .and_return(['graph://existing'])
       allow(CBGP::Dataset).to receive(:load_from_graph)
         .with(hash_including(graph: 'graph://existing'))
@@ -36,7 +36,7 @@ RSpec.describe 'CBGP::Loaders.load_or_fetch_doi' do
   context 'when the DOI is not yet in the database' do
     before do
       allow(CBGP::Loaders).to receive(:execute_search)
-        .with(hash_including(search_params: { 'newpub4' => doi }))
+        .with(hash_including(search_params: { 'publication_doi' => doi }))
         .and_return([])
       allow(CBGP::Parsers).to receive(:match_authors_to_personnel).and_return([])
     end

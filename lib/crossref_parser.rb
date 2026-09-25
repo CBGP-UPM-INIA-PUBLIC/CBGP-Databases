@@ -26,13 +26,26 @@ module CBGP
       message = cref['message']
       return { pub: false, authors: [] } unless message
 
-      jpath = JsonPath.new('$["container-title"][0]')
-      journal = jpath.on(message).first
-      return { pub: false, authors: [] } if journal.to_s.strip.empty?
-
       jpath = JsonPath.new('$.title[0]')
       title = jpath.on(message).first
+      return { pub: false, authors: [] } if title.to_s.strip.empty?
+
       title = Sanitize.fragment(title.to_s)
+
+      # "container-title" is the journal name - present for journal
+      # articles, but legitimately absent for preprints (bioRxiv/medRxiv
+      # "posted-content" records) and other non-journal work types. Treating
+      # a missing journal as "not a valid publication" silently discarded
+      # every real preprint DOI - found 2026-08-26 loading a real bioRxiv
+      # DOI whose Crossref record was otherwise complete. Fall back to the
+      # posting institution (e.g. "bioRxiv") or the publisher when there's
+      # no journal, rather than rejecting the record outright.
+      jpath = JsonPath.new('$["container-title"][0]')
+      journal = jpath.on(message).first
+      if journal.to_s.strip.empty?
+        journal = message.dig('institution', 0, 'name') || message['publisher']
+      end
+      journal = Sanitize.fragment(journal.to_s)
 
       raw_authors = []
       names_only = []
@@ -64,6 +77,14 @@ module CBGP
       dataset.title = title
       dataset.journal = journal
       dataset.date = date
+      # See lib/publication_type_classifier.rb - Crossref's own "type" field
+      # (e.g. "journal-article", "book-chapter") drives this, since it was
+      # otherwise left unset on every import (found 2026-08-26, real example:
+      # 10.1142/9789811265679_0033, a book chapter).
+      dataset.pubtype = publication_type_answer_id(classify_publication_type(message['type']))
+      # See lib/open_access_classifier.rb - only ever sets "Yes" from a
+      # confident Crossref license signal, never "No", never OpenAIRE.
+      dataset.oa = open_access_answer_id(classify_open_access_from_crossref(message['license']))
 
       { pub: dataset, authors: raw_authors }
     end

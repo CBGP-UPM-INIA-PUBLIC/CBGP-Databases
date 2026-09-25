@@ -30,9 +30,15 @@ module CBGP
 
       normalized_dois = dois.to_s.split(/[, \t\n]+/).map(&:strip).reject(&:empty?).uniq
 
+      # Loaded once for the whole batch, not once per DOI: matching a
+      # publication's authors against CBGP personnel needs this index, and
+      # reloading all of personnel from scratch for every single DOI is the
+      # dominant cost of a bulk load (see lib/personnel_matcher.rb).
+      member_index = CBGP::Parsers.load_member_index
+
       normalized_dois.each do |doi|
         warn "\n\n\nFETCHING DOI #{doi}\n\n\n"
-        result = load_or_fetch_doi(doi: doi, database: database)
+        result = load_or_fetch_doi(doi: doi, database: database, member_index: member_index)
 
         if result[:existing]
           messages << "DOI:#{doi} was already in database"
@@ -52,9 +58,17 @@ module CBGP
     private
 
     # Shared core logic: check existence → parse if new → write
-    def self.load_or_fetch_doi(doi:, database:)
-      # 1. Check if already exists
-      graphs = execute_search(search_params: { 'newpub4' => doi }, dataset_type: database)
+    #
+    # @param member_index [Array<Hash>, nil] pre-loaded personnel index (see
+    #   CBGP::Parsers.load_member_index) to reuse across a bulk load; when
+    #   nil (the single-DOI path), match_authors_to_personnel loads its own.
+    def self.load_or_fetch_doi(doi:, database:, member_index: nil)
+      # 1. Check if already exists. 'publication_doi' is the real questionclass
+      # (was 'newpub4' - a stale reference that predates Sara's 2026-08
+      # restructuring; the mismatch made this duplicate check a silent no-op
+      # on every single load, found 2026-08-26 while testing a real bulk
+      # load - see CHANGELOG).
+      graphs = execute_search(search_params: { 'publication_doi' => doi }, dataset_type: database)
 
       if graphs&.any?
         graph = graphs.first
@@ -91,7 +105,7 @@ module CBGP
       # the source gave us one) or exact accent-insensitive name match
       # otherwise - never fuzzy, to avoid mis-attributing an outside
       # co-author's identity to a CBGP member.
-      matched_orcids = CBGP::Parsers.match_authors_to_personnel(authors: result[:authors])
+      matched_orcids = CBGP::Parsers.match_authors_to_personnel(authors: result[:authors], member_index: member_index)
       pub.cbgp_author_orcids = matched_orcids if pub.respond_to?(:cbgp_author_orcids=)
 
       # 3. Save it

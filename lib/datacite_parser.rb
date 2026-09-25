@@ -22,17 +22,25 @@ module CBGP
         end
       end
 
+      jpath = JsonPath.new('title')
+      title = jpath.on(dcite).first
+      return { pub: false, authors: [] } if title.to_s.strip.empty?
+
+      title = Sanitize.fragment(title)
+
+      # DataCite covers datasets, software, and other non-journal deposits
+      # (e.g. Zenodo records) which legitimately have no "container-title" -
+      # gating validity on journal presence silently discarded every real
+      # non-journal DataCite DOI, found 2026-08-26 loading a real Zenodo DOI
+      # whose DataCite record was otherwise complete. See crossref_parser.rb
+      # for the same fix on the Crossref side.
       jpath = JsonPath.new('["container-title"]')
       journal = jpath.on(dcite).first
-      return { pub: false, authors: [] } unless journal
-      return { pub: false, authors: [] } if journal.empty?
+      journal = journal.first if journal.is_a?(Array)
+      journal = Sanitize.fragment(journal.to_s)
 
       # not provided by datacite
       affiliations = []
-
-      jpath = JsonPath.new('title')
-      title = jpath.on(dcite).first
-      title = Sanitize.fragment(title)
 
       raw_authors = []
       names_only = []
@@ -81,6 +89,21 @@ module CBGP
       endpage = pages
       # jpath.on(dcite).split('-')
 
+      # The citeproc/CSL-JSON format this parser requests via Accept above
+      # carries its own "type" field (e.g. "article-journal", "chapter",
+      # "book-chapter", "software") - drives publication_type, which was
+      # otherwise left unset on every import (found 2026-08-26). See
+      # lib/publication_type_classifier.rb.
+      jpath = JsonPath.new('type')
+      raw_type = jpath.on(dcite).first
+
+      # DataCite's citeproc "copyright" field (free text, e.g. "Creative
+      # Commons Attribution 4.0 International") - drives publication_open_access.
+      # See lib/open_access_classifier.rb: only ever sets "Yes", never "No",
+      # never OpenAIRE.
+      jpath = JsonPath.new('copyright')
+      copyright_text = jpath.on(dcite).first
+
       dataset = CBGP::Dataset.new(type: 'publication')
 
       dataset.doi = doi
@@ -89,6 +112,8 @@ module CBGP
       dataset.title = title
       dataset.journal = journal
       dataset.date = date
+      dataset.pubtype = publication_type_answer_id(classify_publication_type(raw_type))
+      dataset.oa = open_access_answer_id(classify_open_access_from_datacite(copyright_text))
 
       { pub: dataset, authors: raw_authors }
     end

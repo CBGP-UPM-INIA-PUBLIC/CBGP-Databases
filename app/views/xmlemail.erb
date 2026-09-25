@@ -2,8 +2,8 @@
 <% @datasets.each do |d| %>
     <intermedia>
         <email><%= d.institutional_mail  %></email>
-        <subcategoria><%= get_label_for_id(id: d.category).strip %></subcategoria>
-        <institucion><%= get_label_for_id(id: d.institution).strip  %></institucion>
+        <subcategoria><%= get_label_for_id(id: d.category).to_s.strip %></subcategoria>
+        <institucion><%= get_label_for_id(id: d.institution).to_s.strip  %></institucion>
     </intermedia>
 <% end %>
 </Root>

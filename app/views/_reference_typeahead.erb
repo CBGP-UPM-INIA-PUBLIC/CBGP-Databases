@@ -119,6 +119,7 @@
              style="margin-top:4px;<%= sv.empty? ? ' display:none' : '' %>">
           <small>Stored value:&nbsp;</small>
           <code id="<%= qid %>_DISPLAY_<%= idx %>"><%= sv %></code>
+          <span id="<%= qid %>_LABEL_<%= idx %>" class="xref-label"></span>
           <button type="button" id="<%= qid %>_CLEAR_<%= idx %>"
                   style="margin-left:6px; font-size:0.8em;">✕ clear</button>
         </div>
@@ -148,6 +149,7 @@
         const input       = document.getElementById(qid + '_SEARCH_'     + suffix);
         const hiddenInput = document.getElementById(qid + '_ANSWER_'     + suffix);
         const displayEl   = document.getElementById(qid + '_DISPLAY_'    + suffix);
+        const labelEl     = document.getElementById(qid + '_LABEL_'      + suffix);
         const storedRow   = document.getElementById(qid + '_stored_row_' + suffix);
         const clearBtn    = document.getElementById(qid + '_CLEAR_'      + suffix);
         const datalist    = document.getElementById(qid + '_suggestions_' + suffix);
@@ -155,23 +157,42 @@
         let timeout;
         let valueMap = new Map();   // entirely private to this row
 
-        function setStoredValue(val) {
+        // labelText is omitted when the caller doesn't know it yet (kept as
+        // whatever was already shown) - see the initial-load lookup below.
+        function setStoredValue(val, labelText) {
           hiddenInput.value     = val;
           displayEl.textContent = val;
           storedRow.style.display = val ? '' : 'none';
+          if (labelEl && labelText !== undefined) {
+            labelEl.textContent = labelText ? `(${labelText})` : '';
+          }
         }
 
         clearBtn.addEventListener('click', function() {
-          setStoredValue('');
+          setStoredValue('', '');
           input.value = '';
           datalist.innerHTML = '';
           valueMap.clear();
         });
 
+        // On page load, a row may already carry a stored value (e.g. an
+        // ORCID saved on a previous visit) with no label ever fetched for
+        // it - the server only knows the raw stored value, not the
+        // cross-referenced record's display name. Look it up once so the
+        // field shows a name, not just an opaque identifier.
+        if (labelEl && hiddenInput.value) {
+          const lookupUrl = `/cbgp/reference/label/${encodeURIComponent(targetForm)}` +
+            `?via=${encodeURIComponent(via)}&label_method=${encodeURIComponent(labelMeth)}&value=${encodeURIComponent(hiddenInput.value)}`;
+          fetch(lookupUrl)
+            .then(r => r.json())
+            .then(data => { if (data.label) labelEl.textContent = `(${data.label})`; })
+            .catch(err => console.error('[typeahead] label lookup failed:', err));
+        }
+
         input.addEventListener('input', function() {
           const query = this.value.trim();
           const realValue = valueMap.get(query);
-          if (realValue !== undefined) setStoredValue(realValue);
+          if (realValue !== undefined) setStoredValue(realValue, query); // query IS the label just searched by
 
           clearTimeout(timeout);
           if (query.length < 2) { datalist.innerHTML = ''; valueMap.clear(); return; }
@@ -223,6 +244,7 @@
           <div id="${qid}_stored_row_${suffix}" style="display:none; margin-top:4px;">
             <small>Stored value:&nbsp;</small>
             <code id="${qid}_DISPLAY_${suffix}"></code>
+            <span id="${qid}_LABEL_${suffix}" class="xref-label"></span>
             <button type="button" id="${qid}_CLEAR_${suffix}" style="margin-left:6px; font-size:0.8em;">✕ clear</button>
           </div>
           <input type="hidden" name="${qid}[]" id="${qid}_ANSWER_${suffix}" value="">`;

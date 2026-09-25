@@ -10,14 +10,14 @@
         <tlf_lab><%= d.lab_phone_number  %></tlf_lab>
         <despacho><%= d.office  %></despacho>
         <tlf_despacho><%= d.office  %></tlf_despacho>
-        <subcategoria><%= get_label_for_id(id: d.category).strip %></subcategoria>
-        <jefe_grupo><%= get_label_for_id(id: d.pi).strip  %></jefe_grupo>
-        <sublinea><%= get_label_for_id(id: d.research_area).strip  %></sublinea>
-        <institucion><%= get_label_for_id(id: d.institution).strip  %></institucion>
-        <code10><%= get_label_for_id(id: d.member_code10).strip  %></code10>
-        <consejo><%= get_label_for_id(id: d.member_cbgp_center_board).strip  %></consejo> 
-        <genero><%= get_label_for_id(id: d.member_gender).strip %></genero>
-        <cluster><%= get_label_for_id(id: d.member_cluster).strip %></cluster>
+        <subcategoria><%= get_label_for_id(id: d.category).to_s.strip %></subcategoria>
+        <jefe_grupo><%= get_label_for_id(id: d.pi).to_s.strip  %></jefe_grupo>
+        <sublinea><%= get_label_for_id(id: d.research_area).to_s.strip  %></sublinea>
+        <institucion><%= get_label_for_id(id: d.institution).to_s.strip  %></institucion>
+        <code10><%= get_label_for_id(id: d.code_10).to_s.strip  %></code10>
+        <consejo><%= get_label_for_id(id: d.consejo).to_s.strip  %></consejo>
+        <genero><%= get_label_for_id(id: d.gender).to_s.strip %></genero>
+        <cluster><%= get_label_for_id(id: d.cluster).to_s.strip %></cluster>
     </intermedia>
 <% end %>
 </Root>

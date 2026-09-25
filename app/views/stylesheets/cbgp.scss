@@ -233,6 +233,57 @@ h3 {
   text-align: left;
 }
 
+/* Cross-reference / plain typeahead widget (_reference_typeahead.erb) -
+   compact layout. Without this, every "− remove"/"✕ clear"/"+ Add
+   another" button here falls through to the generic `button {}` rule
+   above (display:block; width:100%; margin-top:50px; margin-bottom:20px),
+   which is meant for primary form-submit buttons, not small inline
+   controls - that's what turned a 3-row Multiple xref field into a
+   towering wall of whitespace. Found 2026-08-26 reviewing the Publication
+   edit form's "CBGP Author(s)" field. */
+.reference-input-wrapper {
+  margin-bottom: 10px;
+}
+
+.reference-input-wrapper > label {
+  display: block;
+  font-size: 0.85em;
+  margin-bottom: 4px;
+}
+
+.reference-input-wrapper .std-row,
+.reference-input-wrapper .xref-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.reference-input-wrapper .xref-row > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reference-input-wrapper button {
+  display: inline-block;
+  width: auto;
+  margin: 0;
+  padding: 4px 10px;
+  font-size: 0.85em;
+}
+
+.reference-input-wrapper [id$="_add_btn"] {
+  margin-top: 4px;
+}
+
+.reference-input-wrapper .xref-label {
+  font-style: italic;
+  color: #555;
+  margin-left: 4px;
+}
+
 .affiliation input {
   text-align: left;
   width: 100%;

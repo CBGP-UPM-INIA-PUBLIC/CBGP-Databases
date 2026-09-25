@@ -176,7 +176,12 @@ def set_routes
     @mode = 'edit'
     @questionnaire = generate_questionnaire(questionnaire_type: @form) # questionnaire has all fields and possible answers
     # may have more fields than the form itself renders
-    @entry = CBGP::Dataset.new_with_defaults(type: @database, form: @form)
+    # type: @form (NOT @database) - @database is the shared storage dbname
+    # (e.g. "project"), which is no longer itself a valid ontology class
+    # since Sara's project-fields restructuring split it into several
+    # specific forms; CBGP::Dataset.new needs the real form class to look
+    # up fields at all.
+    @entry = CBGP::Dataset.new_with_defaults(type: @form, form: @form)
     halt erb :user_dataset, layout: :database_layout
   end
 
@@ -202,7 +207,9 @@ def set_routes
       @entry = CBGP::Dataset.load_from_params_and_write(params: params, form: @form)
     rescue CBGP::Dataset::ValidationError => e
       @validation_errors = e.errors
-      @entry = CBGP::Dataset.new_from_raw_params(type: params['database'], params: params)
+      # type: @form (NOT params['database']) - same dbname-vs-form distinction
+      # as everywhere else in this route.
+      @entry = CBGP::Dataset.new_from_raw_params(type: @form, params: params)
       halt erb :user_dataset, layout: :database_layout
     end
 
@@ -238,8 +245,10 @@ def set_routes
     # NOT be used here, or two forms sharing one dbname would both render
     # whichever form's section happens to match the dbname string.
     @questionnaire = generate_questionnaire(questionnaire_type: @form) # questionnaire has all fields and possible answers
-    # dbname (@database) for storage, form (@form) for which defaults apply
-    @entry = CBGP::Dataset.new_with_defaults(type: @database, form: @form)
+    # type: @form (NOT @database) - see the same note on the User-facing
+    # route above; @database (the shared storage dbname) is no longer
+    # itself a valid ontology class to build a Dataset from.
+    @entry = CBGP::Dataset.new_with_defaults(type: @form, form: @form)
     halt erb :dataset, layout: :database_layout
   end
 
@@ -318,7 +327,9 @@ def set_routes
       @entry = CBGP::Dataset.load_from_params_and_write(params: params, form: @form)
     rescue CBGP::Dataset::ValidationError => e
       @validation_errors = e.errors
-      @entry = CBGP::Dataset.new_from_raw_params(type: params['database'], params: params)
+      # type: @form (NOT params['database']) - same dbname-vs-form distinction
+      # as everywhere else in this route.
+      @entry = CBGP::Dataset.new_from_raw_params(type: @form, params: params)
     end
 
     halt erb :dataset, layout: :database_layout
@@ -527,6 +538,34 @@ def set_routes
     suggestions.map { |s| { value: s[:value], label: s[:label] } }.to_json
   end
 
+  # Reverse of the suggest endpoint above: given a value already stored on a
+  # cross-reference field (e.g. an ORCiD saved on a previous visit, with no
+  # label cached client-side), returns that record's human-readable label -
+  # used by _reference_typeahead.erb to show a name alongside a stored xref
+  # value, not just the raw stored value.
+  #
+  # Query parameters:
+  #   @param via          [String] questionclass of the field the value is
+  #     stored against (required), e.g. +"member_orcid"+
+  #   @param label_method [String] questionclass of the field to display;
+  #     falls back to the +via+ field itself when omitted
+  #   @param value        [String] the stored value to look up (required)
+  #
+  # @return [String] JSON +{ label: String|nil }+, or 400 JSON error if
+  #   +target+, +via+, or +value+ is blank
+  get '/cbgp/reference/label/:target' do
+    content_type :json
+
+    target = params[:target]
+    via    = params[:via].to_s.strip
+    label  = params[:label_method].to_s.strip
+    value  = params[:value].to_s.strip
+
+    halt 400, { error: 'Missing params' }.to_json if target.empty? || via.empty? || value.empty?
+
+    { label: CBGP::Dataset.fetch_reference_label(target_form: target, via_class: via, label_method: label, value: value) }.to_json
+  end
+
   # LOADERS
   # LOADERS
   # LOADERS
@@ -591,7 +630,12 @@ def set_routes
     @database = 'member'
     @questionnaire = generate_questionnaire(questionnaire_type: @database)
     @entry = CBGP::Dataset.new(type: @database)
-    memberstatus = 'mem17' # status of  members
+    # 'mem17' was a stale, pre-restructuring ontology fragment for this
+    # field (found 2026-08-26 - the /cbgp/active-members and
+    # /cbgp/active-emails feeds silently returned zero members ever since
+    # Sara's ontology restructuring renamed it). 'member_status' is the
+    # current real questionclass; verified live against fields_for('member').
+    memberstatus = 'member_status'
     statusresponse = 'active'
     params = { memberstatus => statusresponse }
 
@@ -631,7 +675,12 @@ def set_routes
     @database = 'member'
     @questionnaire = generate_questionnaire(questionnaire_type: @database)
     @entry = CBGP::Dataset.new(type: @database)
-    memberstatus = 'mem17' # status of  members
+    # 'mem17' was a stale, pre-restructuring ontology fragment for this
+    # field (found 2026-08-26 - the /cbgp/active-members and
+    # /cbgp/active-emails feeds silently returned zero members ever since
+    # Sara's ontology restructuring renamed it). 'member_status' is the
+    # current real questionclass; verified live against fields_for('member').
+    memberstatus = 'member_status'
     statusresponse = 'active'
     params = { memberstatus => statusresponse }
 

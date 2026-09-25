@@ -351,6 +351,53 @@ def field_query(fieldid:, language: current_language)
   field.execute($ontology)
 end
 
+# Direct rdfs:subClassOf parents and children of one ontology class -
+# generic, schema-agnostic hierarchy lookup (queries $ontology directly, not
+# a fixed field list), so any grouping the ontology maintainers ever add
+# (e.g. an "international"/"national" funding-type split) becomes
+# queryable immediately, with no code change here. See
+# lib/mcp_tools/core/ontology_relationships.rb, which exposes this as an
+# MCP discovery tool for exactly that reason.
+#
+# @param class_name [String] an ontology local name, e.g. "European" or
+#   "project_type"
+# @param language [String]
+# @return [Hash] { label:, parents: [{id:, label:}], children: [{id:, label:}] }
+def get_class_relationships_query(class_name:, language: current_language)
+  class_name = validate_local_name!(class_name, field: 'class_name')
+  language = validate_local_name!(language, field: 'language')
+
+  own_label = SPARQL.parse(<<~LABEL_QUERY).execute($ontology)
+    #{PREFIXES}
+    SELECT ?label WHERE {
+      cbgp:#{class_name} rdfs:label ?label .
+      FILTER (lang(?label) = '#{language}')
+    }
+  LABEL_QUERY
+
+  parents = SPARQL.parse(<<~PARENTS_QUERY).execute($ontology)
+    #{PREFIXES}
+    SELECT ?parent ?label WHERE {
+      cbgp:#{class_name} rdfs:subClassOf ?parent .
+      OPTIONAL { ?parent rdfs:label ?label . FILTER (lang(?label) = '#{language}') }
+    }
+  PARENTS_QUERY
+
+  children = SPARQL.parse(<<~CHILDREN_QUERY).execute($ontology)
+    #{PREFIXES}
+    SELECT ?child ?label WHERE {
+      ?child rdfs:subClassOf cbgp:#{class_name} .
+      OPTIONAL { ?child rdfs:label ?label . FILTER (lang(?label) = '#{language}') }
+    }
+  CHILDREN_QUERY
+
+  {
+    label: own_label.first&.bound?(:label) ? own_label.first[:label].to_s : nil,
+    parents: parents.map { |r| { id: r[:parent].to_s.split('#').last, label: r.bound?(:label) ? r[:label].to_s : nil } },
+    children: children.map { |r| { id: r[:child].to_s.split('#').last, label: r.bound?(:label) ? r[:label].to_s : nil } }
+  }
+end
+
 ##############################################################################
 # Dataset persistence — SPARQL queries for reading, writing, and deleting
 # records stored as named graphs.

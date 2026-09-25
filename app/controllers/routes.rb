@@ -72,8 +72,10 @@ def set_routes
       '/logout', # Optional: logout route
       '/set_language', # Add the new route to public paths
       '/cbgp/active-emails', # emails
-      '/cbgp/active-members' # Amembers
+      '/cbgp/active-members', # Amembers
       # '/cbgp/user-dashboard' # Add the new route to public paths
+      '/mcp/core', # MCP query server - own bearer-token auth (lib/mcp_auth.rb), not session-based
+      '/mcp/history' # MCP query server - own bearer-token auth (lib/mcp_auth.rb), not session-based
     ]
 
     # List of path prefixes that require admin (read/write) privileges

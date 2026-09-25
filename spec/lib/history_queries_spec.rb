@@ -128,6 +128,79 @@ RSpec.describe 'Time machine query layer' do
     end
   end
 
+  describe '#bucket_by_date' do
+    it 'groups snapshots by year extracted from a date field' do
+      s2023 = { triples: field_triples(questionclass: 'project_start_date', values: ['2023-06-01']) }
+      s2024a = { triples: field_triples(questionclass: 'project_start_date', values: ['2024-01-15']) }
+      s2024b = { triples: field_triples(questionclass: 'project_start_date', values: ['2024-11-30']) }
+
+      buckets = bucket_by_date(snapshots: [s2023, s2024a, s2024b], date_field: 'project_start_date')
+
+      expect(buckets['2023']).to eq([s2023])
+      expect(buckets['2024']).to eq([s2024a, s2024b])
+    end
+
+    it 'groups by year-month when granularity is "month"' do
+      snap = { triples: field_triples(questionclass: 'project_start_date', values: ['2024-03-15']) }
+      buckets = bucket_by_date(snapshots: [snap], date_field: 'project_start_date', granularity: 'month')
+      expect(buckets.keys).to eq(['2024-03'])
+    end
+
+    it 'silently leaves out a snapshot with an unparseable or missing date, rather than raising' do
+      bad = { triples: field_triples(questionclass: 'project_start_date', values: ['not-a-date']) }
+      missing = { triples: field_triples(questionclass: 'project_title', values: ['x']) }
+      buckets = bucket_by_date(snapshots: [bad, missing], date_field: 'project_start_date')
+      expect(buckets).to eq({})
+    end
+  end
+
+  describe '#snapshot_fields' do
+    it 'reconstructs a flat field hash, values always as arrays' do
+      triples = field_triples(questionclass: 'project_title', values: ['My Project']) +
+                field_triples(questionclass: 'project_pi_orcid', values: %w[0000-0001 0000-0002])
+
+      fields = snapshot_fields(triples: triples)
+
+      expect(fields['project_title']).to eq(['My Project'])
+      expect(fields['project_pi_orcid']).to contain_exactly('0000-0001', '0000-0002')
+    end
+
+    it 'returns an empty hash for triples with no recognizable field attribute' do
+      expect(snapshot_fields(triples: [])).to eq({})
+    end
+  end
+
+  describe '#diff_snapshot_fields' do
+    it 'reports only the fields that actually changed' do
+      before = { 'member_status' => ['Active'], 'member_name' => ['Elena'] }
+      after = { 'member_status' => ['Inactive'], 'member_name' => ['Elena'] }
+
+      diff = diff_snapshot_fields(before: before, after: after)
+
+      expect(diff).to eq([{ field: 'member_status', from: ['Active'], to: ['Inactive'] }])
+    end
+
+    it 'reports a newly-appeared field with no "from"' do
+      diff = diff_snapshot_fields(before: {}, after: { 'member_email' => ['a@example.org'] })
+      expect(diff).to eq([{ field: 'member_email', to: ['a@example.org'] }])
+    end
+
+    it 'reports a disappeared field with no "to"' do
+      diff = diff_snapshot_fields(before: { 'member_email' => ['a@example.org'] }, after: {})
+      expect(diff).to eq([{ field: 'member_email', from: ['a@example.org'] }])
+    end
+
+    it 'treats a nil "before" (the very first version) as every field being newly added' do
+      diff = diff_snapshot_fields(before: nil, after: { 'member_name' => ['Elena'] })
+      expect(diff).to eq([{ field: 'member_name', to: ['Elena'] }])
+    end
+
+    it 'returns an empty array when nothing changed' do
+      same = { 'member_status' => ['Active'] }
+      expect(diff_snapshot_fields(before: same, after: same)).to eq([])
+    end
+  end
+
   describe '#primary_id_from_history_graph' do
     it 'extracts the primary_id segment between /history/ and the trailing uuid' do
       graph = "#{BASE_URI}project/history/abc-123/def-456-uuid"
@@ -550,6 +623,60 @@ RSpec.describe 'Time machine query layer' do
       expect(repo.query([node, RDF::URI("#{CBGP_NS}project_type"), nil]).first.object.to_s).to eq('Articulo-60')
       expect(repo.query([node, RDF::URI("#{LOCAL_NS}queriedIntervalStart"), nil]).first.object.to_s).to eq('2025-01-01')
       expect(repo.query([node, RDF::URI("#{LOCAL_NS}queriedIntervalEnd"), nil]).first.object.to_s).to eq('2025-06-30')
+    end
+  end
+
+  describe '#all_known_primary_ids' do
+    it 'combines primary_ids from current graphs and history snapshots, deduplicated' do
+      allow(self).to receive(:current_graph_uris).with(hash_including(form_type: 'project'))
+        .and_return(["#{BASE_URI}project/context/p1", "#{BASE_URI}project/context/p2"])
+      allow(self).to receive(:history_snapshots).with(hash_including(form_type: 'project'))
+        .and_return([
+                      { graph_uri: "#{BASE_URI}project/history/p1/v1" }, # p1 also in history - already covered
+                      { graph_uri: "#{BASE_URI}project/history/p3/v1" } # p3 only in history (since deleted)
+                    ])
+
+      expect(all_known_primary_ids(form_type: 'project')).to contain_exactly('p1', 'p2', 'p3')
+    end
+
+    it 'does not truncate a slash-containing primary_id (e.g. a DOI) on either side' do
+      doi = '10.1038/s41586-020-1234-5'
+      allow(self).to receive(:current_graph_uris).with(hash_including(form_type: 'publication'))
+        .and_return(["#{BASE_URI}publication/context/#{doi}"])
+      allow(self).to receive(:history_snapshots).with(hash_including(form_type: 'publication')).and_return([])
+
+      expect(all_known_primary_ids(form_type: 'publication')).to eq([doi])
+    end
+  end
+
+  describe '#snapshot_as_of' do
+    it 'returns the version that was active on the given date, not necessarily the current one' do
+      allow(self).to receive(:all_known_primary_ids).with(hash_including(form_type: 'member')).and_return(['m1'])
+      old_version = { graph_uri: 'g-old', generated_at: '2023-01-01T00:00:00Z',
+                       triples: field_triples(questionclass: 'member_status', values: ['Active']) }
+      new_version = { graph_uri: 'g-new', generated_at: '2024-06-01T00:00:00Z',
+                       triples: field_triples(questionclass: 'member_status', values: ['Inactive']) }
+      allow(self).to receive(:full_timeline).with(hash_including(form_type: 'member', primary_id: 'm1'))
+        .and_return([old_version, new_version])
+
+      result = snapshot_as_of(form_type: 'member', as_of_date: '2023-06-01')
+
+      expect(result.size).to eq(1)
+      expect(result.first[:graph_uri]).to eq('g-old')
+      expect(result.first[:fields]['member_status']).to eq(['Active'])
+    end
+
+    it 'excludes a record that did not exist yet as of that date' do
+      allow(self).to receive(:all_known_primary_ids).with(hash_including(form_type: 'member')).and_return(['m1'])
+      future_version = { graph_uri: 'g1', generated_at: '2025-01-01T00:00:00Z', triples: [] }
+      allow(self).to receive(:full_timeline).with(hash_including(form_type: 'member', primary_id: 'm1'))
+        .and_return([future_version])
+
+      expect(snapshot_as_of(form_type: 'member', as_of_date: '2020-01-01')).to eq([])
+    end
+
+    it 'raises on an invalid as_of_date rather than silently misbehaving' do
+      expect { snapshot_as_of(form_type: 'member', as_of_date: 'not-a-date') }.to raise_error(ArgumentError)
     end
   end
 end

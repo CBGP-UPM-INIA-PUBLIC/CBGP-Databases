@@ -57,4 +57,57 @@ RSpec.describe McpTools::Shared::RenderChart do
       described_class.call({ 'rows' => [], 'chart_type' => 'pie', 'x_field' => 'a', 'y_field' => 'b' })
     end.to raise_error(ArgumentError)
   end
+
+  describe 'chart_type "timeline"' do
+    def timeline_rows
+      [
+        { 'label' => 'Predoctoral', 'start' => '2018-01-01', 'end' => '2021-06-30' },
+        { 'label' => 'Postdoctoral', 'start' => '2021-07-01', 'end' => '2024-01-01' },
+        { 'label' => 'Staff Scientist', 'start' => '2024-01-01' } # no end = ongoing
+      ]
+    end
+
+    def timeline_svg(rows, **extra)
+      result = described_class.call({ 'rows' => rows, 'chart_type' => 'timeline', 'title' => 'Career timeline' }.merge(extra))
+      Base64.decode64(result.first[:data])
+    end
+
+    it 'returns a well-formed SVG with one bar per dated row, growing height with row count' do
+      svg = timeline_svg(timeline_rows)
+      expect { REXML::Document.new(svg) }.not_to raise_error
+      expect(svg.scan('<rect').size).to eq(4) # 3 spans + 1 background
+      expect(svg).to include('Predoctoral')
+      expect(svg).to include('Staff Scientist')
+    end
+
+    it 'draws an ongoing (no end date) row through to today rather than omitting it' do
+      svg = timeline_svg([{ 'label' => 'Still active', 'start' => '2024-01-01' }])
+      expect { REXML::Document.new(svg) }.not_to raise_error
+      expect(svg).to include('Still active')
+    end
+
+    it 'skips a row with no parseable start date rather than raising' do
+      svg = timeline_svg([{ 'label' => 'Bad row', 'start' => 'not-a-date' },
+                           { 'label' => 'Good row', 'start' => '2020-01-01', 'end' => '2021-01-01' }])
+      expect(svg).not_to include('Bad row')
+      expect(svg).to include('Good row')
+    end
+
+    it 'renders a friendly empty-state SVG rather than crashing when no rows have a parseable date' do
+      svg = timeline_svg([{ 'label' => 'x', 'start' => 'garbage' }])
+      expect { REXML::Document.new(svg) }.not_to raise_error
+      expect(svg).to include('No dated rows to plot')
+    end
+
+    it 'honors custom label_field/start_field/end_field names' do
+      rows = [{ 'who' => 'A Project', 'began' => '2020-01-01', 'ended' => '2022-01-01' }]
+      svg = timeline_svg(rows, 'label_field' => 'who', 'start_field' => 'began', 'end_field' => 'ended')
+      expect(svg).to include('A Project')
+    end
+
+    it 'still returns the raw rows as a text block' do
+      result = described_class.call({ 'rows' => timeline_rows, 'chart_type' => 'timeline' })
+      expect(JSON.parse(result.last[:text])).to eq(timeline_rows)
+    end
+  end
 end

@@ -14,10 +14,11 @@ require_relative 'routes'
 require_rel '../../lib'
 require_rel '../views'
 
-# Required after require_rel '../../lib' above, not before - CORE_MCP_TOOLS
-# (top-level in mcp/core_routes.rb) references McpTools::Core::*/
-# McpTools::Shared::* classes at load time, which must already exist.
+# Required after require_rel '../../lib' above, not before - CORE_MCP_TOOLS/
+# HISTORY_MCP_TOOLS (top-level in mcp/*_routes.rb) reference McpTools::*
+# classes at load time, which must already exist.
 require_relative 'mcp/core_routes'
+require_relative 'mcp/history_routes'
 
 module CBGP
   class DatabasesApp < Sinatra::Base
@@ -25,6 +26,7 @@ module CBGP
     register Sinatra::Flash
     set_routes
     set_core_mcp_routes
+    set_history_mcp_routes
   end
 end
 

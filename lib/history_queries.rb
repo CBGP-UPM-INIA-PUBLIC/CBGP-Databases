@@ -383,6 +383,132 @@ def sum_numeric_field(snapshots:, questionclass:)
   end
 end
 
+# Buckets an already-filtered snapshot set by a date field, truncated to a
+# granularity - the basis for any trend-over-time aggregation (e.g.
+# "funding by year"), independent of whatever gets computed per bucket
+# afterward (a count, a sum, ...). A snapshot whose date field is
+# unparseable or absent is simply left out of every bucket, not an error.
+#
+# @param snapshots [Array<Hash>] from filter_snapshots_during/latest_known_snapshots
+# @param date_field [String] questionclass of the date to bucket by
+# @param granularity ['year', 'month']
+# @return [Hash{String => Array<Hash>}] bucket label (e.g. "2024") => snapshots
+def bucket_by_date(snapshots:, date_field:, granularity: 'year')
+  snapshots.each_with_object(Hash.new { |h, k| h[k] = [] }) do |snap, buckets|
+    snapshot_field_values(triples: snap[:triples], questionclass: date_field).each do |v|
+      d = Date.parse(v)
+      label = granularity == 'month' ? d.strftime('%Y-%m') : d.strftime('%Y')
+      buckets[label] << snap
+    rescue ArgumentError
+      next
+    end
+  end
+end
+
+##############################################################################
+# Flat field reconstruction and diffing - the schema-agnostic, historical
+# equivalent of what fetch_datasets_raw_data (queries.rb) returns for a
+# CURRENT record, plus a way to see what actually changed between two
+# versions instead of making a caller diff two sets of raw triples itself.
+##############################################################################
+
+# Reconstructs a flat field hash from a snapshot's raw triples. Every value
+# comes back as an Array, even for fields that are normally
+# Single-cardinality - a historical snapshot may reflect an older version
+# of the schema (a field could have been Multiple back then, or dropped
+# since), so today's fields_for cardinality can't be trusted to describe
+# it.
+#
+# @param triples [Array<RDF::Statement>]
+# @return [Hash{String => Array<String>}]
+def snapshot_fields(triples:)
+  attr_type_by_node = triples.each_with_object({}) do |t, hash|
+    next unless t.predicate == RDF.type && t.object.to_s.start_with?(CBGP_NS)
+
+    hash[t.subject] = t.object.to_s.delete_prefix(CBGP_NS)
+  end
+
+  triples.each_with_object(Hash.new { |h, k| h[k] = [] }) do |t, values|
+    next unless t.predicate.to_s == SIO_VALUE_PREDICATE
+
+    questionclass = attr_type_by_node[t.subject]
+    values[questionclass] << t.object.to_s if questionclass
+  end
+end
+
+# Field-level diff between two snapshots' flat field hashes (see
+# snapshot_fields above) - the "what actually changed" behind
+# record_history's per-version diff.
+#
+# @param before [Hash{String => Array<String>}, nil] nil for a record's
+#   very first version - every field is then reported as newly "added"
+# @param after [Hash{String => Array<String>}]
+# @return [Array<Hash>] { field:, from:, to: } per changed field - "from"
+#   absent for a newly-appeared field, "to" absent for one that disappeared
+def diff_snapshot_fields(before:, after:)
+  before ||= {}
+  (before.keys | after.keys).filter_map do |field|
+    from = before[field]
+    to = after[field]
+    next if from == to
+
+    entry = { field: field }
+    entry[:from] = from if from
+    entry[:to] = to if to
+    entry
+  end
+end
+
+##############################################################################
+# Point-in-time ("as of a past date") queries
+##############################################################################
+
+# Every primary_id this form_type has ever had a record for - current or
+# since-deleted - combining current_graph_uris with every history
+# snapshot's primary_id. The basis for snapshot_as_of, which needs to
+# consider every record that ever existed, not just ones that still do.
+#
+# @param form_type [String]
+# @return [Array<String>]
+def all_known_primary_ids(form_type:)
+  current_prefix = "#{BASE_URI}#{form_type}/context/"
+  from_current = current_graph_uris(form_type: form_type).map { |g| g.delete_prefix(current_prefix) }
+  from_history = history_snapshots(form_type: form_type)
+                 .map { |s| primary_id_from_history_graph(graph_uri: s[:graph_uri], form_type: form_type) }
+  (from_current + from_history).uniq
+end
+
+# "Time travel": the state of every record of a form_type as of a specific
+# past date - for each record that existed then, the version that was
+# actually active at that moment (not necessarily the current one, and not
+# necessarily the record's first version either). A record that didn't
+# exist yet as of as_of_date is simply absent from the result, not an
+# error. One full_timeline call per known primary_id, so this is O(records),
+# fine at this institute's scale - not built for a million-row table.
+#
+# @param form_type [String]
+# @param as_of_date [String] "YYYY-MM-DD"
+# @return [Array<Hash>] { primary_id:, graph_uri:, generated_at:, fields: }
+#   one entry per record that existed as of that date
+def snapshot_as_of(form_type:, as_of_date:)
+  target = validate_date!(as_of_date)
+  target = Date.parse(target)
+
+  all_known_primary_ids(form_type: form_type).filter_map do |primary_id|
+    active_version = full_timeline(form_type: form_type, primary_id: primary_id)
+                      .select { |v| v[:generated_at] && Date.parse(v[:generated_at]) <= target }
+                      .max_by { |v| v[:generated_at] }
+    next unless active_version
+
+    {
+      primary_id: primary_id,
+      graph_uri: active_version[:graph_uri],
+      generated_at: active_version[:generated_at],
+      fields: snapshot_fields(triples: active_version[:triples])
+    }
+  end
+end
+
 ##############################################################################
 # Output wrapping: RDF::Repository results (named graphs, not RDF::Graph)
 #

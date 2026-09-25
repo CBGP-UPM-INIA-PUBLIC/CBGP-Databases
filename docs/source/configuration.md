@@ -116,6 +116,26 @@ institute's own mail server (or mail-sending service) requires; ask
 whoever manages that system for the right values, the same as configuring
 any other application to send mail through it.
 
+## MCP query servers
+
+```
+CORE_MCP_TOKEN=change-me-to-a-long-random-string
+HISTORY_MCP_TOKEN=change-me-to-a-long-random-string
+```
+
+Two read-only JSON-RPC endpoints, `POST /mcp/core` and `POST /mcp/history`,
+let an MCP-speaking agent (not a browser) query the current-state and
+History databases directly — see `lib/mcp_tools/` for the tool
+definitions. Each endpoint checks its own bearer token (an
+`Authorization: Bearer <token>` header) against these two env vars rather
+than the session-cookie login every other route requires, since an agent
+has no session. Two separate tokens, not one, so either can be revoked or
+rotated independently of the other. Deliberately the simplest auth that
+still fails closed (a blank/unset token always rejects, never means "no
+auth required") — appropriate given these endpoints are only ever meant to
+be reachable from inside the institute firewall/VPN, not the public
+internet.
+
 ## Verbose SPARQL/debug logging
 
 Set `CBGP_DEBUG_SPARQL=true` (any truthy string) to re-enable a large volume
@@ -129,7 +149,8 @@ query-shape problem, not for routine operation.
 ## A note on security
 
 Every password and secret on this page — login passwords inside
-`CBGP_USERS`, `VIRTUOSO_PASS`, `NOTIFY_PW`, `CBGP_SECRET` — lives *only* as
+`CBGP_USERS`, `VIRTUOSO_PASS`, `NOTIFY_PW`, `CBGP_SECRET`,
+`CORE_MCP_TOKEN`/`HISTORY_MCP_TOKEN` — lives *only* as
 an environment variable the application reads once at startup. There is no
 user/password database inside the application itself: no table of
 accounts, no password hashes, nothing stored in Virtuoso or anywhere else

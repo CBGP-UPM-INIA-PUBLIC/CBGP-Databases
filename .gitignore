@@ -1,6 +1,13 @@
 # Secrets / local environment config - never commit real credentials.
 .env
 .env.*
+# ...except .env.example itself: placeholder "change-me" values only, no
+# real secrets, and it's the one file documentation/onboarding points new
+# setups at (docs/source/configuration.md, installation.md) - it was never
+# actually tracked despite that, since the blanket .env.* pattern above
+# matched it too. Every real per-deployment file (.env, .env.production,
+# etc.) still stays ignored.
+!.env.example
 utilities/.env
 
 # Personal Claude Code permission overrides - not shared with the team.

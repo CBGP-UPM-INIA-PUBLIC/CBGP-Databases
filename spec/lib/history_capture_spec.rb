@@ -25,7 +25,7 @@ RSpec.describe 'SCD Type 2 history capture' do
         .with(a_string_matching(/SELECT \?created \?modified/))
         .and_return([prov_solution])
       allow(DATABASE).to receive(:query)
-        .with(a_string_matching(/CONSTRUCT/))
+        .with(a_string_matching(/CONSTRUCT/), hash_including(headers: { 'Accept' => 'application/n-triples' }))
         .and_return(constructed_triples)
       allow(HISTORY_DATABASE_UPDATE).to receive(:insert_data)
       allow(HISTORY_DATABASE_UPDATE).to receive(:update)
@@ -67,8 +67,11 @@ RSpec.describe 'SCD Type 2 history capture' do
 
     it 'still drops the live graph from the current repository, unchanged from before' do
       delete_dataset_query(oldid: old_graph_uri)
+      # SILENT: required on Virtuoso for a graph that was only ever
+      # populated via INSERT DATA - see lib/queries.rb's comment on this
+      # exact line for the full story.
       expect(DATABASE_UPDATE).to have_received(:update)
-        .with(a_string_matching(/DROP GRAPH <#{Regexp.escape(old_graph_uri)}>/))
+        .with(a_string_matching(/DROP SILENT GRAPH <#{Regexp.escape(old_graph_uri)}>/))
     end
 
     it 'returns the prior dcterms:created and the new history graph URI' do

@@ -77,15 +77,22 @@ module CBGP
     def self.fields_for(type)
       lang = current_language
       key = "#{type}_#{lang}"
-      warn "[CACHE] Checking fields_for(#{type.inspect}) → key=#{key.inspect}, current lang=#{lang.inspect}, thread=#{Thread.current.object_id}"
+
+      # fields_for is called constantly (every Dataset field access loops
+      # through it), so its debug logging is opt-in only - see
+      # CBGP_DEBUG_SPARQL in configuration.md. Dumping the cached fields
+      # array on every cache HIT in particular was a real, measurable source
+      # of slowness during a bulk load (2026-08-26).
+      if ENV['CBGP_DEBUG_SPARQL']
+        warn "[CACHE] Checking fields_for(#{type.inspect}) → key=#{key.inspect}, current lang=#{lang.inspect}, thread=#{Thread.current.object_id}"
+      end
 
       if @@fields_cache[key]
-        warn "[CACHE] HIT for #{key}"
-        warn "[CACHE] HIT value #{@@fields_cache[key]}"
+        warn "[CACHE] HIT for #{key}" if ENV['CBGP_DEBUG_SPARQL']
         return @@fields_cache[key]
       end
 
-      warn "[CACHE] MISS → building for #{key}"
+      warn "[CACHE] MISS → building for #{key}" if ENV['CBGP_DEBUG_SPARQL']
       @@fields_cache[key] ||= begin
         fields = []
         sections = get_questionnaire_sections_query(questionnaire_type: type)
@@ -493,7 +500,7 @@ module CBGP
           value.to_i
         when 'date'
           Date.parse(value.to_s).strftime('%Y-%m-%d')
-        when 'currency'
+        when 'currency', 'number'
           parse_currency_input(value) or
             raise ArgumentError, "'#{value}' doesn't look like a valid amount (e.g. 1234.56 or 1.234,56)"
         else
@@ -631,6 +638,52 @@ module CBGP
 
         { value: value, label: label }
       end.compact
+    end
+
+    # Reverse of #fetch_reference_suggestions: given a value already stored
+    # on a cross-reference field (e.g. an ORCiD), finds the matching record
+    # and returns its human-readable label. Used to display a name alongside
+    # a stored xref value that has no cached label - e.g. re-opening a saved
+    # Publication's "CBGP Author(s)" field only ever had the raw ORCiD to
+    # show, never the member's name (found 2026-08-26).
+    #
+    # @param target_form  [String] the cross-referenced form, e.g. +"member"+
+    # @param via_class    [String] questionclass of the field the value is
+    #   stored against, e.g. +"member_orcid"+
+    # @param label_method [String, nil] questionclass of the field to display,
+    #   e.g. +"member_surnames"+; falls back to +via_class+'s own field when nil
+    # @param value        [String] the stored value to look up, e.g. an ORCiD
+    # @return [String, nil] the label, or +nil+ if nothing matched
+    def self.fetch_reference_label(target_form:, via_class:, value:, label_method: nil)
+      return nil if target_form.to_s.strip.empty? || via_class.to_s.strip.empty? || value.to_s.strip.empty?
+
+      key_method = resolve_key_method(target_form, via_class)
+      return nil if key_method.to_s.strip.empty?
+
+      label_questionclass = label_method.to_s.strip
+      label_ruby_method = if label_questionclass.empty?
+                             key_method
+                           else
+                             resolved = resolve_key_method(target_form, label_questionclass)
+                             resolved.to_s.strip.empty? ? key_method : resolved
+                           end
+
+      graph_uri = execute_search(
+        search_params: { via_class => value.to_s.strip },
+        dataset_type: target_form,
+        broad: false
+      ).first
+      return nil unless graph_uri
+
+      ds = CBGP::Dataset.load_from_graph(graph: graph_uri, database: target_form)
+      return nil unless ds
+
+      label = begin
+        ds.public_send(label_ruby_method).to_s.strip
+      rescue StandardError
+        nil
+      end
+      label.to_s.strip.empty? ? nil : label
     end
 
     # Resolves a questionclass fragment to the Ruby method name declared in the
@@ -795,7 +848,16 @@ module CBGP
     def self.load_from_params_and_write(params:, form: nil)
       warn "PARAMS: #{params.inspect}"
       effective_form = form.to_s.strip.empty? ? params['database'] : form
-      dataset = CBGP::Dataset.new(type: params['database'])
+      # type: effective_form (NOT params['database']) - params['database'] is
+      # the shared storage dbname (e.g. "project"), which is no longer itself
+      # a valid ontology class since Sara's project-fields restructuring
+      # split it into several specific forms. Building +dataset+ with the
+      # dbname instead of the real form silently defeats BOTH the coercion
+      # loop below (dataset.fields ends up empty, so it iterates zero times)
+      # AND the required-fields pass further down (every required field's
+      # `dataset.fields.find` comes back nil, so every required-field check
+      # is silently skipped) - a real, silent data-loss bug found 2026-08-26.
+      dataset = CBGP::Dataset.new(type: effective_form)
       errors = []
 
       dataset.fields.each do |field|
@@ -809,7 +871,7 @@ module CBGP
           # Look up any existing record with this external identifier so we
           # overwrite it rather than create a duplicate.
           dataset.primary_id = CBGP::Dataset.get_primary_id(questionclass: field[:questionclass], questionvalue: value,
-                                                            dataset_type: params['database'])
+                                                            dataset_type: effective_form)
           warn "set primaryid to #{dataset.primary_id.inspect}"
         end
 

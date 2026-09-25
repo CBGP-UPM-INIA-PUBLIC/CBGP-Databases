@@ -192,7 +192,7 @@ class QuestionnaireQuestion
       node['text'] = node['text'].gsub(/[“”‘’]/, '"') if node['text']
       node['children']&.each { |child| child['text'] = child['text'].gsub(/[“”‘’]/, '"') if child['text'] }
     end
-    warn "Hierarchical Data: #{@answertree.inspect}"
+    warn "Hierarchical Data: #{@answertree.inspect}" if ENV['CBGP_DEBUG_SPARQL']
   end
 
   # The questionclass fragments this question's formula references (e.g.
@@ -282,7 +282,7 @@ class QuestionnaireField
           child['text'] = child['text'].gsub(/[“”‘’]/, '"') if child['text']
         end
       end
-      warn "Hierarchical Data: #{field.answertree.inspect}"
+      warn "Hierarchical Data: #{field.answertree.inspect}" if ENV['CBGP_DEBUG_SPARQL']
     end
     field
   end

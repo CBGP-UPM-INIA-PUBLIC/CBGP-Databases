@@ -29,7 +29,8 @@
 #   ruby utilities/backfill_dcterms_type.rb                    # backfill + report only
 #   ruby utilities/backfill_dcterms_type.rb --delete-unresolvable
 
-require 'dotenv/load'
+require 'dotenv'
+Dotenv.load(File.expand_path('../.env', __dir__)) # the project root's .env, not a separate utilities/.env copy - avoids config drift like the Virtuoso migration missing this file (2026-08-26)
 require 'require_all'
 require_all '../app'
 
@@ -50,7 +51,7 @@ unresolvable = []
 graphs.each do |graph_uri|
   already_typed = DATABASE.query(<<~ASK)
     #{PREFIXES}
-    ASK { <#{graph_uri}> dcterms:type ?t }
+    ASK { GRAPH <#{graph_uri}> { <#{graph_uri}> dcterms:type ?t } }
   ASK
 
   if already_typed
@@ -79,7 +80,7 @@ graphs.each do |graph_uri|
 
   DATABASE_UPDATE.update(<<~STAMP)
     #{PREFIXES}
-    INSERT DATA { <#{graph_uri}> dcterms:type cbgp:#{form} . }
+    INSERT DATA { GRAPH <#{graph_uri}> { <#{graph_uri}> dcterms:type cbgp:#{form} . } }
   STAMP
 
   # Clean up the now-dead project_category triples inside the named graph -

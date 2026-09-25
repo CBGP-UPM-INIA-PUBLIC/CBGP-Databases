@@ -39,7 +39,7 @@ rescue StandardError => e
 end
 
 ENV['CBGP_USERS']     ||= '{"test-admin":{"password":"test","role":"admin"}}'
-ENV['CBGP_SECRET']    ||= 'test-secret-not-for-production'
+ENV['CBGP_SECRET']    ||= 'test-secret-not-for-production-must-be-at-least-64-bytes-long-xxxx'
 ENV['NOTIFY_TO']      ||= 'test@example.invalid'
 ENV['NOTIFY_UN']      ||= 'test-user'
 ENV['NOTIFY_PW']      ||= 'test-pass'
@@ -69,6 +69,8 @@ require_relative '../lib/dataset_classes'
 require_relative '../lib/questionnaire'
 require_relative '../lib/history_queries'
 require_relative '../lib/doi_registration_agency'
+require_relative '../lib/publication_type_classifier'
+require_relative '../lib/open_access_classifier'
 require_relative '../lib/datacite_parser'
 require_relative '../lib/crossref_parser'
 require_relative '../lib/openaire_parser'

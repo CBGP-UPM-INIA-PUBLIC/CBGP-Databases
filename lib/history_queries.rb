@@ -69,14 +69,18 @@ PROV_PREFIX_DECL = 'PREFIX prov: <http://www.w3.org/ns/prov#>'
 # @param repository [SPARQL::Client] DATABASE or HISTORY_DATABASE
 # @return [Array<RDF::Statement>]
 def read_graph_triples(graph_uri:, repository:)
-  repository.query(<<~SPARQL).statements
+  # headers: (a fresh hash), not content_type: - see delete_dataset_query's
+  # CONSTRUCT call in lib/queries.rb for the full explanation (content_type:
+  # mutates the client's own shared @headers in place, in this version of
+  # sparql-client, leaking into every later call on the same client).
+  repository.query(<<~SPARQL, headers: { 'Accept' => 'application/n-triples' }).statements
     #{PREFIXES}
     CONSTRUCT { ?s ?p ?o } WHERE { GRAPH <#{graph_uri}> { ?s ?p ?o } }
   SPARQL
 end
 
 # A still-current graph's own provenance (dcterms:created/modified, written
-# by write_dataset_to_db_query into DATABASE's default graph).
+# by write_dataset_to_db_query inside the record's own named graph).
 #
 # @param graph_uri [String]
 # @return [Hash] { created:, modified: } — either key may be nil
@@ -84,8 +88,10 @@ def read_current_meta(graph_uri:)
   result = DATABASE.query(<<~SPARQL).first
     #{PREFIXES}
     SELECT ?created ?modified WHERE {
-      OPTIONAL { <#{graph_uri}> dcterms:created  ?created }
-      OPTIONAL { <#{graph_uri}> dcterms:modified ?modified }
+      GRAPH <#{graph_uri}> {
+        OPTIONAL { <#{graph_uri}> dcterms:created  ?created }
+        OPTIONAL { <#{graph_uri}> dcterms:modified ?modified }
+      }
     }
   SPARQL
 
@@ -132,10 +138,12 @@ def history_snapshots(form_type:, primary_id: nil)
     #{PREFIXES}
     #{PROV_PREFIX_DECL}
     SELECT ?g ?generated ?invalidated ?reason ?detail WHERE {
-      ?g prov:generatedAtTime ?generated .
-      OPTIONAL { ?g prov:invalidatedAtTime ?invalidated }
-      OPTIONAL { ?g local:history-reason ?reason }
-      OPTIONAL { ?g local:history-detail ?detail }
+      GRAPH ?g {
+        ?g prov:generatedAtTime ?generated .
+        OPTIONAL { ?g prov:invalidatedAtTime ?invalidated }
+        OPTIONAL { ?g local:history-reason ?reason }
+        OPTIONAL { ?g local:history-detail ?detail }
+      }
       FILTER(STRSTARTS(STR(?g), "#{prefix}"))
     }
   SPARQL

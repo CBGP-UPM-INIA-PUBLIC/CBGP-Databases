@@ -15,7 +15,19 @@ $ontology = RDF::Repository.load(CBGP_KB) # set in configuration.rb and/or in do
 # Reads: plain SPARQL::Client against Virtuoso's /sparql endpoint - Virtuoso
 # allows anonymous SELECT/CONSTRUCT there by default (same as GraphDB's
 # /repositories/<name> did, just without needing credentials in the URL).
-DATABASE = SPARQL::Client.new("http://#{host}/sparql")
+#
+# The explicit default Accept header is required, not decorative - confirmed
+# live 2026-08-26: on a persistent (keep-alive) connection that has already
+# handled a mix of query types, Virtuoso's own default content negotiation
+# for a follow-up SELECT can drift to something sparql-client's SELECT
+# parser doesn't expect (observed: an RDF::ReaderError trying to parse a
+# results document as NTriples), and separately a CONSTRUCT can come back
+# as SELECT-shaped JSON bindings instead of a graph - see the CONSTRUCT call
+# sites in this file/history_queries.rb, which is why they override this
+# default with content_type: 'application/n-triples' per call. GraphDB never
+# needed any of this; its content negotiation was stable across a
+# connection's whole request history.
+DATABASE = SPARQL::Client.new("http://#{host}/sparql", headers: { 'Accept' => 'application/sparql-results+json' })
 # Writes: Virtuoso's /sparql-auth requires HTTP Digest auth and rejects Basic
 # outright - confirmed live against a real Virtuoso 07.20 container, no
 # virtuoso.ini setting in that build offers a way around it - hence the
@@ -26,7 +38,7 @@ DATABASE_UPDATE = CBGP::VirtuosoUpdateClient.new(endpoint: "http://#{host}/sparq
 # SCD Type 2 history store — a separate Virtuoso container/process (not a
 # namespaced graph in DATABASE) that holds snapshots of superseded/deleted
 # records. See delete_dataset_query.
-HISTORY_DATABASE = SPARQL::Client.new("http://#{history_host}/sparql")
+HISTORY_DATABASE = SPARQL::Client.new("http://#{history_host}/sparql", headers: { 'Accept' => 'application/sparql-results+json' })
 HISTORY_DATABASE_UPDATE = CBGP::VirtuosoUpdateClient.new(endpoint: "http://#{history_host}/sparql-auth", user: HISTORY_USER, password: HISTORY_PASS)
 
 PREFIXES = "PREFIX cbgp: <https://w3id.org/CBGP-App#>
@@ -56,7 +68,7 @@ def get_dbname_for_form(form:) # form is e.g. publication or userproject
         local:dbname ?dbname .  # this is just the string, like "project"
     }
 GET_DBNAME
-  warn "database name query\n\n#{qs}\n\n"
+  warn "database name query\n\n#{qs}\n\n" if ENV['CBGP_DEBUG_SPARQL']
   qs = SPARQL.parse(qs)
   results = qs.execute($ontology)
   results.first[:dbname].to_s
@@ -96,10 +108,10 @@ def get_questionnaire_sections_query(questionnaire_type:, language: current_lang
       FILTER (lang(?seclab) = "#{language}")
     }
 GET_QUESTIONNAIRE_SECTIONS
-  warn "QUERY IS #{qs} on ontology #{$ontology} #{$ontology.size}"
+  warn "QUERY IS #{qs} on ontology #{$ontology} #{$ontology.size}" if ENV['CBGP_DEBUG_SPARQL']
   qs = SPARQL.parse(qs)
   result = qs.execute($ontology)
-  warn "questionnaire_sections_query result: #{result.inspect}"
+  warn "questionnaire_sections_query result: #{result.inspect}" if ENV['CBGP_DEBUG_SPARQL']
   result
 end
 
@@ -288,7 +300,7 @@ def get_label_for_id(id:, language: current_language)
     LIMIT 1
   LABEL_QUERY
 
-  warn "LABEL QUERY FOR #{id}: #{query}"
+  warn "LABEL QUERY FOR #{id}: #{query}" if ENV['CBGP_DEBUG_SPARQL']
   res = SPARQL.parse(query).execute($ontology)
   if res.any? && res.first&.bound?(:label)
     res.first[:label].to_s
@@ -330,10 +342,20 @@ end
 #   <attribute_node> rdf:type cbgp:<questionclass> ;
 #                    sio:SIO_000300 "<literal_value>" .
 #
-# Provenance triples (dcterms:created / dcterms:modified) are written into the
-# DEFAULT graph (outside the named graph) so they survive graph-level queries.
-# Consequently, delete_dataset_query must remove them explicitly before dropping
-# the named graph.
+# Provenance triples (dcterms:created / dcterms:modified / dcterms:type) are
+# written INSIDE each record's own named graph, subject = the graph's own
+# URI. Every reader already knows the specific graph URI in advance (there is
+# no cross-graph "find by dcterms:type" query anywhere in this codebase), so
+# nothing needs them to live outside it - and putting them outside doesn't
+# actually work on Virtuoso: its INSERT DATA implementation requires an
+# explicit default-graph preamble for any triple not wrapped in its own
+# GRAPH {} block, which SPARQL 1.1 doesn't provide a way to supply for
+# INSERT DATA specifically (confirmed live, 2026-08-26, migrating personnel
+# data - GraphDB tolerated the old default-graph placement, Virtuoso
+# rejects it outright: "Virtuoso 37000 Error SP031: ... No plain default
+# graph specified in the preamble"). delete_dataset_query no longer needs a
+# separate DELETE WHERE for these triples either - DROP GRAPH now removes
+# them along with everything else in the record's graph.
 ##############################################################################
 
 # Finds the named graph URI that contains a record with the given primary_id.
@@ -353,12 +375,12 @@ def retrieve_dataset_graph_query(primary_id:)
       ?dataset sio:SIO_000671 ?id .
 
       ?id  sio:SIO_000300 "#{primary_id}" ;
-        rdf:type sio:SIO_000115 ; # identifier
+        rdf:type sio:SIO_000115 . # identifier
   }}
 
 SELECT_DS
 
-  warn "retrieve dataset graph query is:\n #{retds}"
+  warn "retrieve dataset graph query is:\n #{retds}" if ENV['CBGP_DEBUG_SPARQL']
   DATABASE.query(retds)
 end
 
@@ -375,11 +397,11 @@ def retrieve_dataset_id_from_graph_query(graph:)
   graph <#{graph}> {
       ?dataset sio:SIO_000671 ?idnode .
       ?idnode  sio:SIO_000300 ?id ;
-        rdf:type sio:SIO_000115 ; # identifier
+        rdf:type sio:SIO_000115 . # identifier
   }}
 SELECT_DS
 
-  warn "retrieve dataset id query is:\n #{retds}"
+  warn "retrieve dataset id query is:\n #{retds}" if ENV['CBGP_DEBUG_SPARQL']
   results = DATABASE.query(retds)
   return results.first[:id].to_s if results
 
@@ -409,23 +431,24 @@ end
 # write_dataset_to_db_query, edits (reason: 'superseded').
 #
 # Steps:
-#   1. Read the live graph's own dcterms:created/dcterms:modified (default
-#      graph, subject = graph URI) before touching anything. dcterms:modified
-#      becomes the snapshot's prov:generatedAtTime (when *this* version
-#      became current); dcterms:created is returned so the caller can
-#      preserve it into the new write instead of losing it (a pre-existing
-#      bug: this same DELETE wipes it and nothing rewrites it after an edit).
+#   1. Read the live graph's own dcterms:created/dcterms:modified (inside the
+#      graph itself, subject = graph URI) before touching anything.
+#      dcterms:modified becomes the snapshot's prov:generatedAtTime (when
+#      *this* version became current); dcterms:created is returned so the
+#      caller can preserve it into the new write instead of losing it.
 #   2. CONSTRUCT the old graph's triples out of DATABASE (read-only) and
 #      INSERT them verbatim into a freshly-named graph in HISTORY_DATABASE,
-#      then annotate that snapshot graph at the graph level (subject = the
-#      snapshot's own URI, not a resource inside it — deliberately
-#      nanopub/PROV-style, not mixed into the assertion data) with
-#      prov:generatedAtTime/prov:invalidatedAtTime/local:history-reason/
-#      local:history-detail, all living in HISTORY_DATABASE's default graph.
+#      then annotate that SAME snapshot graph (subject = the snapshot's own
+#      URI, not a resource inside it — deliberately nanopub/PROV-style, not
+#      mixed into the assertion data) with prov:generatedAtTime/
+#      prov:invalidatedAtTime/local:history-reason/local:history-detail.
 #      Two independent repositories are used — no SPARQL federation, no
 #      INSERT-WHERE across connections.
-#   3. Only then remove the live graph (and its default-graph provenance)
-#      from DATABASE — unchanged from the original delete logic.
+#   3. Only then remove the live graph from DATABASE via DROP GRAPH, which
+#      takes its provenance triples with it since they live inside it —
+#      unchanged from the original delete logic in spirit, simpler in
+#      practice (no separate cleanup step needed for triples that used to
+#      live outside the graph).
 #
 # @param oldid [String] the full named graph URI to delete (in DATABASE)
 # @param reason ['deleted', 'superseded'] why this version is ending
@@ -442,8 +465,10 @@ def delete_dataset_query(oldid:, reason: 'deleted', detail: nil)
   prov_results = DATABASE.query(<<~PROV)
     #{PREFIXES}
     SELECT ?created ?modified WHERE {
-      OPTIONAL { <#{oldid}> dcterms:created  ?created }
-      OPTIONAL { <#{oldid}> dcterms:modified ?modified }
+      GRAPH <#{oldid}> {
+        OPTIONAL { <#{oldid}> dcterms:created  ?created }
+        OPTIONAL { <#{oldid}> dcterms:modified ?modified }
+      }
     }
   PROV
   created = prov_results.first&.bound?(:created) ? prov_results.first[:created].to_s : nil
@@ -452,27 +477,59 @@ def delete_dataset_query(oldid:, reason: 'deleted', detail: nil)
   history_graph = "#{BASE_URI}#{form_type}/history/#{primary_id}/#{SecureRandom.uuid}"
   now = Time.now.utc.iso8601
 
-  old_triples = DATABASE.query(<<~CONSTRUCT)
+  # An explicit Accept header is required here, not optional - confirmed
+  # live 2026-08-26: without it, a CONSTRUCT on this connection can come
+  # back as SELECT-shaped application/sparql-results+json bindings instead
+  # of an RDF graph serialization, which sparql-client then can't parse as
+  # RDF::Statements at all. GraphDB never had this problem.
+  #
+  # Passed as headers: (a FRESH hash), not content_type: - sparql-client's
+  # Client#response does `headers = options[:headers] || @headers` with NO
+  # dup, so content_type: silently overwrites DATABASE's own @headers in
+  # place and leaks into every later call on this same client (a real
+  # sparql-client bug, not a Virtuoso quirk - it broke the very next SELECT
+  # in this same method's caller once discovered). A fresh hash here can't
+  # touch @headers.
+  old_triples = DATABASE.query(<<~CONSTRUCT, headers: { 'Accept' => 'application/n-triples' })
     #{PREFIXES}
     CONSTRUCT { ?s ?p ?o } WHERE { GRAPH <#{oldid}> { ?s ?p ?o } }
   CONSTRUCT
   HISTORY_DATABASE_UPDATE.insert_data(old_triples, graph: history_graph)
 
+  # Metadata about the snapshot lives inside the snapshot's OWN graph
+  # (alongside the copied triples inserted just above), not the default
+  # graph - see write_dataset_to_db_query's doc comment for why not the
+  # default graph in general; history snapshots are never dropped, so there
+  # was never a reason for this metadata to live outside its own graph in
+  # the first place.
   HISTORY_DATABASE_UPDATE.update(<<~META)
     #{PREFIXES}
     PREFIX prov: <http://www.w3.org/ns/prov#>
     INSERT DATA {
-      <#{history_graph}> prov:generatedAtTime    "#{generated_at}"^^xsd:dateTime ;
-                          prov:invalidatedAtTime  "#{now}"^^xsd:dateTime ;
-                          local:history-reason    "#{escape_for_literal(reason)}" ;
-                          local:history-detail    "#{escape_for_literal(detail)}" .
+      GRAPH <#{history_graph}> {
+        <#{history_graph}> prov:generatedAtTime    "#{generated_at}"^^xsd:dateTime ;
+                            prov:invalidatedAtTime  "#{now}"^^xsd:dateTime ;
+                            local:history-reason    "#{escape_for_literal(reason)}" ;
+                            local:history-detail    "#{escape_for_literal(detail)}" .
+      }
     }
   META
 
+  # No separate DELETE WHERE needed for the provenance triples anymore -
+  # they live inside <oldid> now, so DROP GRAPH removes them along with
+  # everything else.
+  #
+  # SILENT is required on Virtuoso, not optional - confirmed live
+  # 2026-08-26: Virtuoso tracks "graphs" as first-class entities separate
+  # from "any graph URI that happens to have triples", and a graph that was
+  # only ever populated via INSERT DATA (never an explicit CREATE GRAPH,
+  # which this codebase has never done) doesn't count as one to Virtuoso's
+  # DROP - plain DROP GRAPH raises "has not been explicitly created before"
+  # even though the triples are really there and really get removed by
+  # SILENT. GraphDB never distinguished the two.
   DATABASE_UPDATE.update(<<~DELETE_DATASET)
     #{PREFIXES}
-    DELETE WHERE { <#{oldid}> ?p ?o } ;
-    DROP GRAPH <#{oldid}>
+    DROP SILENT GRAPH <#{oldid}>
   DELETE_DATASET
 
   { created: created, history_graph: history_graph }
@@ -489,9 +546,9 @@ end
 # @return [Object] raw response from the SPARQL update endpoint
 def write_dataset_to_db(dataset:, oldid: nil, form: nil)
   writequery = write_dataset_to_db_query(dataset: dataset, oldid: oldid, form: form)
-  warn "WRITE DATASET QUERY\n#{writequery}\n\n\n"
+  warn "WRITE DATASET QUERY\n#{writequery}\n\n\n" if ENV['CBGP_DEBUG_SPARQL']
   resp = DATABASE_UPDATE.update(writequery)
-  warn "write dataset response #{resp.inspect}"
+  warn "write dataset response #{resp.inspect}" if ENV['CBGP_DEBUG_SPARQL']
   resp
 end
 
@@ -590,17 +647,17 @@ def write_dataset_to_db_query(dataset:, oldid: nil, form: nil)
     end
   end
 
-  body = triples.join("\n")
-
-  # Provenance triples are intentionally written OUTSIDE the GRAPH {} block so
-  # they land in the default graph.  This keeps them queryable without knowing
-  # the graph URI and means delete_dataset_query must clean them up explicitly.
-  # dcterms:created is preserved from the prior version on an edit (captured
-  # by delete_dataset_query above) rather than reset, so it survives edits.
+  # Provenance triples live INSIDE the record's own named graph, subject =
+  # the graph's own URI (see this method's doc comment for why, and why not
+  # the default graph). dcterms:created is preserved from the prior version
+  # on an edit (captured by delete_dataset_query above) rather than reset,
+  # so it survives edits.
   created_value = captured&.dig(:created) || timestamp
-  prov = "datasetgraph:#{primary_id} dcterms:modified \"#{timestamp}\"^^xsd:dateTime ."
-  prov += "datasetgraph:#{primary_id} dcterms:created \"#{created_value}\"^^xsd:dateTime ."
-  prov += "datasetgraph:#{primary_id} dcterms:type cbgp:#{form} ."
+  triples << "datasetgraph:#{primary_id} dcterms:modified \"#{timestamp}\"^^xsd:dateTime ."
+  triples << "datasetgraph:#{primary_id} dcterms:created \"#{created_value}\"^^xsd:dateTime ."
+  triples << "datasetgraph:#{primary_id} dcterms:type cbgp:#{form} ."
+
+  body = triples.join("\n")
 
   <<~WRITE_DATASET
     #{PREFIXES}
@@ -610,7 +667,6 @@ def write_dataset_to_db_query(dataset:, oldid: nil, form: nil)
     INSERT DATA { GRAPH datasetgraph:#{primary_id} {
     #{body}
     }
-    #{prov}
     }
   WRITE_DATASET
 end
@@ -669,9 +725,19 @@ end
 # legal SPARQL string escape, which previously caused a lexical error on any
 # multi-word search term (e.g. "My Innovative Project").
 def sparql_regex_escape(char)
+  # Two layers of escaping stack here: XPath/regex-metacharacter escaping
+  # (one backslash) is itself embedded inside a SPARQL double-quoted string
+  # literal, whose own grammar only recognizes a fixed ECHAR set
+  # (\t \n \r \b \f \" \' \\) - \. \* \( etc. are NOT valid SPARQL string
+  # escapes. GraphDB passed a single backslash through leniently; Virtuoso
+  # enforces the grammar and rejects it outright (SP030 "Bad escape
+  # sequence"), found 2026-08-26 testing a real bulk publication load. The
+  # backslash therefore has to be doubled so the SPARQL string-literal
+  # parser reduces \\ -> \ first, leaving a single backslash for the regex
+  # engine underneath - exactly what was intended all along.
   case char
-  when '"', '\\' then "\\#{char}" # must not break out of the SPARQL string literal
-  when '.', '*', '+', '?', '(', ')', '[', ']', '{', '}', '|', '^', '$' then "\\#{char}" # XPath regex metacharacters
+  when '"', '\\' then "\\\\#{char}" # must not break out of the SPARQL string literal
+  when '.', '*', '+', '?', '(', ')', '[', ']', '{', '}', '|', '^', '$' then "\\\\#{char}" # XPath regex metacharacters
   else char
   end
 end
@@ -688,7 +754,7 @@ def build_search_query(search_params:, dataset_type:)
 
   # OPTIMIZATION: Use the exact cached fields (with :questionclass, :label, etc.)
   fields = CBGP::Dataset.fields_for(dataset_type)
-  warn "\n\n\nFIELDS #{fields}\n\n\n"
+  warn "\n\n\nFIELDS #{fields}\n\n\n" if ENV['CBGP_DEBUG_SPARQL']
   datasetPREFIX = "<#{BASE_URI}#{dataset_type}/dataset/>"
   datasetgraphPREFIX = "<#{BASE_URI}#{dataset_type}/context/>"
 
@@ -735,7 +801,7 @@ def build_search_query(search_params:, dataset_type:)
       value_str = value.to_s.strip
       next if value_str.empty?
 
-      if field[:class] == 'currency'
+      if %w[currency number].include?(field[:class])
         # Search input is typed in the current UI language's number
         # convention (e.g. "15.000,50" in Spanish); normalize it to the
         # canonical decimal form the value is actually stored in before
@@ -785,33 +851,33 @@ def build_search_query(search_params:, dataset_type:)
     }
   SPARQL
 
-  warn "Generated search query:\n#{query}\n\n\n"
+  warn "Generated search query:\n#{query}\n\n\n" if ENV['CBGP_DEBUG_SPARQL']
   query
 end
 
 def execute_search(dataset_type:, search_params: {}, broad: false)
   if broad || search_params.empty? # Treat empty params as broad request
-    warn "[BROAD SEARCH] Fetching all graphs for #{dataset_type}"
+    warn "[BROAD SEARCH] Fetching all graphs for #{dataset_type}" if ENV['CBGP_DEBUG_SPARQL']
     return search_for_all_graphs(dataset_type: dataset_type)
   end
 
   query = build_search_query(search_params: search_params, dataset_type: dataset_type)
-  warn "Generated search query:\n#{query || 'NIL QUERY'}"
+  warn "Generated search query:\n#{query || 'NIL QUERY'}" if ENV['CBGP_DEBUG_SPARQL']
   return [] unless query
 
   results = DATABASE.query(query)
-  warn "Search results count: #{results.count}"
+  warn "Search results count: #{results.count}" if ENV['CBGP_DEBUG_SPARQL']
   results.map { |r| r[:datasetgraph].to_s }
 end
 
 def search_for_all_graphs(dataset_type:)
   query = search_all_graphs_query(dataset_type: dataset_type)
-  warn "\n\n\nBROAD SEARCH QUERY IS #{query}\n\n\n"
+  warn "\n\n\nBROAD SEARCH QUERY IS #{query}\n\n\n" if ENV['CBGP_DEBUG_SPARQL']
 
   return [] unless query
 
   results = DATABASE.query(query)
-  warn "Search results: #{results.map { |r| r.to_h }.inspect}"
+  warn "Search results: #{results.map { |r| r.to_h }.inspect}" if ENV['CBGP_DEBUG_SPARQL']
   results.map { |result| result[:datasetgraph].to_s } # Return array of graph URIs
 end
 
@@ -831,7 +897,7 @@ def search_all_graphs_query(dataset_type:)
     }
   SPARQL
 
-  warn "Generated search query:\n#{query}\n\n\n"
+  warn "Generated search query:\n#{query}\n\n\n" if ENV['CBGP_DEBUG_SPARQL']
   query
 end
 
@@ -847,8 +913,10 @@ def fetch_datasets_raw_data(graph_uris:, database:)
   # OPTIMIZATION: Use cached exact fields
   fields = CBGP::Dataset.fields_for(database)
 
-  # Build SELECT: ?graph + all ?questionclass vars
-  select_clause = '?graph ' + fields.map { |f| "?#{f[:questionclass]}" }.join(' ')
+  # Build SELECT: ?graph + all ?questionclass vars, plus each field's own
+  # attribute-node variable - needed to reconstruct Multiple-cardinality
+  # field order below (see the sort_by in the grouping step).
+  select_clause = '?graph ' + fields.map { |f| "?#{f[:questionclass]} ?attribute#{f[:questionclass]}" }.join(' ')
 
   # Build VALUES clause for all graphs
   values_clause = "VALUES ?graph { #{graph_uris.map { |g| "<#{g}>" }.join(' ')} }"
@@ -876,7 +944,7 @@ def fetch_datasets_raw_data(graph_uris:, database:)
     }
   SPARQL
 
-  warn "BATCHED FETCH QUERY:\n#{query}\n\n"
+  warn "BATCHED FETCH QUERY:\n#{query}\n\n" if ENV['CBGP_DEBUG_SPARQL']
 
   result_set = DATABASE.query(query)
 
@@ -890,16 +958,40 @@ def fetch_datasets_raw_data(graph_uris:, database:)
       field_sym = f[:questionclass].to_sym
 
       if f[:cardinality] == 'Multiple'
-        values = rows.flat_map { |r| r[field_sym]&.to_s }.compact.uniq
+        # Reconstruct write-time order: each attribute node's own URI ends
+        # in "_<N>" (the 1-based array index write_dataset_to_db_query gave
+        # it - see that method's doc comment), which SPARQL's row order does
+        # not preserve on its own. Sorting by that before flattening/uniq-ing
+        # is what makes e.g. publication_authors come back in the original
+        # author order (first/last author position matters for biology
+        # papers) - found 2026-08-26, this previously silently returned
+        # authors in whatever arbitrary order Virtuoso's query planner chose.
+        attr_sym = :"attribute#{f[:questionclass]}"
+        ordered_rows = rows.sort_by { |r| multiple_field_sort_key(row: r, attr_sym: attr_sym) }
+        values = ordered_rows.flat_map { |r| r[field_sym]&.to_s }.compact.uniq
         details[field_sym] = values unless values.empty?
       elsif rows.first&.bound?(field_sym)
         details[field_sym] = rows.first[field_sym]&.to_s
       end
     end
 
-    warn "BATCHED DETAILS FOR #{graph_uri}: #{details.inspect}"
+    warn "BATCHED DETAILS FOR #{graph_uri}: #{details.inspect}" if ENV['CBGP_DEBUG_SPARQL']
     details
   end
+end
+
+# Sort key for reconstructing Multiple-cardinality field order (see
+# fetch_datasets_raw_data). A row with no attribute bound (this field wasn't
+# the one that matched in this particular OPTIONAL row) or a URI with no
+# numeric suffix sorts last rather than raising, so a partial or unexpected
+# record shape still returns something sensible instead of crashing the
+# whole batch fetch.
+def multiple_field_sort_key(row:, attr_sym:)
+  uri = row[attr_sym]&.to_s
+  return Float::INFINITY unless uri
+
+  match = uri.match(/_(\d+)\z/)
+  match ? match[1].to_i : Float::INFINITY
 end
 
 def batch_retrieve_dataset_ids(graph_uris:)
@@ -921,7 +1013,7 @@ def batch_retrieve_dataset_ids(graph_uris:)
     }
   SPARQL
 
-  warn "BATCHED PRIMARY_ID QUERY:\n#{query}\n\n"
+  warn "BATCHED PRIMARY_ID QUERY:\n#{query}\n\n" if ENV['CBGP_DEBUG_SPARQL']
 
   results = DATABASE.query(query)
 

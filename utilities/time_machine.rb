@@ -21,7 +21,8 @@
 # lib/history_queries.rb's "Output wrapping" section) — TriG (Turtle +
 # named-graph blocks, same triple syntax) is the closest equivalent.
 
-require 'dotenv/load'
+require 'dotenv'
+Dotenv.load(File.expand_path('../.env', __dir__)) # the project root's .env, not a separate utilities/.env copy - avoids config drift like the Virtuoso migration missing this file (2026-08-26)
 require 'require_all'
 require_all '../app'
 

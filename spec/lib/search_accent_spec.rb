@@ -65,6 +65,28 @@ RSpec.describe 'accent-insensitive search' do
       expect(pattern).to include('\\.')
       expect(pattern).to include('\\"')
     end
+
+    # A single backslash (e.g. "\.") is not a valid SPARQL string-literal
+    # escape (ECHAR only covers \t \n \r \b \f \" \' \\) - GraphDB passed it
+    # through leniently, but Virtuoso rejects it outright with SP030 "Bad
+    # escape sequence", found 2026-08-26 testing a real bulk publication
+    # load (a DOI like "10.1038/sdata..." contains regex metacharacters -
+    # the literal dots - that triggered this on every single search/existence
+    # check). The backslash must be doubled so Virtuoso's string parser
+    # reduces \\ -> \ before the regex engine sees it.
+    it 'doubles the backslash before a regex metacharacter, for Virtuoso SPARQL string-literal safety' do
+      pattern = accent_insensitive_pattern('10.1038/sdata.2016.18')
+
+      # Every literal "." in the term must be preceded by an EVEN number of
+      # backslashes in the generated pattern (2, not 1) - an odd count means
+      # a lone backslash would reach Virtuoso's SPARQL string-literal parser
+      # as an invalid escape sequence.
+      pattern.scan(/(\\*)\./).each do |match|
+        backslashes = match[0]
+        expect(backslashes.length.even?).to be(true), "expected an even backslash count before '.', got #{backslashes.length}"
+      end
+      expect(pattern).to include('\\\\.')
+    end
   end
 
   describe '#build_search_query' do

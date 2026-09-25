@@ -34,12 +34,11 @@ lean on instead.
 ```{note}
 Before 2026-08-25 this application used GraphDB instead. The switch was
 made because GraphDB's free/open tier returned to requiring periodic
-license re-registration, which Virtuoso Open Source doesn't. If a
-pre-2026-08-25 instance needs to keep running on GraphDB rather than
-migrate, `docker-compose-graphdb.yml` in the repository still reflects
-that setup, kept as a reference/rollback point rather than removed
-outright — nothing in the running code depends on it, and it isn't
-maintained going forward.
+license re-registration, which Virtuoso Open Source doesn't. A
+pre-2026-08-25 instance staying on GraphDB would need `docker-compose.yml`
+and `configuration.rb` rolled back to that point in git history — the
+GraphDB-only compose file that used to live alongside this one has since
+been removed from the repository.
 ```
 
 ### No repository-creation step needed

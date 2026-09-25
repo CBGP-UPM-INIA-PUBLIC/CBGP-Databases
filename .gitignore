@@ -8,3 +8,6 @@ utilities/.env
 
 # Sphinx build output (docs/source/ is the tracked source; this is generated)
 docs/build/
+
+# Local Virtuoso database files (bind-mounted container data, never commit DB content)
+virtuoso-data/

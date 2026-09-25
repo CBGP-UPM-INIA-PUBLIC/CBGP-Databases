@@ -116,6 +116,16 @@ institute's own mail server (or mail-sending service) requires; ask
 whoever manages that system for the right values, the same as configuring
 any other application to send mail through it.
 
+## Verbose SPARQL/debug logging
+
+Set `CBGP_DEBUG_SPARQL=true` (any truthy string) to re-enable a large volume
+of `warn`-based debug logging that is silent by default: full generated
+SPARQL query text, raw result-set dumps, and internal field-cache tracing.
+It's off by default because printing this on every query is expensive
+enough to visibly slow down a bulk operation (e.g. loading many
+publications by DOI at once) — turn it on only while actively debugging a
+query-shape problem, not for routine operation.
+
 ## A note on security
 
 Every password and secret on this page — login passwords inside

@@ -110,4 +110,72 @@ RSpec.describe McpTools::Shared::RenderChart do
       expect(JSON.parse(result.last[:text])).to eq(timeline_rows)
     end
   end
+
+  describe 'chart_type "stacked_bar"' do
+    def budget_rows
+      [
+        { 'bucket' => '2021', 'group' => 'European', 'value' => '120000' },
+        { 'bucket' => '2021', 'group' => 'National', 'value' => '60000' },
+        { 'bucket' => '2022', 'group' => 'European', 'value' => '200000' },
+        { 'bucket' => '2022', 'group' => 'National', 'value' => '45000' },
+        { 'bucket' => '2022', 'group' => 'Articulo-83', 'value' => '30000' },
+        { 'bucket' => '2023', 'group' => 'European', 'value' => '90000' },
+        { 'bucket' => '2023', 'group' => 'National', 'value' => '80000' }
+      ]
+    end
+
+    def stacked_bar_svg(rows, **extra)
+      result = described_class.call({ 'rows' => rows, 'chart_type' => 'stacked_bar', 'x_field' => 'bucket',
+                                       'y_field' => 'value', 'series_field' => 'group', 'title' => 'Budget' }.merge(extra))
+      Base64.decode64(result.first[:data])
+    end
+
+    it 'draws one segment per (x, series) pair, well-formed, in "stacked" (default) mode' do
+      svg = stacked_bar_svg(budget_rows)
+      expect { REXML::Document.new(svg) }.not_to raise_error
+      expect(svg.scan('<rect').size).to eq(1 + 7 + 3) # background + 7 data segments + 3 legend swatches
+      expect(svg).to include('2021').and include('2022').and include('2023')
+      expect(svg).to include('European').and include('National').and include('Articulo-83')
+    end
+
+    it 'also draws one segment per pair in "grouped" mode, same counts, different geometry' do
+      svg = stacked_bar_svg(budget_rows, 'mode' => 'grouped')
+      expect { REXML::Document.new(svg) }.not_to raise_error
+      expect(svg.scan('<rect').size).to eq(1 + 7 + 3)
+    end
+
+    it 'sums duplicate (x, series) rows rather than overwriting or double-drawing them oddly' do
+      rows = [
+        { 'bucket' => '2021', 'group' => 'European', 'value' => '50' },
+        { 'bucket' => '2021', 'group' => 'European', 'value' => '30' }
+      ]
+      svg = stacked_bar_svg(rows)
+      # one bar segment for the combined (2021, European) pair, not two
+      expect(svg.scan('<rect').size).to eq(1 + 1 + 1)
+    end
+
+    it 'skips a row with a non-numeric value rather than raising' do
+      rows = [{ 'bucket' => '2021', 'group' => 'European', 'value' => 'not-a-number' },
+              { 'bucket' => '2021', 'group' => 'National', 'value' => '10' }]
+      svg = stacked_bar_svg(rows)
+      expect(svg.scan('<rect').size).to eq(1 + 1 + 1)
+    end
+
+    it 'renders an empty-but-valid chart when there are no rows' do
+      svg = stacked_bar_svg([])
+      expect { REXML::Document.new(svg) }.not_to raise_error
+    end
+
+    it 'raises when x_field, y_field, or series_field is missing' do
+      expect do
+        described_class.call({ 'rows' => budget_rows, 'chart_type' => 'stacked_bar', 'x_field' => 'bucket', 'y_field' => 'value' })
+      end.to raise_error(ArgumentError)
+    end
+
+    it 'still returns the raw rows as a text block' do
+      result = described_class.call({ 'rows' => budget_rows, 'chart_type' => 'stacked_bar', 'x_field' => 'bucket',
+                                       'y_field' => 'value', 'series_field' => 'group' })
+      expect(JSON.parse(result.last[:text])).to eq(budget_rows)
+    end
+  end
 end

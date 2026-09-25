@@ -110,6 +110,7 @@ end
 # @param form_type [String] e.g. "member"
 # @return [Array<String>]
 def current_graph_uris(form_type:)
+  form_type = validate_local_name!(form_type, field: 'form_type')
   DATABASE.query(<<~SPARQL).map { |r| r[:g].to_s }
     #{PREFIXES}
     SELECT DISTINCT ?g WHERE { GRAPH ?g { ?s a cbgp:#{form_type} } }
@@ -131,6 +132,7 @@ end
 #   reason:, detail: } — generated_at is always present (delete_dataset_query
 #   always sets prov:generatedAtTime); the rest may be nil
 def history_snapshots(form_type:, primary_id: nil)
+  form_type = validate_local_name!(form_type, field: 'form_type')
   prefix = "#{BASE_URI}#{form_type}/history/#{primary_id}"
   prefix += '/' if primary_id
 
@@ -144,7 +146,7 @@ def history_snapshots(form_type:, primary_id: nil)
         OPTIONAL { ?g local:history-reason ?reason }
         OPTIONAL { ?g local:history-detail ?detail }
       }
-      FILTER(STRSTARTS(STR(?g), "#{prefix}"))
+      FILTER(STRSTARTS(STR(?g), "#{escape_for_literal(prefix)}"))
     }
   SPARQL
     {
@@ -180,6 +182,8 @@ end
 # @param value [String] the identifier value to match, exactly
 # @return [String, nil] the record's primary_id, or nil if not found anywhere
 def find_primary_id(form_type:, questionclass:, value:)
+  form_type = validate_local_name!(form_type, field: 'form_type')
+  questionclass = validate_local_name!(questionclass, field: 'questionclass')
   escaped = escape_for_literal(value)
   attr_match = <<~PATTERN
     ?dataset sio:SIO_000008 ?attr ;
@@ -201,7 +205,7 @@ def find_primary_id(form_type:, questionclass:, value:)
     #{PREFIXES}
     SELECT ?id WHERE {
       GRAPH ?g { #{attr_match} }
-      FILTER(STRSTARTS(STR(?g), "#{history_prefix}"))
+      FILTER(STRSTARTS(STR(?g), "#{escape_for_literal(history_prefix)}"))
     }
   SPARQL
   match ? match[:id].to_s : nil
@@ -221,6 +225,9 @@ end
 #   invalidated_at: (nil if still current), reason: (nil if still current),
 #   detail: (nil if still current) }, sorted by generated_at ascending
 def full_timeline(form_type:, primary_id:)
+  form_type = validate_local_name!(form_type, field: 'form_type')
+  primary_id = validate_iri_component!(primary_id, field: 'primary_id')
+
   versions = history_snapshots(form_type: form_type, primary_id: primary_id).map do |snap|
     snap.merge(triples: read_graph_triples(graph_uri: snap[:graph_uri], repository: HISTORY_DATABASE))
   end

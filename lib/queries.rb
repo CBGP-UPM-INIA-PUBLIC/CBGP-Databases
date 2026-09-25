@@ -4,6 +4,7 @@ require 'linkeddata'
 require 'sparql'
 require 'sparql/client'
 require 'securerandom'
+require 'date'
 require_relative 'virtuoso_update_client'
 # require 'unicode' # If not already available; Ruby stdlib has String#unicode_normalize, but ensure it's loaded if needed
 
@@ -58,6 +59,7 @@ PREFIX dcterms: <http://purl.org/dc/terms/>   # NEW: for provenance timestamps
 
 # what database should we be writing to or reading from?
 def get_dbname_for_form(form:) # form is e.g. publication or userproject
+  form = validate_local_name!(form, field: 'form')
   # questionnaire_type = Add/Edit publications (#publication) has-fields Publication Questions (#new-publication-questions)
   classname = "cbgp:#{form}"
   qs = <<GET_DBNAME
@@ -75,6 +77,8 @@ GET_DBNAME
 end
 
 def get_questionnaire_types_query(type: 'Core', language: current_language) # rubocop:disable Metrics/MethodLength
+  type = validate_local_name!(type, field: 'type')
+  language = validate_local_name!(language, field: 'language')
   # questionnaire_type = Add/Edit publications (#publication) has-fields Publication Questions (#new-publication-questions)
 
   qs = <<GET_QUESTIONNAIRE_TYPES
@@ -94,6 +98,9 @@ end
 
 def get_questionnaire_sections_query(questionnaire_type:, language: current_language)
   return [] unless questionnaire_type
+
+  questionnaire_type = validate_local_name!(questionnaire_type, field: 'questionnaire_type')
+  language = validate_local_name!(language, field: 'language')
 
   warn "\n\nIn get_questionnaire_sections with #{questionnaire_type} and #{language}\n\n\n"
 
@@ -116,6 +123,8 @@ GET_QUESTIONNAIRE_SECTIONS
 end
 
 def get_section_questions_query(sectionid:, language: current_language)
+  sectionid = validate_local_name!(sectionid, field: 'sectionid')
+  language = validate_local_name!(language, field: 'language')
   qs = <<GET_SECTION_QUESTIONS
     #{PREFIXES}
 
@@ -156,6 +165,7 @@ end
 #   "personnel_project" - NOT the shared dbname ("project")
 # @return [SPARQL::Client::Solutions] rows with ?field (full URI) and ?value
 def get_form_defaults_query(form_class:)
+  form_class = validate_local_name!(form_class, field: 'form_class')
   qs = <<~GET_FORM_DEFAULTS
     #{PREFIXES}
     SELECT ?field ?value WHERE {
@@ -193,6 +203,7 @@ end
 #   binding per required field — there is no "value" column here, only
 #   presence/absence of a row for a given field
 def get_form_required_fields_query(form_class:)
+  form_class = validate_local_name!(form_class, field: 'form_class')
   qs = <<~GET_FORM_REQUIRED_FIELDS
     #{PREFIXES}
     SELECT ?field WHERE {
@@ -222,6 +233,7 @@ end
 #   ?formula (the Dentaku expression string) per calculated field this form
 #   declares
 def get_form_formulas_query(form_class:)
+  form_class = validate_local_name!(form_class, field: 'form_class')
   qs = <<~GET_FORM_FORMULAS
     #{PREFIXES}
     SELECT ?field ?formula WHERE {
@@ -235,6 +247,8 @@ def get_form_formulas_query(form_class:)
 end
 
 def get_answer_block_query(ablockid:, language: current_language)
+  ablockid = validate_local_name!(ablockid, field: 'ablockid')
+  language = validate_local_name!(language, field: 'language')
   a = <<GET_ANSWER_BLOCK
     #{PREFIXES}
 
@@ -252,6 +266,7 @@ GET_ANSWER_BLOCK
 end
 
 def get_hierarchical_answer_block_query(ablockid:, language: current_language)
+  language = validate_local_name!(language, field: 'language')
   query = <<~GET_HIERARCHICAL_ANSWERS
     #{PREFIXES}
     SELECT DISTINCT ?aid ?label ?parent ?sequence WHERE {
@@ -269,6 +284,8 @@ def get_hierarchical_answer_block_query(ablockid:, language: current_language)
 end
 
 def get_label_for_questionnaire_type(id:, language: current_language)
+  id = validate_local_name!(id, field: 'id')
+  language = validate_local_name!(language, field: 'language')
   lab = SPARQL.parse("
     #{PREFIXES}
 
@@ -290,6 +307,8 @@ def get_label_for_id(id:, language: current_language)
 
   # Strip the document fragment from the URI if it includes a '#'
   id = id.to_s.split('#').last if id.to_s.include?('#')
+  id = validate_local_name!(id, field: 'id')
+  language = validate_local_name!(language, field: 'language')
 
   query = <<~LABEL_QUERY
     #{PREFIXES}
@@ -311,6 +330,8 @@ def get_label_for_id(id:, language: current_language)
 end
 
 def field_query(fieldid:, language: current_language)
+  fieldid = validate_local_name!(fieldid, field: 'fieldid')
+  language = validate_local_name!(language, field: 'language')
   query = <<~FIELDQ
     #{PREFIXES}
     SELECT ?label ?answerblock ?objectclass ?objectmethod ?questionorder ?cardinality ?widgettype
@@ -374,7 +395,7 @@ def retrieve_dataset_graph_query(primary_id:)
   graph ?g {
       ?dataset sio:SIO_000671 ?id .
 
-      ?id  sio:SIO_000300 "#{primary_id}" ;
+      ?id  sio:SIO_000300 "#{escape_for_literal(primary_id)}" ;
         rdf:type sio:SIO_000115 . # identifier
   }}
 
@@ -421,6 +442,74 @@ end
 # @return [String]
 def escape_for_literal(value)
   value.to_s.gsub(/["\\]/) { |c| "\\#{c}" }
+end
+
+# Validates a value that's about to be interpolated as a bare SPARQL
+# identifier fragment (an ontology local name — e.g. cbgp:#{form},
+# cbgp:#{questionclass}) rather than inside a quoted literal, so
+# escape_for_literal doesn't apply: there's no quote to escape into, an
+# unescaped value here can break out of the query's syntactic structure
+# outright. Ontology local names are always simple ASCII identifiers (see
+# local:method values throughout the .owl file), so anything else is
+# rejected rather than guessed at. Previously every one of these was
+# interpolated unchecked; harmless while callers only ever passed
+# dropdown-derived values, not once these same call paths take arguments
+# supplied by an LLM/agent (see the planned MCP query servers).
+#
+# @param value [Object] the value about to be interpolated
+# @param field [String] name to reference in the error, e.g. "questionclass"
+# @return [String] the validated value, unchanged
+# @raise [ArgumentError] if value isn't a simple identifier
+def validate_local_name!(value, field:)
+  str = value.to_s
+  raise ArgumentError, "Invalid #{field}: #{value.inspect}" unless str.match?(/\A[A-Za-z_][\w-]*\z/)
+
+  str
+end
+
+# Validates and normalizes a date string about to be interpolated into a
+# SPARQL FILTER as a bare xsd:date literal (e.g.
+# "#{start_date}"^^xsd:date) — same reasoning as validate_local_name!: this
+# isn't a quoted-string context escape_for_literal handles, it's raw
+# interpolation, and a crafted "start_date" could otherwise break out of
+# the FILTER entirely. Round-trips through Date.parse so anything that
+# isn't a real calendar date is rejected outright.
+#
+# @param value [String]
+# @return [String] "YYYY-MM-DD"
+# @raise [ArgumentError] if value isn't a parseable date
+def validate_date!(value)
+  str = value.to_s
+  # Date.parse is deliberately lenient (it'll extract a date from the front
+  # of a larger string and silently ignore the rest, e.g. trailing SPARQL
+  # syntax) - useful for free-text input, wrong here. Anchor to exactly
+  # YYYY-MM-DD first so there's nothing left over for an injected value to
+  # smuggle through.
+  raise ArgumentError, "Invalid date: #{value.inspect}" unless str.match?(/\A\d{4}-\d{2}-\d{2}\z/)
+
+  Date.strptime(str, '%Y-%m-%d').iso8601
+rescue ArgumentError, TypeError
+  raise ArgumentError, "Invalid date: #{value.inspect}"
+end
+
+# Validates a value that's about to be interpolated as a bare IRI inside
+# angle brackets (<#{value}>) — a different context from a quoted literal
+# (escape_for_literal) or an ontology local name (validate_local_name!).
+# primary_ids routinely contain characters a local name can't (an ORCID
+# starts with a digit, a DOI contains slashes), so rather than allowlist a
+# narrow shape, this only rejects the specific characters SPARQL's own
+# IRIREF grammar forbids (<>"{}|^`\ plus control/whitespace characters) —
+# exactly the characters that could break out of the <...> syntax.
+#
+# @param value [Object]
+# @param field [String]
+# @return [String]
+# @raise [ArgumentError]
+def validate_iri_component!(value, field:)
+  str = value.to_s
+  raise ArgumentError, "Invalid #{field}: #{value.inspect}" if str.match?(/[<>"{}|^`\\\x00-\x20]/)
+
+  str
 end
 
 # Removes a named graph from the CURRENT-state repository (DATABASE), first
@@ -743,6 +832,7 @@ def sparql_regex_escape(char)
 end
 
 def build_search_query(search_params:, dataset_type:)
+  dataset_type = validate_local_name!(dataset_type, field: 'dataset_type')
   return nil unless search_params.is_a?(Hash) &&
                     search_params.any? do |k, v|
                       !v.nil? &&
@@ -782,12 +872,20 @@ def build_search_query(search_params:, dataset_type:)
       end_date = value['end']&.strip
       next if start_date.to_s.empty? && end_date.to_s.empty?
 
+      # Previously interpolated raw with no escaping at all - fine while
+      # only a date-picker widget ever produced these, not once this same
+      # path takes an MCP tool argument. validate_date! both rejects
+      # anything that isn't a real calendar date and normalizes it to
+      # YYYY-MM-DD, so there's nothing left for an injected value to do.
+      start_date = start_date.to_s.empty? ? nil : validate_date!(start_date)
+      end_date = end_date.to_s.empty? ? nil : validate_date!(end_date)
+
       filter = ''
-      if !start_date.to_s.empty? && !end_date.to_s.empty?
+      if start_date && end_date
         filter = "FILTER (?datevalue >= \"#{start_date}\"^^xsd:date && ?datevalue <= \"#{end_date}\"^^xsd:date)"
-      elsif !start_date.to_s.empty?
+      elsif start_date
         filter = "FILTER (?datevalue >= \"#{start_date}\"^^xsd:date)"
-      elsif !end_date.to_s.empty?
+      elsif end_date
         filter = "FILTER (?datevalue <= \"#{end_date}\"^^xsd:date)"
       end
 
@@ -882,6 +980,7 @@ def search_for_all_graphs(dataset_type:)
 end
 
 def search_all_graphs_query(dataset_type:)
+  dataset_type = validate_local_name!(dataset_type, field: 'dataset_type')
   # [Unchanged early-exit guard]
 
   datasetPREFIX = "<#{BASE_URI}#{dataset_type}/dataset/>"
@@ -907,6 +1006,7 @@ end
 # Returns an array of hashes, one hash per dataset URI, containing only the fields that
 # actually have values.
 def fetch_datasets_raw_data(graph_uris:, database:)
+  database = validate_local_name!(database, field: 'database')
   graph_uris = [graph_uris] unless graph_uris.is_a? Array
   return [] if graph_uris.empty?
 

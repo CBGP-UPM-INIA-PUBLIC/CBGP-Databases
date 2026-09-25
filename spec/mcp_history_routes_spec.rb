@@ -44,8 +44,7 @@ RSpec.describe '/mcp/history', type: :request do
     body = JSON.parse(last_response.body)
     names = body['result']['tools'].map { |t| t['name'] }
     expect(names).to include('record_history', 'record_timeline', 'temporal_search', 'aggregate_over_time',
-                              'point_in_time_snapshot', 'institute_timeline', 'compute_statistics', 'render_chart',
-                              'funder_lookup')
+                              'point_in_time_snapshot', 'institute_timeline', 'compute_statistics', 'render_chart')
   end
 
   it 'calls record_history end-to-end, with the underlying DB functions stubbed' do

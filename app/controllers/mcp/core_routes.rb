@@ -20,8 +20,7 @@ CORE_MCP_TOOLS = [
   McpTools::Core::Aggregate,
   McpTools::Core::PublicationProjectHeuristicLink,
   McpTools::Shared::ComputeStatistics,
-  McpTools::Shared::RenderChart,
-  McpTools::Shared::FunderLookup
+  McpTools::Shared::RenderChart
 ].freeze
 
 def set_core_mcp_routes

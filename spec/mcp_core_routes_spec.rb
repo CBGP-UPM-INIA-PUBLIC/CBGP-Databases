@@ -49,7 +49,7 @@ RSpec.describe '/mcp/core', type: :request do
     names = body['result']['tools'].map { |t| t['name'] }
     expect(names).to include('list_form_facets', 'search_records', 'get_record', 'aggregate',
                               'publication_project_heuristic_link', 'ontology_relationships',
-                              'compute_statistics', 'render_chart', 'funder_lookup')
+                              'compute_statistics', 'render_chart')
   end
 
   it 'calls a real tool (list_form_facets) end-to-end through the JSON-RPC endpoint' do

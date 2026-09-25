@@ -16,7 +16,8 @@ HISTORY_MCP_TOOLS = [
   McpTools::History::PointInTimeSnapshot,
   McpTools::History::InstituteTimeline,
   McpTools::Shared::ComputeStatistics,
-  McpTools::Shared::RenderChart
+  McpTools::Shared::RenderChart,
+  McpTools::Shared::FunderLookup
 ].freeze
 
 def set_history_mcp_routes

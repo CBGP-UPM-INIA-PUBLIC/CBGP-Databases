@@ -162,9 +162,23 @@ end
 # Extracts the primary_id out of a history graph URI
 # (".../form_type/history/<primary_id>/<uuid>") — the inverse of the URI
 # pattern delete_dataset_query mints.
+#
+# primary_id itself may contain slashes (a DOI, e.g.
+# "10.1038/s41586-020-1234-5", is a completely normal publication
+# primary_id) - ".first" on the split used to silently truncate at the
+# first internal slash, which is a real, live-data-affecting bug: it's
+# fine when generated_at/invalidated_at are irrelevant, but
+# latest_known_snapshots/filter_snapshots_during/temporal_search_result all
+# group by this return value, so a DOI-keyed publication's history
+# snapshots would have been split across multiple wrong "primary_ids"
+# instead of grouped as one record's timeline. Fixed by taking every
+# segment except the trailing uuid (which delete_dataset_query always mints
+# via SecureRandom.uuid, so it never itself contains a slash) rather than
+# assuming the primary_id has none.
 def primary_id_from_history_graph(graph_uri:, form_type:)
   prefix = "#{BASE_URI}#{form_type}/history/"
-  graph_uri.delete_prefix(prefix).split('/').first
+  segments = graph_uri.delete_prefix(prefix).split('/')
+  segments[0..-2].join('/')
 end
 
 ##############################################################################
@@ -263,8 +277,15 @@ end
 # @param form_type [String]
 # @return [Array<Hash>] { primary_id:, graph_uri:, is_current:, triples: }
 def latest_known_snapshots(form_type:)
+  # Same reasoning as primary_id_from_history_graph's fix above: primary_id
+  # may itself contain slashes (a DOI), so ".split('/').last" would
+  # silently truncate it to the wrong, shorter string. There's no trailing
+  # uuid segment on a CURRENT graph URI (".../form_type/context/<primary_id>",
+  # not ".../history/<primary_id>/<uuid>"), so the fix here is simpler:
+  # the primary_id is everything left after stripping the known prefix.
+  current_prefix = "#{BASE_URI}#{form_type}/context/"
   current_by_id = current_graph_uris(form_type: form_type).each_with_object({}) do |g, hash|
-    hash[g.split('/').last] = g
+    hash[g.delete_prefix(current_prefix)] = g
   end
 
   by_id = history_snapshots(form_type: form_type).group_by do |snap|

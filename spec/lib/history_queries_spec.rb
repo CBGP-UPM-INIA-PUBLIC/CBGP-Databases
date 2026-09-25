@@ -133,6 +133,12 @@ RSpec.describe 'Time machine query layer' do
       graph = "#{BASE_URI}project/history/abc-123/def-456-uuid"
       expect(primary_id_from_history_graph(graph_uri: graph, form_type: 'project')).to eq('abc-123')
     end
+
+    it 'does not truncate a primary_id that itself contains a slash, e.g. a DOI' do
+      graph = "#{BASE_URI}publication/history/10.1038/s41586-020-1234-5/def-456-uuid"
+      expect(primary_id_from_history_graph(graph_uri: graph, form_type: 'publication'))
+        .to eq('10.1038/s41586-020-1234-5')
+    end
   end
 
   describe '#insert_into_named_graph' do
@@ -341,6 +347,20 @@ RSpec.describe 'Time machine query layer' do
       result = latest_known_snapshots(form_type: 'project')
       expect(result.size).to eq(1)
       expect(result.first).to include(primary_id: 'live-1', is_current: true)
+    end
+
+    it 'does not truncate a current primary_id that itself contains a slash, e.g. a DOI' do
+      doi = '10.1038/s41586-020-1234-5'
+      live_graph = "#{BASE_URI}publication/context/#{doi}"
+      allow(self).to receive(:current_graph_uris).with(hash_including(form_type: 'publication')).and_return([live_graph])
+      allow(self).to receive(:history_snapshots).with(hash_including(form_type: 'publication')).and_return([])
+      allow(self).to receive(:read_graph_triples)
+        .with(hash_including(graph_uri: live_graph, repository: DATABASE))
+        .and_return(field_triples(questionclass: 'publication_title', values: ['A Paper']))
+
+      result = latest_known_snapshots(form_type: 'publication')
+      expect(result.size).to eq(1)
+      expect(result.first).to include(primary_id: doi, is_current: true)
     end
 
     it 'falls back to the latest history snapshot for a deleted record (durability through deletion)' do

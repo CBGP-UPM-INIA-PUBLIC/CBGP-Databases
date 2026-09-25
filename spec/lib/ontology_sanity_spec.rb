@@ -194,21 +194,10 @@ RSpec.describe 'Ontology structural sanity' do
   end
 
   it 'never defines the same rdfs:label twice for the same language on the same class (ambiguous for FILTER(lang(...))-based lookups)' do
-    # 'forms' is a known, pre-existing case (found 2026-09-25, not introduced
-    # by any change in this codebase) - it has two English labels ("Data
-    # entry" and "Forms"). Low real-world impact since 'forms' is a purely
-    # structural/internal marker class (get_dbname_for_form's
-    # `rdfs:subClassOf cbgp:forms` check) never shown to a user directly,
-    # but it's a real ontology data-quality issue flagged to the team.
-    # Remove this allowance once it's cleaned up upstream.
-    known_issues = %w[forms].freeze
-
     by_subject = Hash.new { |h, k| h[k] = [] }
     $ontology.query([nil, RDF::RDFS.label, nil]).each { |s| by_subject[s.subject] << s.object }
 
     violations = by_subject.filter_map do |subject, labels|
-      next if known_issues.include?(frag(subject))
-
       dupes = labels.group_by { |l| l.language&.to_s }.select { |lang, vals| lang && vals.size > 1 }
       next if dupes.empty?
 

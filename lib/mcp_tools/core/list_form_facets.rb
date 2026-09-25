@@ -27,24 +27,37 @@ module McpTools
         For controlled-vocabulary fields (a fixed dropdown/radio list, not
         free text), also returns every legal value as {id, label} - id is
         what you pass as the value when searching or filtering on that
-        field; label is what a human would read.
+        field (and what search_records/get_record/aggregate return in a
+        record); label is what a human would read.
+
+        The ontology is bilingual (English/Spanish). Detect the language of
+        the user's question yourself and pass its ISO code ("en" or "es")
+        as language - every label in the response comes back in that
+        language. search_records/get_record/aggregate always return the raw
+        id, never a label, so when presenting their results to the user:
+        call this tool (with the right language) to get the id -> label
+        mapping for whichever field's values you need to show, and
+        substitute the label yourself rather than showing the raw id.
       DESCRIPTION
 
       INPUT_SCHEMA = {
         type: 'object',
         properties: {
-          form_type: { type: 'string', description: 'e.g. "member", "project", "publication"' }
+          form_type: { type: 'string', description: 'e.g. "member", "project", "publication"' },
+          language: { type: 'string', description: 'ISO code of the question\'s language, e.g. "en" or "es" - default "en"' }
         },
         required: ['form_type']
       }.freeze
 
       def self.call(arguments)
-        form_type = arguments['form_type']
-        fields = CBGP::Dataset.fields_for(form_type)
+        McpTools::Shared::WithLanguage.call(arguments['language']) do
+          form_type = arguments['form_type']
+          fields = CBGP::Dataset.fields_for(form_type)
 
-        facets = fields.map { |f| facet_entry(f) }
+          facets = fields.map { |f| facet_entry(f) }
 
-        [{ type: 'text', text: { form_type: form_type, facets: facets }.to_json }]
+          [{ type: 'text', text: { form_type: form_type, facets: facets }.to_json }]
+        end
       end
 
       def self.facet_entry(field)

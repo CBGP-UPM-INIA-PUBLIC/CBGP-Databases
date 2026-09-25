@@ -25,6 +25,28 @@ RSpec.describe 'Core MCP discovery tools' do
       body = JSON.parse(response.first[:text])
       expect(body['facets']).to eq([])
     end
+
+    it 'returns labels in the requested language, not whatever the thread happened to have set' do
+      Thread.current[:language] = 'es'
+      en_body = JSON.parse(described_class.call({ 'form_type' => 'member', 'language' => 'en' }).first[:text])
+      es_body = JSON.parse(described_class.call({ 'form_type' => 'member', 'language' => 'es' }).first[:text])
+
+      en_label = en_body['facets'].find { |f| f['questionclass'] == 'member_status' }['label']
+      es_label = es_body['facets'].find { |f| f['questionclass'] == 'member_status' }['label']
+
+      expect(en_label).not_to eq(es_label)
+    end
+
+    it 'restores Thread.current[:language] afterward, so one MCP call cannot leak into the next' do
+      Thread.current[:language] = nil
+      described_class.call({ 'form_type' => 'member', 'language' => 'es' })
+      expect(Thread.current[:language]).to be_nil
+    end
+
+    it 'defaults to English when language is omitted' do
+      response = described_class.call({ 'form_type' => 'member' })
+      expect(JSON.parse(response.first[:text])['facets']).not_to be_empty
+    end
   end
 
   describe McpTools::Core::OntologyRelationships do
@@ -46,6 +68,14 @@ RSpec.describe 'Core MCP discovery tools' do
       expect do
         described_class.call({ 'class_name' => 'x } DROP ALL #' })
       end.to raise_error(ArgumentError)
+    end
+
+    it 'returns the label in the requested language' do
+      en_label = JSON.parse(described_class.call({ 'class_name' => 'European', 'language' => 'en' }).first[:text])['label']
+      es_label = JSON.parse(described_class.call({ 'class_name' => 'European', 'language' => 'es' }).first[:text])['label']
+
+      expect(en_label).to eq('European')
+      expect(es_label).not_to eq(en_label)
     end
   end
 end

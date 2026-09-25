@@ -30,6 +30,11 @@ module McpTools
         funding types count as "international" if the ontology doesn't say
         so). Tell the user the distinction isn't defined in the data rather
         than fabricating an answer.
+
+        The ontology is bilingual (English/Spanish). Detect the language of
+        the user's question yourself and pass its ISO code ("en" or "es")
+        as language - every label in the response comes back in that
+        language.
       DESCRIPTION
 
       INPUT_SCHEMA = {
@@ -38,14 +43,17 @@ module McpTools
           class_name: {
             type: 'string',
             description: 'An ontology local name - a questionclass, or one of its controlled-vocabulary values (the "id" from list_form_facets)'
-          }
+          },
+          language: { type: 'string', description: 'ISO code of the question\'s language, e.g. "en" or "es" - default "en"' }
         },
         required: ['class_name']
       }.freeze
 
       def self.call(arguments)
-        result = get_class_relationships_query(class_name: arguments['class_name'])
-        [{ type: 'text', text: result.to_json }]
+        McpTools::Shared::WithLanguage.call(arguments['language']) do
+          result = get_class_relationships_query(class_name: arguments['class_name'])
+          [{ type: 'text', text: result.to_json }]
+        end
       end
     end
   end

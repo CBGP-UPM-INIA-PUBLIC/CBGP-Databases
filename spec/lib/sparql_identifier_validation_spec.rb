@@ -92,7 +92,8 @@ RSpec.describe 'SPARQL identifier/date/IRI validation' do
         dataset_type: 'member'
       )
 
-      expect(query).to include('FILTER (?datevalue >= "2020-01-01"^^xsd:date && ?datevalue <= "2020-12-31"^^xsd:date)')
+      expect(query).to include('?datevalue_0 >= "2020-01-01"^^xsd:date')
+      expect(query).to include('?datevalue_0 <= "2020-12-31"^^xsd:date')
     end
 
     it 'raises rather than interpolate an injected start_date into the generated query' do

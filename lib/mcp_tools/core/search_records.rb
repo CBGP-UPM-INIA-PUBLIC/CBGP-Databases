@@ -27,6 +27,18 @@ module McpTools
         bound may be omitted for an open-ended range. Omit search_params
         (or pass {}) to list every record of that form_type.
 
+        To EXCLUDE records matching a field instead of requiring a match,
+        add a sibling key "questionclass__not": "1" alongside that field's
+        normal value/range - e.g. {"member_institutional_mail_address":
+        "upm.es", "member_institutional_mail_address__not": "1"} finds every
+        record whose email is anything other than an upm.es address,
+        INCLUDING records with no email on file at all (true exclusion, not
+        "has a non-matching value"). The "__not" flag negates whichever
+        field it's suffixed to; the value/range for that field still has to
+        be given normally alongside it. Works for every field type
+        (text, controlled-vocabulary id, currency/number, and date range -
+        a negated date range excludes anything falling inside it).
+
         Returns each matching record as compact JSON-LD: an @id (the
         record's stable graph URI - pass this directly as the value/
         primary_id argument to the History-server tools to see that
@@ -41,7 +53,9 @@ module McpTools
           form_type: { type: 'string', description: 'e.g. "member", "project", "publication"' },
           search_params: {
             type: 'object',
-            description: 'questionclass => value (string) or {start, end} (date range). Omit for all records.'
+            description: 'questionclass => value (string) or {start, end} (date range). Add a sibling ' \
+                         '"questionclass__not": "1" to exclude matches on that field instead (see description). ' \
+                         'Omit search_params for all records.'
           },
           limit: { type: 'integer', description: "Max records to return (default #{DEFAULT_LIMIT})" }
         },
@@ -59,7 +73,8 @@ module McpTools
         raw_records = fetch_datasets_raw_data(graph_uris: graph_uris, database: form_type)
         records = JsonldCompact.serialize_records(form_type: form_type, raw_records: raw_records)
 
-        [{ type: 'text', text: { total_matches: all_graph_uris.size, returned: records.size, records: records }.to_json }]
+        [{ type: 'text',
+           text: { total_matches: all_graph_uris.size, returned: records.size, records: records }.to_json }]
       end
     end
   end

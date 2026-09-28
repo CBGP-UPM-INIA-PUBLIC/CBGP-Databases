@@ -880,8 +880,19 @@ end
 
 def build_search_query(search_params:, dataset_type:)
   dataset_type = validate_local_name!(dataset_type, field: 'dataset_type')
-  return nil unless search_params.is_a?(Hash) &&
-                    search_params.any? do |k, v|
+  return nil unless search_params.is_a?(Hash)
+
+  # A "#{questionclass}__not" => "1" sibling param (checkbox on the search
+  # form) negates that field's condition. Pulled out up front so the main
+  # loop below only ever sees real fields, never these flag keys.
+  negate_flags = search_params.keys.each_with_object({}) do |k, h|
+    next unless k.to_s.end_with?('__not')
+
+    h[k.to_s.sub(/__not\z/, '')] = true
+  end
+  field_params = search_params.reject { |k, _v| k.to_s.end_with?('__not') }
+
+  return nil unless field_params.any? do |_k, v|
                       !v.nil? &&
                       (
                         (!v.is_a?(Hash) && !v.to_s.strip.empty?) ||
@@ -902,11 +913,21 @@ def build_search_query(search_params:, dataset_type:)
     SELECT DISTINCT ?datasetgraph
     WHERE {
       GRAPH ?datasetgraph {
+        ?dataset a cbgp:#{dataset_type} .
   SPARQL
 
   conditions = []
 
-  search_params.each do |questionclass, value|
+  # Each field gets its own index-suffixed ?attribute_N/?value_N (or
+  # ?datevalue_N) pair. Previously every condition block reused the bare
+  # ?attribute/?value names, which meant combining 2+ non-date fields forced
+  # a single ?attribute binding to simultaneously satisfy two different
+  # `rdf:type cbgp:...` constraints - impossible under this reified
+  # attribute-value model, so any 2-field search silently returned zero
+  # rows. Found 2026-09-28 while building NOT support, which independently
+  # needs each field scoped to its own variables so a FILTER NOT EXISTS on
+  # one field can't leak into another field's match.
+  field_params.each_with_index do |(questionclass, value), idx|
     field = fields.find { |f| f[:questionclass] == questionclass }
 
     if field.nil?
@@ -914,75 +935,90 @@ def build_search_query(search_params:, dataset_type:)
       next
     end
 
-    if value.is_a?(Hash) # Date range
-      start_date = value['start']&.strip
-      end_date = value['end']&.strip
-      next if start_date.to_s.empty? && end_date.to_s.empty?
+    attr_var = "?attribute_#{idx}"
+    negate = negate_flags[questionclass]
+    # NOT means "no matching value AND no value at all" (true set-complement,
+    # not just 'has a non-matching value'), so negation wraps the field's
+    # entire normal match pattern in FILTER NOT EXISTS rather than just
+    # negating the FILTER - a record missing the attribute entirely still
+    # satisfies NOT EXISTS.
+    wrap = ->(block) { negate ? "FILTER NOT EXISTS {\n#{block}}\n" : block }
 
-      # Previously interpolated raw with no escaping at all - fine while
-      # only a date-picker widget ever produced these, not once this same
-      # path takes an MCP tool argument. validate_date! both rejects
-      # anything that isn't a real calendar date and normalizes it to
-      # YYYY-MM-DD, so there's nothing left for an injected value to do.
-      start_date = start_date.to_s.empty? ? nil : validate_date!(start_date)
-      end_date = end_date.to_s.empty? ? nil : validate_date!(end_date)
+    block =
+      if value.is_a?(Hash) # Date range
+        start_date = value['start']&.strip
+        end_date = value['end']&.strip
+        next if start_date.to_s.empty? && end_date.to_s.empty?
 
-      filter = ''
-      if start_date && end_date
-        filter = "FILTER (?datevalue >= \"#{start_date}\"^^xsd:date && ?datevalue <= \"#{end_date}\"^^xsd:date)"
-      elsif start_date
-        filter = "FILTER (?datevalue >= \"#{start_date}\"^^xsd:date)"
-      elsif end_date
-        filter = "FILTER (?datevalue <= \"#{end_date}\"^^xsd:date)"
-      end
+        # Previously interpolated raw with no escaping at all - fine while
+        # only a date-picker widget ever produced these, not once this same
+        # path takes an MCP tool argument. validate_date! both rejects
+        # anything that isn't a real calendar date and normalizes it to
+        # YYYY-MM-DD, so there's nothing left for an injected value to do.
+        start_date = start_date.to_s.empty? ? nil : validate_date!(start_date)
+        end_date = end_date.to_s.empty? ? nil : validate_date!(end_date)
 
-      conditions << <<-CONDITION
-        ?dataset sio:SIO_000008 ?attribute .
-        ?attribute sio:SIO_000300 ?datevalue .
-        ?attribute rdf:type cbgp:#{questionclass} .
+        date_var = "?datevalue_#{idx}"
+        filter = ''
+        if start_date && end_date
+          filter = "FILTER (#{date_var} >= \"#{start_date}\"^^xsd:date && #{date_var} <= \"#{end_date}\"^^xsd:date)"
+        elsif start_date
+          filter = "FILTER (#{date_var} >= \"#{start_date}\"^^xsd:date)"
+        elsif end_date
+          filter = "FILTER (#{date_var} <= \"#{end_date}\"^^xsd:date)"
+        end
+
+        <<-CONDITION
+        ?dataset sio:SIO_000008 #{attr_var} .
+        #{attr_var} sio:SIO_000300 #{date_var} .
+        #{attr_var} rdf:type cbgp:#{questionclass} .
         #{filter}
-      CONDITION
-    else # Text / dropdown value
-      value_str = value.to_s.strip
-      next if value_str.empty?
-
-      if %w[currency number].include?(field[:class])
-        # Search input is typed in the current UI language's number
-        # convention (e.g. "15.000,50" in Spanish); normalize it to the
-        # canonical decimal form the value is actually stored in before
-        # matching, same as on save. Skip silently on unparseable input,
-        # like every other search field does on a blank/invalid term.
-        parsed = parse_currency_input(value_str)
-        next unless parsed
-
-        conditions << <<-CONDITION
-          ?dataset sio:SIO_000008 ?attribute .
-          ?attribute sio:SIO_000300 ?value .
-          ?attribute rdf:type cbgp:#{questionclass} .
-          FILTER(CONTAINS(STR(?value), "#{parsed}"))
         CONDITION
-      else
-        # Accent-insensitive by default for every free-text/dropdown field.
-        # Previously this was opt-in per field via an ACCENT_SENSITIVE_LABELS
-        # allowlist keyed on the ontology's human-readable (and
-        # language-specific, and rewording-prone) field label, which is how
-        # fields silently fell out of coverage — e.g. "member_name" was never
-        # added, and label rewordings ("affiliation" -> "Affiliations",
-        # "partner institutions" -> "Partner institutions (acronym and
-        # country)") broke the exact-string match for fields that WERE
-        # supposedly covered. Matching is now unconditional, so there is no
-        # list to fall out of sync.
-        pattern = accent_insensitive_pattern(value_str)
-        next if pattern.empty?
+      else # Text / dropdown value
+        value_str = value.to_s.strip
+        next if value_str.empty?
 
-        conditions << <<-CONDITION
-          ?dataset sio:SIO_000008 ?attribute .
-          ?attribute sio:SIO_000300 ?value .
-          ?attribute rdf:type cbgp:#{questionclass} .
-          FILTER regex(STR(?value), "#{pattern}", "i")
-        CONDITION
+        val_var = "?value_#{idx}"
+
+        if %w[currency number].include?(field[:class])
+          # Search input is typed in the current UI language's number
+          # convention (e.g. "15.000,50" in Spanish); normalize it to the
+          # canonical decimal form the value is actually stored in before
+          # matching, same as on save. Skip silently on unparseable input,
+          # like every other search field does on a blank/invalid term.
+          parsed = parse_currency_input(value_str)
+          next unless parsed
+
+          <<-CONDITION
+          ?dataset sio:SIO_000008 #{attr_var} .
+          #{attr_var} sio:SIO_000300 #{val_var} .
+          #{attr_var} rdf:type cbgp:#{questionclass} .
+          FILTER(CONTAINS(STR(#{val_var}), "#{parsed}"))
+          CONDITION
+        else
+          # Accent-insensitive by default for every free-text/dropdown field.
+          # Previously this was opt-in per field via an ACCENT_SENSITIVE_LABELS
+          # allowlist keyed on the ontology's human-readable (and
+          # language-specific, and rewording-prone) field label, which is how
+          # fields silently fell out of coverage — e.g. "member_name" was never
+          # added, and label rewordings ("affiliation" -> "Affiliations",
+          # "partner institutions" -> "Partner institutions (acronym and
+          # country)") broke the exact-string match for fields that WERE
+          # supposedly covered. Matching is now unconditional, so there is no
+          # list to fall out of sync.
+          pattern = accent_insensitive_pattern(value_str)
+          next if pattern.empty?
+
+          <<-CONDITION
+          ?dataset sio:SIO_000008 #{attr_var} .
+          #{attr_var} sio:SIO_000300 #{val_var} .
+          #{attr_var} rdf:type cbgp:#{questionclass} .
+          FILTER regex(STR(#{val_var}), "#{pattern}", "i")
+          CONDITION
+        end
       end
-    end
+
+    conditions << wrap.call(block)
   end
 
   if conditions.empty?

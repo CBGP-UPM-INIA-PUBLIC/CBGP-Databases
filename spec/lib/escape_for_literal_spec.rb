@@ -30,6 +30,35 @@ RSpec.describe '#escape_for_literal' do
     expect(escape_for_literal(42)).to eq('42')
   end
 
+  # Regression: a real multi-line free-text value (e.g. a funding-comments
+  # textarea, or bulk-loaded historical data with genuine multi-line
+  # content) crashed Virtuoso outright - "End-of-line in a short
+  # double-quoted string" - because a raw newline byte was never escaped,
+  # only quotes and backslashes were. The SPARQL grammar forbids a literal
+  # LF/CR inside a short-quoted "..." string entirely; it must become the
+  # two-character \n/\r ECHAR sequence instead. Found 2026-09-28 bulk-loading
+  # real personnel history data.
+  it 'escapes an embedded newline to the two-character \n sequence, not a raw LF byte' do
+    expect(escape_for_literal("line one\nline two")).to eq('line one\nline two')
+  end
+
+  it 'escapes an embedded carriage return to the two-character \r sequence' do
+    expect(escape_for_literal("line one\rline two")).to eq('line one\rline two')
+  end
+
+  it 'escapes an embedded tab to the two-character \t sequence' do
+    expect(escape_for_literal("a\tb")).to eq('a\tb')
+  end
+
+  it 'round-trips a multi-line value correctly when embedded and re-parsed as a SPARQL literal' do
+    original = "Actual: Postdoctoral Severo Ochoa\nAnterior: Extensión Beca Cola"
+    escaped = escape_for_literal(original)
+    turtle = %(<urn:test:s> <urn:test:p> "#{escaped}" .)
+
+    graph = RDF::Graph.new << RDF::Turtle::Reader.new(turtle)
+    expect(graph.first.object.to_s).to eq(original)
+  end
+
   it 'round-trips correctly when the escaped output is embedded and re-parsed as a SPARQL literal' do
     original = 'She said "hi" then typed C:\\path\\to\\file'
     escaped = escape_for_literal(original)

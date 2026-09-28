@@ -26,8 +26,13 @@ RSpec.describe 'SPARQL identifier/date/IRI validation' do
       end.to raise_error(ArgumentError, /Invalid form/)
     end
 
-    it 'rejects a value starting with a digit' do
-      expect { validate_local_name!('123abc', field: 'form') }.to raise_error(ArgumentError)
+    it 'accepts a value starting with a digit' do
+      # SPARQL/Turtle's own PN_LOCAL grammar allows it, and real ontology
+      # content uses it - e.g. cbgp:10C/cbgp:10D, member_code10's actual
+      # answer options (found 2026-09-28 bulk-loading real personnel data:
+      # the old, stricter regex rejected these as invalid).
+      expect(validate_local_name!('10C', field: 'form')).to eq('10C')
+      expect(validate_local_name!('123abc', field: 'form')).to eq('123abc')
     end
 
     it 'rejects blank input' do
@@ -61,7 +66,7 @@ RSpec.describe 'SPARQL identifier/date/IRI validation' do
   end
 
   describe '#validate_iri_component!' do
-    it 'accepts an ORCID, which starts with a digit and would fail validate_local_name!' do
+    it 'accepts an ORCID (dash-separated digit groups)' do
       expect(validate_iri_component!('0000-0001-2345-6789', field: 'primary_id')).to eq('0000-0001-2345-6789')
     end
 

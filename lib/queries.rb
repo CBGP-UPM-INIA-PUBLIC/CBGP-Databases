@@ -502,10 +502,27 @@ end
 # single literal backslash on the way out). A block's return value is
 # inserted literally, with no second interpretation pass, so this is safe.
 #
+# Also escapes literal newline/carriage-return/tab bytes to their ECHAR
+# two-character sequences (\n, \r, \t) - the SPARQL grammar's short-quoted
+# string literal ("...") forbids a raw LF/CR appearing inside it at all
+# (Virtuoso: "End-of-line in a short double-quoted string"), not just quotes
+# and backslashes. Found 2026-09-28 bulk-loading real personnel history data
+# with genuine multi-line free-text fields (e.g. funding_comments) - every
+# multi-line textarea submission through the ordinary admin/User forms was
+# already exposed to this same crash, it just hadn't been hit by any
+# existing spec or manual test before now.
+#
 # @param value [Object]
 # @return [String]
 def escape_for_literal(value)
-  value.to_s.gsub(/["\\]/) { |c| "\\#{c}" }
+  value.to_s.gsub(/["\\\n\r\t]/) do |c|
+    case c
+    when '"', '\\' then "\\#{c}"
+    when "\n" then '\n'
+    when "\r" then '\r'
+    when "\t" then '\t'
+    end
+  end
 end
 
 # Validates a value that's about to be interpolated as a bare SPARQL
@@ -520,13 +537,22 @@ end
 # dropdown-derived values, not once these same call paths take arguments
 # supplied by an LLM/agent (see the planned MCP query servers).
 #
+# The first character may be a digit, not just a letter/underscore: SPARQL/
+# Turtle's own PN_LOCAL grammar explicitly permits it, and real ontology
+# content actually uses it - e.g. cbgp:10C/cbgp:10D (member_code10's answer
+# options). Found 2026-09-28 bulk-loading real personnel data: this
+# rejected those two genuine, correctly-formed answer ids as invalid.
+# Widening the allowed first-character set to the same safe charset already
+# used for every other character introduces no new special characters, so
+# this doesn't weaken the injection guard.
+#
 # @param value [Object] the value about to be interpolated
 # @param field [String] name to reference in the error, e.g. "questionclass"
 # @return [String] the validated value, unchanged
 # @raise [ArgumentError] if value isn't a simple identifier
 def validate_local_name!(value, field:)
   str = value.to_s
-  raise ArgumentError, "Invalid #{field}: #{value.inspect}" unless str.match?(/\A[A-Za-z_][\w-]*\z/)
+  raise ArgumentError, "Invalid #{field}: #{value.inspect}" unless str.match?(/\A[A-Za-z0-9_][\w-]*\z/)
 
   str
 end
@@ -625,10 +651,18 @@ def delete_dataset_query(oldid:, reason: 'deleted', detail: nil)
     }
   PROV
   created = prov_results.first&.bound?(:created) ? prov_results.first[:created].to_s : nil
-  generated_at = prov_results.first&.bound?(:modified) ? prov_results.first[:modified].to_s : Time.now.utc.iso8601
+  # Microsecond precision (iso8601(6)), not the bare/second-precision default:
+  # full_timeline sorts snapshots by this string, and a bulk load (or any
+  # rapid-succession edits within the same wall-clock second) would
+  # otherwise produce identical timestamps for multiple versions of the same
+  # record, making their relative order in the History DB arbitrary rather
+  # than reflecting the order they were actually written in. Found
+  # 2026-09-28 bulk-loading real personnel history data - several versions
+  # per person landed in the same second.
+  generated_at = prov_results.first&.bound?(:modified) ? prov_results.first[:modified].to_s : Time.now.utc.iso8601(6)
 
   history_graph = "#{BASE_URI}#{form_type}/history/#{primary_id}/#{SecureRandom.uuid}"
-  now = Time.now.utc.iso8601
+  now = Time.now.utc.iso8601(6)
 
   # An explicit Accept header is required here, not optional - confirmed
   # live 2026-08-26: without it, a CONSTRUCT on this connection can come
@@ -766,8 +800,13 @@ def write_dataset_to_db_query(dataset:, oldid: nil, form: nil)
   datasetFragmentPREFIX = "<#{BASE_URI}#{database}/dataset/#{primary_id}#>"
   graph_uri             = "#{datasetgraphPREFIX}#{primary_id}" # Full named graph URI (used for provenance)
 
-  # Current UTC timestamp in ISO8601 format (xsd:dateTime compatible literal)
-  timestamp = Time.now.utc.iso8601
+  # Current UTC timestamp in ISO8601 format (xsd:dateTime compatible literal).
+  # Microsecond precision (6) - see delete_dataset_query's generated_at
+  # comment above for why: this becomes dcterms:modified, which
+  # full_timeline sorts snapshots by, and rapid-succession writes to the
+  # same record (a bulk load, in particular) can otherwise land in the same
+  # second.
+  timestamp = Time.now.utc.iso8601(6)
 
   triples = []
   triples << "dataset:#{primary_id} rdf:type sio:SIO_000089 ;"

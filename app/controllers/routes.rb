@@ -118,6 +118,7 @@ def set_routes
     # until the whole app process restarted.
     CBGP::Dataset.clear_caches!
     Questionnaire.clear_cache!
+    CBGP::Triggers.clear_cache!
     redirect '/cbgp/dashboard'
   end
   # ----------------------------------------------------------------------------
@@ -214,11 +215,17 @@ def set_routes
     end
 
     # Every submission through this route came from a UserFacing form, so
-    # always give the admins a heads-up — form-agnostic, so this covers any
-    # future UserFacing form (e.g. incoming Staff registration) with no
-    # changes needed here. See notify_new_user_submission in helpers.rb.
+    # check for an ontology-declared form-level trigger (local:has-triggers
+    # on @form - see lib/triggers.rb). If this form doesn't have one
+    # configured yet, on_no_form_trigger preserves the original,
+    # unconditional "admins get a heads-up" behavior exactly as before -
+    # form-agnostic, so this covers any future UserFacing form (e.g.
+    # incoming Staff registration) with no changes needed here.
     link = "#{request.base_url}/cbgp/dataset/#{@database}/#{@entry.primary_id}"
-    notify_new_user_submission(dataset: @entry, link: link)
+    CBGP::Triggers.check_and_fire(
+      dataset: @entry,
+      on_no_form_trigger: -> { notify_new_user_submission(dataset: @entry, link: link) }
+    )
 
     halt erb :thankyou, layout: :database_layout
   end
@@ -325,6 +332,22 @@ def set_routes
       # route above for why this distinction matters for required-field
       # validation.
       @entry = CBGP::Dataset.load_from_params_and_write(params: params, form: @form)
+      # Inside the begin block, right after the successful write - this
+      # route's rescue branch (unlike the User-facing route's) falls
+      # through to the shared `halt erb :dataset` below rather than halting
+      # immediately, so placing this after the whole begin/rescue would
+      # incorrectly also run it on a validation failure.
+      #
+      # check_form_level: false - this route can also create a brand-new
+      # record directly (GET /cbgp/dataset/:database renders a blank
+      # dataset.erb that posts here), which is technically a "creation" the
+      # same as a User-facing submission is. A form-level trigger means "a
+      # User registered themselves" - the admin team doesn't need notifying
+      # when THEY create a record - so form-level triggers are deliberately
+      # skipped here regardless of whether the ontology has one configured
+      # for this form. Answer-level triggers (e.g. Damaris approving a
+      # record) are NOT affected by this flag and still fire normally.
+      CBGP::Triggers.check_and_fire(dataset: @entry, check_form_level: false)
     rescue CBGP::Dataset::ValidationError => e
       @validation_errors = e.errors
       # type: @form (NOT params['database']) - same dbname-vs-form distinction
@@ -569,7 +592,8 @@ def set_routes
 
     halt 400, { error: 'Missing params' }.to_json if target.empty? || via.empty? || value.empty?
 
-    { label: CBGP::Dataset.fetch_reference_label(target_form: target, via_class: via, label_method: label, value: value) }.to_json
+    { label: CBGP::Dataset.fetch_reference_label(target_form: target, via_class: via, label_method: label,
+                                                 value: value) }.to_json
   end
 
   # LOADERS

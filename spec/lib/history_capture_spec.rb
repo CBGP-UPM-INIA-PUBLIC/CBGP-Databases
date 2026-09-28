@@ -144,7 +144,7 @@ RSpec.describe 'SCD Type 2 history capture' do
       allow(self).to receive(:delete_dataset_query)
         .and_return(created: '2020-01-01T00:00:00Z', history_graph: 'irrelevant')
 
-      query = write_dataset_to_db_query(dataset: dataset, oldid: 'abc-123')
+      query = write_dataset_to_db_query(dataset: dataset, oldid: 'abc-123')[:query]
 
       expect(self).to have_received(:delete_dataset_query).with(
         oldid: "#{BASE_URI}personnel_project/context/abc-123",
@@ -155,8 +155,19 @@ RSpec.describe 'SCD Type 2 history capture' do
     end
 
     it 'writes a fresh dcterms:created for a brand-new record (no oldid)' do
-      query = write_dataset_to_db_query(dataset: dataset, oldid: nil)
+      query = write_dataset_to_db_query(dataset: dataset, oldid: nil)[:query]
       expect(query).to match(/dcterms:created "\d{4}-\d{2}-\d{2}T/)
+    end
+
+    it 'surfaces the pre-edit field values (old_values) for edits, and nil for a new record' do
+      allow(self).to receive(:fetch_datasets_raw_data).and_return([{ project_title: 'Old Title' }])
+      allow(self).to receive(:delete_dataset_query).and_return(created: '2020-01-01T00:00:00Z')
+
+      edit_result = write_dataset_to_db_query(dataset: dataset, oldid: 'abc-123')
+      expect(edit_result[:old_values]).to eq(project_title: 'Old Title')
+
+      new_result = write_dataset_to_db_query(dataset: dataset, oldid: nil)
+      expect(new_result[:old_values]).to be_nil
     end
   end
 end

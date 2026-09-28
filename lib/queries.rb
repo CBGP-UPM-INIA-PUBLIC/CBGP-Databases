@@ -246,6 +246,70 @@ def get_form_formulas_query(form_class:)
   qs.execute($ontology)
 end
 
+# Fetches an ANSWER's trigger declarations: local:has-triggers, a fourth
+# sibling of has-defaults/has-formulas/requires-field. Unlike those three,
+# this is keyed by the ANSWER class, not the form class - a trigger is a
+# property of the answer itself ("selecting Yes here means X should
+# happen"), true on every form that happens to ask the question, not just
+# one. See get_form_triggers_query below for the form-level sibling (fires
+# on record creation rather than on a specific answer being selected) -
+# same reified-node shape, same trigger-type/trigger-recipient-key
+# properties, just a different subject.
+#
+#   cbgp:member_approved_yes local:has-triggers cbgp:member_approved_yes_photo_trigger .
+#   cbgp:member_approved_yes_photo_trigger
+#       local:trigger-type            "email" ;
+#       local:trigger-recipient-key   "photo_id_scheduler" .
+#
+# Only a symbolic recipient KEY ever lives here - never a literal email
+# address. The ontology is synced publicly (w3id.org/GitHub Pages), so real
+# addresses resolve from TRIGGER_RECIPIENTS (app config) by this key at
+# dispatch time instead - see lib/triggers.rb.
+#
+# @param answer_class [String] the specific Answer class fragment, e.g.
+#   "member_approved_yes"
+# @return [SPARQL::Client::Solutions] rows with ?type and (optionally)
+#   ?recipient_key per trigger this answer declares
+def get_answer_triggers_query(answer_class:)
+  answer_class = validate_local_name!(answer_class, field: 'answer_class')
+  qs = <<~GET_ANSWER_TRIGGERS
+    #{PREFIXES}
+    SELECT ?type ?recipient_key WHERE {
+      cbgp:#{answer_class} local:has-triggers ?t .
+      ?t local:trigger-type ?type .
+      OPTIONAL { ?t local:trigger-recipient-key ?recipient_key }
+    }
+  GET_ANSWER_TRIGGERS
+  qs = SPARQL.parse(qs)
+  qs.execute($ontology)
+end
+
+# Form-level sibling of get_answer_triggers_query above: local:has-triggers
+# on the FORM class itself means "fires when a record of this form is
+# newly created" (checked by CBGP::Triggers.check_and_fire only when
+# dataset.old_values is nil, i.e. this save was a creation, not an edit) -
+# the same generic mechanism that replaces the old hardcoded
+# notify_new_user_submission call, see lib/triggers.rb.
+#
+# @param form_class [String] the specific form class fragment, e.g. "member"
+#   - same caveat as get_form_formulas_query: must be the real form class,
+#   never the shared dbname.
+# @return [SPARQL::Client::Solutions] rows with ?type and (optionally)
+#   ?recipient_key per trigger this form declares
+def get_form_triggers_query(form_class:)
+  form_class = validate_local_name!(form_class, field: 'form_class')
+  qs = <<~GET_FORM_TRIGGERS
+    #{PREFIXES}
+    SELECT ?type ?recipient_key WHERE {
+      cbgp:#{form_class} local:has-triggers ?t .
+      ?t local:trigger-type ?type .
+      OPTIONAL { ?t local:trigger-recipient-key ?recipient_key }
+    }
+  GET_FORM_TRIGGERS
+  qs = SPARQL.parse(qs)
+  qs.execute($ontology)
+end
+
 def get_answer_block_query(ablockid:, language: current_language)
   ablockid = validate_local_name!(ablockid, field: 'ablockid')
   language = validate_local_name!(language, field: 'language')
@@ -634,11 +698,11 @@ end
 #   while preserving its URI
 # @return [Object] raw response from the SPARQL update endpoint
 def write_dataset_to_db(dataset:, oldid: nil, form: nil)
-  writequery = write_dataset_to_db_query(dataset: dataset, oldid: oldid, form: form)
-  warn "WRITE DATASET QUERY\n#{writequery}\n\n\n" if ENV['CBGP_DEBUG_SPARQL']
-  resp = DATABASE_UPDATE.update(writequery)
+  built = write_dataset_to_db_query(dataset: dataset, oldid: oldid, form: form)
+  warn "WRITE DATASET QUERY\n#{built[:query]}\n\n\n" if ENV['CBGP_DEBUG_SPARQL']
+  resp = DATABASE_UPDATE.update(built[:query])
   warn "write dataset response #{resp.inspect}" if ENV['CBGP_DEBUG_SPARQL']
-  resp
+  { resp: resp, old_values: built[:old_values] }
 end
 
 # Builds the SPARQL UPDATE string that inserts a dataset's triples.
@@ -689,6 +753,7 @@ def write_dataset_to_db_query(dataset:, oldid: nil, form: nil)
   warn "WRITE DATASET primary_id is #{primary_id}\n\n"
 
   captured = nil
+  old_values = nil
   if oldid
     old_graph_uri = "#{BASE_URI}#{database}/context/#{oldid}"
     old_values = fetch_datasets_raw_data(graph_uris: [old_graph_uri], database: database).first || {}
@@ -748,7 +813,7 @@ def write_dataset_to_db_query(dataset:, oldid: nil, form: nil)
 
   body = triples.join("\n")
 
-  <<~WRITE_DATASET
+  query = <<~WRITE_DATASET
     #{PREFIXES}
     PREFIX dataset: #{datasetPREFIX}
     PREFIX datasetfrag: #{datasetFragmentPREFIX}
@@ -758,6 +823,12 @@ def write_dataset_to_db_query(dataset:, oldid: nil, form: nil)
     }
     }
   WRITE_DATASET
+
+  # old_values (nil for a new record, the pre-edit field values for an
+  # edit) is surfaced here rather than discarded, so CBGP::Triggers can
+  # detect an answer-value transition at save time without a second query -
+  # see write_dataset_to_db below and Dataset#old_values.
+  { query: query, old_values: old_values }
 end
 
 #####################################################

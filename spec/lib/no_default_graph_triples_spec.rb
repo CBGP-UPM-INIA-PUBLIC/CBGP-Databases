@@ -52,7 +52,7 @@ RSpec.describe 'no bare default-graph triples in generated SPARQL Update text' d
       dataset.primary_id = 'abc-123'
       dataset.title = 'A Project'
 
-      query = write_dataset_to_db_query(dataset: dataset, oldid: nil, form: 'personnel_project')
+      query = write_dataset_to_db_query(dataset: dataset, oldid: nil, form: 'personnel_project')[:query]
 
       expect(every_triple_inside_a_graph_block?(query)).to be(true)
     end

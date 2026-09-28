@@ -54,4 +54,22 @@ HISTORY_PASS = ENV.fetch('HISTORY_PASS', VIRTUOSO_PASS)
 CBGP_KB = ENV.fetch('CBGP_KB', 'https://w3id.org/CBGP-App')
 BASE_URI = 'http://admin.cbgp.upm.es/graphs/datasets/'
 
+# Symbolic-key => real-address map for ontology-driven activity triggers
+# (local:has-triggers, see lib/triggers.rb). The ontology only ever
+# declares a symbolic local:trigger-recipient-key (e.g.
+# "photo_id_scheduler") - never a literal address, since the ontology is
+# synced publicly (w3id.org/GitHub Pages). Optional: a trigger whose key
+# isn't listed here simply fails (logged via warn, not fatal - see
+# CBGP::Triggers.dispatch), so this is not in the required-env abort list
+# above.
+TRIGGER_RECIPIENTS = JSON.parse(ENV.fetch('TRIGGER_RECIPIENTS', '{}'))
+
+# The app's own externally-reachable URL, for "open this record" links in
+# trigger emails (lib/triggers.rb's EmailTrigger). Deliberately separate
+# from BASE_URI above, which is the RDF graph namespace, not a clickable
+# web address - EmailTrigger has no live Sinatra request (unlike
+# notify_new_user_submission, which builds its link from request.base_url)
+# to derive one from otherwise.
+APP_BASE_URL = ENV.fetch('APP_BASE_URL', 'http://localhost:4567')
+
 warn USERS

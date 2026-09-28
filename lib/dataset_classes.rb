@@ -45,7 +45,12 @@ module CBGP
       end
     end
 
-    attr_accessor :fields, :form_type, :primary_id
+    # old_values: nil for a new record, or the pre-edit {questionclass_sym =>
+    # value} hash for an edit (surfaced from write_dataset_to_db_query, see
+    # lib/queries.rb) - transient, never persisted, set once by
+    # load_from_params_and_write so CBGP::Triggers.check_and_fire can detect
+    # an answer-value transition without a second query.
+    attr_accessor :fields, :form_type, :primary_id, :old_values
 
     @@fields_cache       = {}  # keyed by "form_type_lang"; avoids re-querying the ontology
     @@methods_defined    = {}  # guards against redefining singleton methods per type
@@ -933,7 +938,11 @@ module CBGP
       # form: effective_form, so the write path stamps dcterms:type with the
       # TRUE form (e.g. "personnel_project"), never the shared dbname - see
       # write_dataset_to_db_query's doc comment in lib/queries.rb.
-      write_dataset_to_db(dataset: dataset, oldid: oldid, form: effective_form)
+      write_result = write_dataset_to_db(dataset: dataset, oldid: oldid, form: effective_form)
+      # &. : specs that stub write_dataset_to_db without an explicit
+      # .and_return get RSpec's default nil, which is fine - old_values
+      # simply stays nil, same as a brand-new record.
+      dataset.old_values = write_result&.dig(:old_values)
       dataset
     end
     # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity

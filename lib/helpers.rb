@@ -38,9 +38,9 @@ module MyHelpers
     end
   end
 
-  def _send_notification(subject:, message:)
+  def _send_notification(subject:, message:, to: NOTIFY_TO)
     Pony.mail({
-                to: NOTIFY_TO,
+                to: to,
                 from: NOTIFY_FROM,
                 subject: subject,
                 body: message,
@@ -55,6 +55,17 @@ module MyHelpers
                 }
               })
   end
+  # Named form (not the bare `module_function` mode-setter, which would
+  # also silently flip the visibility of every method defined after it,
+  # e.g. notify_new_user_submission below): converts only this one method
+  # into both a private instance method wherever MyHelpers is mixed in
+  # (Sinatra's `helpers MyHelpers`, unchanged from before) AND a public
+  # singleton method callable as MyHelpers._send_notification(...) from a
+  # plain Ruby class with no request/helpers context - needed by
+  # CBGP::Triggers::EmailTrigger (lib/triggers.rb), which fires outside any
+  # Sinatra route. to: defaults to NOTIFY_TO so the existing bare call
+  # below (notify_new_user_submission) keeps working unchanged.
+  module_function :_send_notification
 
   # Emails the admin address (NOTIFY_TO) whenever a general User submits any
   # record through a UserFacing form (e.g. applying for a Project today;

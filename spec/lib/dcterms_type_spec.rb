@@ -34,25 +34,25 @@ RSpec.describe 'dcterms:type provenance stamp' do
 
   describe '#write_dataset_to_db_query' do
     it 'stamps dcterms:type with the explicitly-given form, not the dbname' do
-      query = write_dataset_to_db_query(dataset: dataset, oldid: nil, form: 'personnel_project')
+      query = write_dataset_to_db_query(dataset: dataset, oldid: nil, form: 'personnel_project')[:query]
       expect(query).to include('dcterms:type cbgp:personnel_project')
     end
 
     it 'stamps a different form differently for the exact same dataset/dbname' do
-      research_query = write_dataset_to_db_query(dataset: dataset, oldid: nil, form: 'project')
-      personnel_query = write_dataset_to_db_query(dataset: dataset, oldid: nil, form: 'personnel_project')
+      research_query = write_dataset_to_db_query(dataset: dataset, oldid: nil, form: 'project')[:query]
+      personnel_query = write_dataset_to_db_query(dataset: dataset, oldid: nil, form: 'personnel_project')[:query]
 
       expect(research_query).to include('dcterms:type cbgp:project')
       expect(personnel_query).to include('dcterms:type cbgp:personnel_project')
     end
 
     it 'falls back to the dataset\'s dbname when no form: is given, same fallback as its siblings' do
-      query = write_dataset_to_db_query(dataset: dataset, oldid: nil)
+      query = write_dataset_to_db_query(dataset: dataset, oldid: nil)[:query]
       expect(query).to include('dcterms:type cbgp:personnel_project') # dataset.form_type == "personnel_project"
     end
 
     it 'writes dcterms:type inside the same named GRAPH block as dcterms:created/dcterms:modified' do
-      query = write_dataset_to_db_query(dataset: dataset, oldid: nil, form: 'personnel_project')
+      query = write_dataset_to_db_query(dataset: dataset, oldid: nil, form: 'personnel_project')[:query]
 
       # All three provenance triples share one subject (datasetgraph:<id>)
       # and must sit INSIDE the named GRAPH {} block, alongside the field

@@ -116,6 +116,33 @@ institute's own mail server (or mail-sending service) requires; ask
 whoever manages that system for the right values, the same as configuring
 any other application to send mail through it.
 
+## Activity triggers
+
+```
+TRIGGER_RECIPIENTS={"photo_id_scheduler":"aaron@example.org","new_member_reviewer":"damaris@example.org"}
+APP_BASE_URL=https://admin.cbgp.upm.es
+```
+
+The ontology can declare that selecting a specific answer (e.g. marking a
+new member "approved"), or creating a new record of a specific form, should
+send an email — see `local:has-triggers` in the ontology documentation.
+Ontology triggers only ever reference a *symbolic* recipient key (e.g.
+`"photo_id_scheduler"`), never a literal address — the ontology is synced
+publicly (w3id.org, GitHub Pages), so no real person's email address can
+live in it. `TRIGGER_RECIPIENTS` is where each key actually resolves to an
+address, on this deployment only; it's a JSON object, kept on one line,
+same convention as `CBGP_USERS`. If an ontology trigger references a key
+that isn't listed here, only that one trigger silently fails (logged via
+`warn`, not fatal) — nothing else is affected, the same fail-safe pattern
+as a malformed `has-formulas`/`has-defaults` entry elsewhere in the
+ontology.
+
+Both settings are optional. Without `TRIGGER_RECIPIENTS`, any ontology
+trigger asking for a recipient key simply fails (logged, no email sent).
+Without `APP_BASE_URL`, trigger emails' "open this record" links default to
+`http://localhost:4567`, which is only correct for local development — set
+it to this deployment's real external URL in production.
+
 ## Verbose SPARQL/debug logging
 
 Set `CBGP_DEBUG_SPARQL=true` (any truthy string) to re-enable a large volume

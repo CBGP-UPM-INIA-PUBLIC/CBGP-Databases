@@ -427,6 +427,12 @@ def set_routes
     halt 400, { error: 'format must be jsonld or trig' }.to_json unless %w[jsonld trig].include?(format)
 
     search_params = to_plain_hash(params.except('database', 'format', 'sum_field').to_h)
+    # query-dataset's search form (and session[:last_search], which replays
+    # those same params) may carry "#{questionclass}__not" negation flags -
+    # meaningless here since this route hand-rolls facets/date_ranges rather
+    # than going through build_search_query. Left in, a stray flag would
+    # become its own bogus, unmatchable facet and force zero results.
+    search_params.reject! { |k, _v| k.to_s.end_with?('__not') }
     facets = {}
     date_ranges = {}
     search_params.each do |field, value|

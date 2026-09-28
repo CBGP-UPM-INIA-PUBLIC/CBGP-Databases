@@ -23,6 +23,29 @@
 # branches and are untouched). These specs pin that behavior so a future
 # change can't reintroduce a per-field opt-in list.
 RSpec.describe 'accent-insensitive search' do
+  # Extracts every "?attribute_N rdf:type cbgp:questionclass" assertion from a
+  # generated query and maps questionclass => variable(s), so specs below can
+  # assert two different fields never end up sharing one variable (the exact
+  # shape of the 2026-09-28 variable-collision bug, see the describe block
+  # below) - structurally, not tied to one specific field pair, so a future
+  # field added to the ontology is covered automatically. Shared by both the
+  # multi-field and the negation describe blocks below.
+  def field_variable_map(query)
+    query.scan(/(\?attribute_\d+)\s+rdf:type\s+cbgp:(\w+)/).each_with_object({}) do |(var, questionclass), map|
+      map[questionclass] ||= []
+      map[questionclass] << var
+    end
+  end
+
+  def expect_each_field_to_have_its_own_variable(query, expected_questionclasses)
+    map = field_variable_map(query)
+    expect(map.keys.sort).to eq(expected_questionclasses.sort)
+
+    all_vars = map.values.flatten
+    expect(all_vars.uniq.size).to eq(all_vars.size),
+                                  "expected every field to use a distinct ?attribute_N variable, got: #{map.inspect}"
+  end
+
   describe '#unaccent' do
     it 'strips Spanish diacritics down to base letters' do
       expect(unaccent('María')).to eq('Maria')
@@ -83,7 +106,8 @@ RSpec.describe 'accent-insensitive search' do
       # as an invalid escape sequence.
       pattern.scan(/(\\*)\./).each do |match|
         backslashes = match[0]
-        expect(backslashes.length.even?).to be(true), "expected an even backslash count before '.', got #{backslashes.length}"
+        expect(backslashes.length.even?).to be(true),
+                                            "expected an even backslash count before '.', got #{backslashes.length}"
       end
       expect(pattern).to include('\\\\.')
     end
@@ -112,40 +136,179 @@ RSpec.describe 'accent-insensitive search' do
       it "searches #{c[:questionclass]} with an accent-insensitive regex filter, not plain CONTAINS/LCASE" do
         query = build_search_query(search_params: c[:params], dataset_type: c[:dataset_type])
 
-        expect(query).to include('FILTER regex(STR(?value)')
-        expect(query).not_to include('FILTER(CONTAINS(LCASE(STR(?value))')
+        expect(query).to include('FILTER regex(STR(?value_0)')
+        expect(query).not_to include('FILTER(CONTAINS(LCASE(STR(?value_0))')
       end
     end
 
     it 'generates a query for "maria" whose regex pattern actually matches a stored "María"' do
       query = build_search_query(search_params: { 'member_name' => 'maria' }, dataset_type: 'member')
 
-      pattern = query[/FILTER regex\(STR\(\?value\), "(.*?)", "i"\)/, 1]
+      pattern = query[/FILTER regex\(STR\(\?value_0\), "(.*?)", "i"\)/, 1]
       expect(pattern).not_to be_nil
       expect('María').to match(Regexp.new(pattern, Regexp::IGNORECASE))
     end
 
     it 'still matches a currency field with the dedicated numeric CONTAINS filter, unaffected by the accent change' do
-      query = build_search_query(search_params: { 'personnel_project_total_funding' => '15,000.5' }, dataset_type: 'personnel_project')
+      query = build_search_query(search_params: { 'personnel_project_total_funding' => '15,000.5' },
+                                 dataset_type: 'personnel_project')
 
-      expect(query).to include('FILTER(CONTAINS(STR(?value), "15000.50"))')
+      expect(query).to include('FILTER(CONTAINS(STR(?value_0), "15000.50"))')
       expect(query).not_to include('FILTER regex(')
     end
 
-    it 'still builds a date-range filter on ?datevalue, unaffected by the accent change' do
+    it 'still builds a date-range filter on ?datevalue_0, unaffected by the accent change' do
       query = build_search_query(
         search_params: { 'member_start_date' => { 'start' => '2020-01-01', 'end' => '2020-12-31' } },
         dataset_type: 'member'
       )
 
-      expect(query).to include('FILTER (?datevalue >= "2020-01-01"^^xsd:date && ?datevalue <= "2020-12-31"^^xsd:date)')
+      expect(query).to include('?datevalue_0 >= "2020-01-01"^^xsd:date')
+      expect(query).to include('?datevalue_0 <= "2020-12-31"^^xsd:date')
     end
 
     it 'applies accent-insensitive matching regardless of the current UI language' do
       Thread.current[:language] = 'es'
       query = build_search_query(search_params: { 'member_name' => 'maria' }, dataset_type: 'member')
 
-      expect(query).to include('FILTER regex(STR(?value)')
+      expect(query).to include('FILTER regex(STR(?value_0)')
+    end
+
+    it 'anchors every search query to the dataset type via an unconditional ?dataset triple' do
+      query = build_search_query(search_params: { 'member_name' => 'maria' }, dataset_type: 'member')
+
+      expect(query).to include('?dataset a cbgp:member .')
+    end
+  end
+
+  describe '#build_search_query with multiple fields (regression coverage for the variable-collision bug)' do
+    # 2026-09-28: build_search_query used to reuse the literal variable names
+    # ?attribute/?value/?datevalue for EVERY field's condition block. Combining
+    # 2+ non-date fields therefore forced a single ?attribute binding to
+    # simultaneously satisfy two different `rdf:type cbgp:...` constraints -
+    # impossible under this reified attribute-value model - so any 2-field
+    # search silently returned zero rows. Nothing caught this because no spec
+    # ever combined 2+ non-date params. Found while building NOT support
+    # (which independently needs each field's variables scoped to its own
+    # block anyway, so one field's FILTER NOT EXISTS can't leak into another
+    # field's match).
+
+    # field-type pairings x dataset types, so the guard isn't scoped to just
+    # one form's field set.
+    multi_field_cases = [
+      { dataset_type: 'member', label: 'text + text',
+        params: { 'member_name' => 'maria', 'member_surnames' => 'garcia' } },
+      { dataset_type: 'member', label: 'text + date range',
+        params: { 'member_name' => 'maria',
+                  'member_start_date' => { 'start' => '2020-01-01', 'end' => '2020-12-31' } } },
+      { dataset_type: 'personnel_project', label: 'text + currency',
+        params: { 'project_title' => 'genomics', 'personnel_project_total_funding' => '1000' } },
+      { dataset_type: 'personnel_project', label: 'currency + date range',
+        params: { 'personnel_project_total_funding' => '1000',
+                  'project_start_date' => { 'start' => '2020-01-01', 'end' => '2020-12-31' } } },
+      { dataset_type: 'personnel_project', label: 'three fields at once (text + currency + date range)',
+        params: { 'project_title' => 'genomics', 'personnel_project_total_funding' => '1000',
+                  'project_start_date' => { 'start' => '2020-01-01', 'end' => '2020-12-31' } } }
+    ]
+
+    multi_field_cases.each do |c|
+      it "gives each field its own SPARQL variables when searching #{c[:label]} on #{c[:dataset_type]}" do
+        query = build_search_query(search_params: c[:params], dataset_type: c[:dataset_type])
+
+        expect_each_field_to_have_its_own_variable(query, c[:params].keys)
+      end
+    end
+
+    it 'still combines multiple positive fields with AND semantics (both conditions present, not just the last one)' do
+      query = build_search_query(
+        search_params: { 'member_name' => 'maria', 'member_surnames' => 'garcia' },
+        dataset_type: 'member'
+      )
+
+      expect(query).to include('rdf:type cbgp:member_name')
+      expect(query).to include('rdf:type cbgp:member_surnames')
+    end
+  end
+
+  describe '#build_search_query with negation (NOT search)' do
+    it 'wraps a negated text field in FILTER NOT EXISTS instead of negating the regex directly' do
+      query = build_search_query(
+        search_params: { 'member_institutional_mail_address' => 'upm.es',
+                         'member_institutional_mail_address__not' => '1' },
+        dataset_type: 'member'
+      )
+
+      expect(query).to include('FILTER NOT EXISTS {')
+      expect(query).to match(
+        /FILTER NOT EXISTS \{[^}]*rdf:type cbgp:member_institutional_mail_address[^}]*FILTER regex/m
+      )
+      expect(query).not_to include('FILTER(!regex(')
+      expect(query).not_to include('FILTER (!regex(')
+    end
+
+    it 'wraps a negated currency field in FILTER NOT EXISTS around the CONTAINS filter' do
+      query = build_search_query(
+        search_params: { 'personnel_project_total_funding' => '1000', 'personnel_project_total_funding__not' => '1' },
+        dataset_type: 'personnel_project'
+      )
+
+      expect(query).to match(/FILTER NOT EXISTS \{[^}]*FILTER\(CONTAINS\(STR\(\?value_0\), "1000\.00"\)\)/m)
+    end
+
+    it 'wraps a negated date range in FILTER NOT EXISTS around the range filter' do
+      query = build_search_query(
+        search_params: {
+          'member_start_date' => { 'start' => '2020-01-01', 'end' => '2020-12-31' },
+          'member_start_date__not' => '1'
+        },
+        dataset_type: 'member'
+      )
+
+      expect(query).to match(/FILTER NOT EXISTS \{[^}]*\?datevalue_0 >= "2020-01-01"\^\^xsd:date[^}]*\}/m)
+    end
+
+    it 'combines a positive field and a negative field, each scoped to its own variables' do
+      query = build_search_query(
+        search_params: { 'member_name' => 'maria', 'member_institutional_mail_address' => 'upm.es',
+                         'member_institutional_mail_address__not' => '1' },
+        dataset_type: 'member'
+      )
+
+      # the positive field's regex is NOT inside the NOT EXISTS block
+      expect(query).to include('FILTER regex(STR(?value_0)')
+      expect(query).to include('FILTER NOT EXISTS {')
+      not_exists_block = query[/FILTER NOT EXISTS \{(.*?)\n\}/m, 1]
+      expect(not_exists_block).to include('member_institutional_mail_address')
+      expect(not_exists_block).not_to include('member_name')
+    end
+
+    it 'combines two negative fields, each getting its own FILTER NOT EXISTS block with distinct variables' do
+      query = build_search_query(
+        search_params: { 'member_name' => 'maria', 'member_name__not' => '1',
+                         'member_surnames' => 'garcia', 'member_surnames__not' => '1' },
+        dataset_type: 'member'
+      )
+
+      expect(query.scan('FILTER NOT EXISTS {').size).to eq(2)
+      expect_each_field_to_have_its_own_variable(query, %w[member_name member_surnames])
+    end
+
+    it 'treats a NOT flag with no corresponding field value as a no-op, not an error' do
+      query = build_search_query(
+        search_params: { 'member_institutional_mail_address__not' => '1' },
+        dataset_type: 'member'
+      )
+
+      expect(query).to be_nil
+    end
+
+    it 'still anchors the query to the dataset type when every field is negated' do
+      query = build_search_query(
+        search_params: { 'member_name' => 'maria', 'member_name__not' => '1' },
+        dataset_type: 'member'
+      )
+
+      expect(query).to include('?dataset a cbgp:member .')
     end
   end
 end

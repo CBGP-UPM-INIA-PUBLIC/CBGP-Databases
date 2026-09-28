@@ -59,6 +59,11 @@
       <% else %>
         <%= erb "_search_#{widget}".to_sym %>
       <% end %>
+      <label for="<%= @question.questionid %>_NOT" class="search-negate-label" style="font-size:.75em; margin-left: 8px;">
+        <input type="checkbox" id="<%= @question.questionid %>_NOT"
+               name="<%= @question.questionid %>__not" value="1">
+        NOT (exclude matches)
+      </label>
     <% end %>
   <% else %> <!-- Assume add/edit mode -->
     <% @value = @entry.public_send(@question.objectmethod) || (@question.cardinality == "Multiple" ? [""] : "") %>

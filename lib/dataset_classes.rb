@@ -75,6 +75,8 @@ module CBGP
     # +:method+, +:class+, +:cardinality+, +:answers+, +:is_external_primary+,
     # +:sequence+, +:sectionid+, +:sectionlabel+, +:references+,
     # +:references_target+, +:references_via+, +:references_via_method+,
+    # +:references_label+ (questionclass fragment of the field shown as an
+    # xref's human-readable label, nil if none declared),
     # +:comment+ (mouseover help text, blank if the ontology has none).
     #
     # @param type [String] ontology form fragment, e.g. +"member"+
@@ -120,6 +122,7 @@ module CBGP
             references_target = result[:references] ? result[:references].to_s.split('#').last : nil # e.g. "member"
             references_via = result[:references_via]&.to_s # e.g. "orcid"   (method name in target)
             references_via_method = result[:references_via] ? result[:references_via].to_s.split('#').last : nil # e.g. "orcid"
+            references_label = result[:references_label] ? result[:references_label].to_s.split('#').last : nil # e.g. "member_surnames"
 
             fields << {
               q: q,
@@ -138,10 +141,17 @@ module CBGP
               references_target: references_target, # just #form
               references_via: references_via,
               references_via_method: references_via_method,
+              references_label: references_label, # questionclass shown as the xref's human-readable label
               comment: result[:comment]&.to_s # mouseover help text, current language; blank if the ontology has none
             }
           end
         end
+        # One question class can sit in several sections (e.g. project_title
+        # is in every project form's section) - harmless for a single form,
+        # but when `type` is a shared dbname resolved to several forms' worth
+        # of sections (see get_dbname_sections_query), the same field would
+        # otherwise be listed once per form.
+        fields.uniq! { |f| f[:questionclass] }
         fields.sort_by! { |f| f[:sequence] }
         fields
       end
@@ -183,30 +193,28 @@ module CBGP
           # Standard controlled-vocabulary validation (unchanged)
           validate_value(coerced_value, fetch_answers(answers_uri)) if answers_uri && !answers_uri.end_with?('#FREE')
 
-          # New: generic reference validation
-          validate_references(field, coerced_value) if field[:references_target_form]
-
           @data[q] = coerced_value
         end
-
-        # Optional helpers — only define if it's a reference field (once per field, not per setter call!)
-        next unless field[:references_target_form]
-
-        # Helper: returns target form name e.g. "member"
-        define_singleton_method("#{method_name}_target_form") do
-          field[:references_target_form]
-        end
-
-        # Helper: returns the resolved key method name in the target form (computed once)
-        define_singleton_method("#{method_name}_key_method") do
-          via_class = field[:references_via_class]
-          if via_class
-            self.class.resolve_key_method(field[:references_target_form], via_class)
-          else
-            self.class.key_method_for_form(field[:references_target_form])
-          end
-        end
       end
+    end
+
+    # Pre-fills this (blank) record's cross-reference fields from request
+    # params - e.g. ?commitment_member=<NIE> from a member's "add a new
+    # commitment" link. Only cross-reference fields, only non-blank values;
+    # anything invalid is skipped silently (it's a convenience, not input
+    # that is being saved).
+    def prefill_references(params)
+      fields.each do |field|
+        next unless field[:references_target] && field[:method]
+
+        value = params[field[:questionclass]].to_s.strip
+        next if value.empty?
+
+        public_send("#{field[:method]}=", field[:cardinality].casecmp('multiple').zero? ? [value] : value)
+      rescue ArgumentError
+        next
+      end
+      self
     end
 
     # Builds a blank Dataset the same way +new+ does, then pre-populates any
@@ -496,7 +504,7 @@ module CBGP
       return '' if value.to_s.strip.empty?
 
       if cardinality.downcase == 'multiple' && value.is_a?(Array)
-        value.map { |v| v.to_s.strip }.reject(&:empty?)
+        value.map { |v| v.to_s.strip }.reject(&:empty?).each { |v| require_http_url!(v) if klass == 'url' }
       else
         case klass
         when 'string'
@@ -505,6 +513,9 @@ module CBGP
           value.to_i
         when 'date'
           Date.parse(value.to_s).strftime('%Y-%m-%d')
+        when 'url'
+          require_http_url!(value)
+          value.to_s.strip
         when 'currency', 'number'
           parse_currency_input(value) or
             raise ArgumentError, "'#{value}' doesn't look like a valid amount (e.g. 1234.56 or 1.234,56)"
@@ -516,34 +527,14 @@ module CBGP
       raise ArgumentError, "Invalid value #{value} for type #{klass}: #{e.message}"
     end
 
-    def validate_references(field, value)
-      target_form = field[:references_target_form]
-      return unless target_form # clearer guard
+    def require_http_url!(value)
+      return if valid_http_url?(value)
 
-      # Prefer via_class → method resolution; fallback to primary field of target form
-      key_method = if field[:references_via_class]
-                     self.class.resolve_key_method(target_form, field[:references_via_class])
-                   else
-                     self.class.key_method_for_form(target_form)
-                   end
-
-      return unless key_method # silent skip if no key found (or raise/warn)
-
-      Array(value).each do |v|
-        next if v.to_s.strip.empty?
-
-        found_primary_id = CBGP::Dataset.get_primary_id(
-          questionclass: key_method,
-          questionvalue: v.strip,
-          dataset_type: target_form
-        )
-
-        unless found_primary_id
-          warn "[FOREIGN-KEY] No #{target_form} found matching #{key_method} = '#{v}'"
-          # raise ArgumentError, "..." if you later want strict enforcement
-        end
-      end
+      raise ArgumentError,
+            "'#{value.to_s.strip[0, 80]}' is not a full web address - it must start with http:// or https:// " \
+            '(paste the complete link, not just an identifier)'
     end
+    private :require_http_url!
 
     def fetch_answers(answers_uri)
       [] # Stub: replace with SPARQL query if needed
@@ -623,26 +614,29 @@ module CBGP
         broad: broad
       ).first(limit)
 
-      graphs.map do |graph_uri|
+      graphs.flat_map do |graph_uri|
         ds = CBGP::Dataset.load_from_graph(graph: graph_uri, database: target_form)
-        next unless ds
+        next [] unless ds
 
-        value = begin
-          ds.public_send(key_method).to_s.strip
-        rescue StandardError
-          ds.primary_id.to_s.strip
+        # The key (and the label) may itself be a repeatable field - a project
+        # can have several internal codes - whose getter returns an Array. Each
+        # key value is its own suggestion; stringifying the Array would store
+        # the literal text ["ABC-1"] as the cross-reference.
+        keys = reference_values(ds, key_method) { ds.primary_id }
+        keys.map do |value|
+          label = reference_values(ds, search_method) { [] }.join(', ')
+          { value: value, label: label.empty? ? value : label }
         end
-        next if value.empty?
+      end
+    end
 
-        label = begin
-          ds.public_send(search_method).to_s.strip
-        rescue StandardError
-          value
-        end
-        label = value if label.empty?
-
-        { value: value, label: label }
-      end.compact
+    # A record's value(s) for +method+ as an Array of non-blank Strings,
+    # whether the field is single or repeatable. The block supplies the
+    # fallback when the record has no such method at all.
+    def self.reference_values(record, method)
+      Array(record.public_send(method)).map { |v| v.to_s.strip }.reject(&:empty?)
+    rescue StandardError
+      Array(yield).map { |v| v.to_s.strip }.reject(&:empty?)
     end
 
     # Reverse of #fetch_reference_suggestions: given a value already stored
@@ -683,12 +677,8 @@ module CBGP
       ds = CBGP::Dataset.load_from_graph(graph: graph_uri, database: target_form)
       return nil unless ds
 
-      label = begin
-        ds.public_send(label_ruby_method).to_s.strip
-      rescue StandardError
-        nil
-      end
-      label.to_s.strip.empty? ? nil : label
+      label = reference_values(ds, label_ruby_method) { [] }.join(', ')
+      label.empty? ? nil : label
     end
 
     # Resolves a questionclass fragment to the Ruby method name declared in the
@@ -875,8 +865,16 @@ module CBGP
         if field[:is_external_primary].downcase == 'true'
           # Look up any existing record with this external identifier so we
           # overwrite it rather than create a duplicate.
-          dataset.primary_id = CBGP::Dataset.get_primary_id(questionclass: field[:questionclass], questionvalue: value,
-                                                            dataset_type: effective_form)
+          #
+          # Searched under the form's storage dbname (where write_dataset_to_db_query
+          # puts it), not the form class - several forms can share one dbname, and
+          # re-entering an identifier through a sibling form must still find the
+          # record. A repeatable primary-id field (e.g. a project's internal code)
+          # arrives as an Array: the first value that matches an existing record wins.
+          dataset.primary_id = Array(value).map(&:to_s).map(&:strip).reject(&:empty?).lazy.map do |v|
+            CBGP::Dataset.get_primary_id(questionclass: field[:questionclass], questionvalue: v,
+                                         dataset_type: storage_dbname_for(effective_form))
+          end.find { |found| found }
           warn "set primaryid to #{dataset.primary_id.inspect}"
         end
 

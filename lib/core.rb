@@ -136,6 +136,47 @@ end
 # @param value [Object] one stored value for that field (not an Array —
 #   callers handle Multiple-cardinality fields by mapping this over each one)
 # @return [String] the value as it should be displayed/exported
+# Parses a user-supplied web address, accepting only a COMPLETE http(s) URL:
+# an http or https scheme, a host, no whitespace or control characters
+# anywhere, and none of the characters (" < > \\ `) a real copied link never
+# contains raw (browsers percent-encode them) but which an attacker would
+# need to break out of an HTML attribute. Anything else - a bare identifier
+# like HORIZON-CL5-2027-07-D3-26, "www.example.org", javascript:/data:/ftp:
+# URLs - is rejected rather than "fixed up": the call is never guessed from an
+# identifier. Non-ASCII (IRIs) and the full range of query punctuation
+# (? & = , ; [ ] | ( ) etc.) are fine.
+#
+# @return [URI::HTTP, nil] nil when not an acceptable URL
+MAX_URL_LENGTH = 2048
+def parse_http_url(value)
+  text = value.to_s.strip
+  return nil if text.empty? || text.length > MAX_URL_LENGTH
+  return nil if text.match?(/[[:space:][:cntrl:]"<>\\`]/)
+
+  uri = URI.parse(URI::DEFAULT_PARSER.escape(text)) # escape only for parsing non-ASCII; the stored text is untouched
+  return nil unless uri.is_a?(URI::HTTP) # URI::HTTPS is a subclass; ftp/javascript/data/mailto are not
+  return nil if uri.host.to_s.empty?
+
+  uri
+rescue URI::InvalidURIError
+  nil
+end
+
+def valid_http_url?(value)
+  !parse_http_url(value).nil?
+end
+
+# An <a> for +value+ when it is an acceptable http(s) URL, otherwise just the
+# escaped text - so even data that got in some other way (a bulk loader, an
+# old record) can never become a javascript: link or inject markup. Opens in
+# a new tab without leaking the opener.
+def url_link_html(value, text = nil)
+  shown = CGI.escapeHTML((text || value).to_s)
+  return shown unless valid_http_url?(value)
+
+  %(<a href="#{CGI.escapeHTML(value.to_s.strip)}" target="_blank" rel="noopener noreferrer">#{shown}</a>)
+end
+
 def resolve_display_value(field, value)
   return format_currency(value) if field[:class] == 'currency'
   return value.to_s unless controlled_vocabulary_field?(field)

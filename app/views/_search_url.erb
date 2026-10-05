@@ -1,0 +1,4 @@
+<!-- Searching a URL field: a plain text filter (part of the address is enough), not type="url" -->
+<div class="inputtype">
+  <input type="text" name="<%= @question.questionid %>" value="<%= CGI.escapeHTML(@thisval.to_s) %>" id="<%= @question.questionid %>_ANSWER" placeholder="Enter part of the web address to filter" style="width: 50%;" />
+</div>

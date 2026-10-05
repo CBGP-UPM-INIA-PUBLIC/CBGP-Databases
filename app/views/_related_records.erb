@@ -1,0 +1,56 @@
+<!-- Expects @related_panels: Array<CBGP::RelatedRecords::Panel> (see lib/related_records.rb).
+     Everything shown - titles, columns, which sum is checked against which
+     total - comes from the ontology, not from this template. -->
+<% (@related_panels || []).each do |panel| %>
+  <div class="related-records">
+    <h3><%= Rack::Utils.escape_html(panel.title) %></h3>
+
+    <% if panel.warning %>
+      <div class="related-records-warning" role="alert">
+        <% CBGP::RelatedRecords.warning_messages(panel).each do |message| %>
+          <div><%= Rack::Utils.escape_html(message) %></div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if panel.rows.empty? %>
+      <p class="related-records-empty">None yet.</p>
+    <% else %>
+      <table class="related-records-table">
+        <thead>
+          <tr>
+            <% panel.columns.each do |label| %><th><%= Rack::Utils.escape_html(label) %></th><% end %>
+          </tr>
+        </thead>
+        <tbody>
+          <% panel.rows.each do |row| %>
+            <% current = @entry && @entry.primary_id.to_s == row.primary_id.to_s %>
+            <tr class="<%= row.active ? 'related-active' : 'related-inactive' %><%= current ? ' related-current' : '' %>">
+              <% row.cells.each_with_index do |cell, i| %>
+                <td>
+                  <% if i.zero? %>
+                    <a href="/cbgp/dataset/<%= Rack::Utils.escape_path(panel.related_form) %>/<%= Rack::Utils.escape_path(row.primary_id.to_s) %>"><%= Rack::Utils.escape_html(cell.to_s.empty? ? '(open)' : cell) %></a>
+                    <% if current %><em>(this record)</em><% end %>
+                  <% else %>
+                    <%= Rack::Utils.escape_html(cell) %>
+                  <% end %>
+                </td>
+              <% end %>
+            </tr>
+          <% end %>
+        </tbody>
+        <% if panel.total && !panel.total.zero? || (panel.total && panel.active_count.positive?) %>
+          <tfoot>
+            <tr>
+              <td colspan="<%= panel.columns.size %>">
+                Active total: <%= Rack::Utils.escape_html(format_currency(panel.total.to_s('F'))) %>
+              </td>
+            </tr>
+          </tfoot>
+        <% end %>
+      </table>
+    <% end %>
+
+    <p><a href="<%= CGI.escapeHTML(panel.add_path + (panel.prefill.to_h.empty? ? '' : '?' + URI.encode_www_form(panel.prefill))) %>">Add a new <%= Rack::Utils.escape_html(panel.related_form_label.to_s.empty? ? panel.title : panel.related_form_label) %></a></p>
+  </div>
+<% end %>

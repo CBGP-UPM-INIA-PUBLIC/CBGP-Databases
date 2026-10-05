@@ -256,6 +256,7 @@ def set_routes
     # route above; @database (the shared storage dbname) is no longer
     # itself a valid ontology class to build a Dataset from.
     @entry = CBGP::Dataset.new_with_defaults(type: @form, form: @form)
+    @entry.prefill_references(params) # e.g. a member's "add a new commitment" link
     halt erb :dataset, layout: :database_layout
   end
 
@@ -348,6 +349,25 @@ def set_routes
       # for this form. Answer-level triggers (e.g. Damaris approving a
       # record) are NOT affected by this flag and still fire normally.
       CBGP::Triggers.check_and_fire(dataset: @entry, check_form_level: false)
+      @related_panels = CBGP::RelatedRecords.panels_for(entry: @entry, type: @database)
+
+      # Editing an existing record that was reached from a search: go back to
+      # those results (the record just changed is in them, and the next thing an
+      # administrator wants is usually a neighbouring record - e.g. the sister
+      # commitment that holds the rest of a split) rather than redisplaying the
+      # same edit form. A brand-new record, or an edit not reached via a search,
+      # keeps showing the saved record. Advisory panel warnings (e.g. "active
+      # funding totals 91, expected 100") ride along as a flash, since the
+      # results page has no panel of its own to show them in.
+      search_form = [@form, @database].find { |f| session[:last_search] && session[:last_search][:database] == f }
+      if search_form && !params['primary_id'].to_s.strip.empty?
+        flash[:notice] = 'Record saved.'
+        warnings = (@related_panels || []).select(&:warning).flat_map do |panel|
+          CBGP::RelatedRecords.warning_messages(panel).map { |m| "#{panel.subject || panel.title}: #{m}" }
+        end
+        flash[:warning] = warnings.join(' ') unless warnings.empty?
+        redirect "/cbgp/last-search/#{Rack::Utils.escape_path(search_form)}"
+      end
     rescue CBGP::Dataset::ValidationError => e
       @validation_errors = e.errors
       # type: @form (NOT params['database']) - same dbname-vs-form distinction
@@ -392,6 +412,16 @@ def set_routes
     halt erb :search_dataset_inputform, layout: :database_layout
   end
 
+  # Re-runs the search this session last ran on :database and shows its
+  # results - where saving or deleting a record lands. Falls back to the
+  # search form when this session has no search for that database (e.g. the
+  # session expired), rather than a dead end.
+  get '/cbgp/last-search/:database' do
+    halt erb(:search_dataset_resultform, layout: :database_layout) if render_last_search_results(database: params[:database])
+
+    redirect "/cbgp/search-dataset/#{Rack::Utils.escape_path(params[:database])}"
+  end
+
   post '/cbgp/query-dataset/:database' do
     @database = params[:database]
     @questionnaire = generate_questionnaire(questionnaire_type: @database)
@@ -419,6 +449,8 @@ def set_routes
         pre_fetched_primary_id: primary_ids_by_graph[graphuri]
       )
     end
+
+    @result_warnings = CBGP::RelatedRecords.result_warnings(datasets: @datasets, type: @database)
 
     plain_params = to_plain_hash(search_params.to_h) # Sinatra params object doesn't clone easily, so this makes it a hash
     session[:last_search] = {
@@ -782,7 +814,23 @@ def set_routes
       _idtype, clean_identifier = identifier_type(id: primary_id)
       clean_identifier ||= identifier
       @entry = CBGP::Dataset.load_from_primary_id(database: database, primary_id: clean_identifier)
+      @related_panels = CBGP::RelatedRecords.panels_for(entry: @entry, type: @database) # ontology-declared; usually empty
       erb :dataset, layout: :database_layout
+    end
+
+    # Loads @database/@fields/@datasets for the search this session last ran on
+    # +database+, ready for the search_dataset_resultform view. Returns false
+    # (and sets nothing) when there is no such search to repeat.
+    def render_last_search_results(database:) # rubocop:disable Lint/NestedMethodDefinition
+      last_search = session[:last_search]
+      return false unless last_search && last_search[:database] == database
+
+      @database = database
+      @fields = CBGP::Dataset.fields_for(@database)
+      graphuris = execute_search(search_params: last_search[:params], dataset_type: @database)
+      @datasets = graphuris.map { |graphuri| CBGP::Dataset.load_from_graph(graph: graphuri, database: @database) }
+      @result_warnings = CBGP::RelatedRecords.result_warnings(datasets: @datasets, type: @database)
+      true
     end
 
     def delete_dataset(database:, primary_id:) # rubocop:disable Lint/NestedMethodDefinition
@@ -801,28 +849,14 @@ def set_routes
 
       delete_dataset_query(oldid: graphuri)
 
-      # NEW: Try to return to the previous search results
-      last_search = session[:last_search]
-      if last_search && last_search[:database] == @database
-        search_params = last_search[:params] # Now it's plain Hash
-        warn "Re-running search with params: #{search_params.inspect}" # debug
-
-        @fields = CBGP::Dataset.fields_for(@database) # or .get_questionnaire_fields if still using old name
-        graphuris = execute_search(search_params: search_params, dataset_type: @database)
-        @datasets = []
-        graphuris.each do |graphuri|
-          @datasets << CBGP::Dataset.load_from_graph(graph: graphuri, database: @database)
-        end
-
-        # Optional: Add a flash message (if you have flash enabled)
+      # Try to return to the previous search results
+      if render_last_search_results(database: @database)
         flash[:notice] = 'Record deleted successfully.'
-
-        # Render the refreshed results page
-        erb :search_dataset_resultform, layout: :database_layout
-      else
-        # No search context – fall back to dashboard (or search form)
-        redirect '/cbgp/dashboard'
+        halt erb(:search_dataset_resultform, layout: :database_layout)
       end
+
+      # No search context - fall back to the dashboard
+      redirect '/cbgp/dashboard'
     end
   end
 end

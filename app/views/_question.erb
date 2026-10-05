@@ -56,6 +56,12 @@
       <% @thisval = val %>
       <% if widget == "date" %>
         <%= erb :_search_date %>
+      <% elsif @question.respond_to?(:references_target) && @question.references_target && !@question.references_via_class.to_s.strip.empty? %>
+        <!-- Cross-reference field: search by the referenced record's label (e.g. a
+             member's surname), exactly as on the add/edit form - the posted value is the
+             stored key (e.g. the member's DNI/NIE/PAS), which is what the search matches.
+             Nobody should have to know or type an identifier to search. -->
+        <%= erb :_reference_typeahead, locals: { question: @question, value: "", target: @question.references_target } %>
       <% else %>
         <%= erb "_search_#{widget}".to_sym %>
       <% end %>

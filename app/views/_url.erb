@@ -1,0 +1,27 @@
+<!-- URL widget: a full http(s) address, validated on save (see parse_http_url in lib/core.rb).
+     Browsers also check type="url" before submitting, but the server is what enforces it. -->
+<div class="inputtype">
+  <div id="<%= @question.questionid %>_container">
+    <% if @question.cardinality == "Multiple" %>
+      <% @thisval = [""] if @thisval.nil? || (@thisval.is_a?(Array) && @thisval.empty?) %>
+      <% @thisval.each_with_index do |val, index| %>
+        <div class="text-input-row" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+          <input type="url" name="<%= @question.questionid %>[]" value="<%= CGI.escapeHTML(val.to_s) %>" id="<%= @question.questionid %>_<%= index + 1 %>_ANSWER" size="70" placeholder="https://..." style="vertical-align: middle;" />
+          <% if valid_http_url?(val) %><a href="<%= CGI.escapeHTML(val.to_s.strip) %>" target="_blank" rel="noopener noreferrer">open&nbsp;&#8599;</a><% end %>
+          <% if index > 0 %>
+            <button type="button" class="remove-input" data-index="<%= index %>">−</button>
+          <% end %>
+        </div>
+      <% end %>
+    <% else %>
+      <% single = @thisval.to_s.gsub(/^\["|"\]$/, '') %>
+      <div class="text-input-row" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+        <input type="url" name="<%= @question.questionid %>" value="<%= CGI.escapeHTML(single) %>" id="<%= @question.questionid %>_ANSWER" size="70" placeholder="https://..." style="vertical-align: middle;" />
+        <% if valid_http_url?(single) %><a href="<%= CGI.escapeHTML(single.strip) %>" target="_blank" rel="noopener noreferrer">open&nbsp;&#8599;</a><% end %>
+      </div>
+    <% end %>
+  </div>
+  <% if @question.cardinality == "Multiple" %>
+    <button type="button" class="add-input" data-question-id="<%= @question.questionid %>">+</button>
+  <% end %>
+</div>

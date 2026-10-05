@@ -135,6 +135,64 @@ Screenshot needed: `docs/source/_static/screenshots/admin-validation-error.png`
 ![Validation error banner](../_static/screenshots/admin-validation-error.png)
 *A friendly validation-error banner after an invalid submission.*
 
+## Web address (URL) fields
+
+Some fields hold a web address rather than free text — the **Application
+URL** on a project is the link to the call or application page itself (for a
+European Commission call, the topic page on the Funding & Tenders portal),
+not just its identifier such as `HORIZON-CL5-2027-07-D3-26`. These fields
+only accept a complete address starting with `http://` or `https://`; an
+identifier on its own, or an address without the `https://`, is refused with
+a message saying so, and nothing is guessed or filled in for you.
+Paste the whole link, including everything after the `?`.
+
+Once saved, the address shows as a clickable link in search results, and
+beside the field when you edit the record (**open ↗**), opening in a new
+tab. The application only checks that what was entered *is* a web address,
+not that it goes to the right place: if a link turns out to be wrong,
+follow it, then edit the record and enter the correct one.
+
+## Funding commitments: splitting a person's salary across projects
+
+A researcher can be paid by several projects at once — say 50% from one,
+30% from another and 20% from a third. That split isn't stored on the
+member or on any of the projects; it has a record of its own, the
+**Funding Commitment**, with one record per member-and-project pair:
+
+- **Member** and **Project** — both are [cross-reference
+  fields](cross_references.md): search by surname or project title, and
+  the member's DNI/NIE/PAS and the project's internal code are what get
+  stored.
+- **Percentage of salary cost** — the share of this person's salary cost
+  charged to the project, from 0 to 100. Decimals are fine (`33.3`, or
+  `33,3` with the Spanish interface).
+- **Start date**, and an **End date** that you leave blank while the
+  allocation is current.
+- **Notes**, optional.
+
+A Personnel Project (a grant that pays for one person) gets its own
+commitment record too, at 100% — the beneficiary field on the project
+says *who*, the commitment says *how much of their salary, and when*.
+
+**To change a split, don't edit the old record.** Close it by giving it
+an end date, then add a new commitment with the new percentage and a
+start date. For example, if the 30% project ends on 30 June and the first
+one rises to 80% from 1 July: put `30 June` as the end date of the 30%
+and 50% records, and add one new 80% record starting `1 July`. This keeps
+a dated ledger of who was funded by what, and when — the normal
+[history](history_and_snapshots.md) would only tell you when somebody
+*typed in* a change, not when it took effect.
+
+Open any member's record and, under the form, a **Funding commitments**
+list shows all of their commitments (ended ones greyed out) with the total
+of the ones that apply today. Open a project and the same list shows the
+staff funded by it. If a member's active commitments don't add up to 100%
+a warning appears above the list. **This is only a warning**: nothing is
+blocked, and it will naturally appear halfway through entering a split
+(70% entered so far, 30% still to go) and disappear once the total is
+right. It does not appear at all for a member with no active commitments,
+since someone not funded from projects is not a mistake.
+
 ## Editing and deleting an existing record
 
 Editing an existing record starts from a search result (see

@@ -5,6 +5,19 @@
   via        = question.references_via_class.to_s
   label_meth = question.references_label_method.to_s
   is_xref    = !via.strip.empty?
+
+  # What the box searches, in the ontology's own words (e.g. "Surname(s)" for a
+  # member, "Title of the project" for a project) - so the placeholder says
+  # exactly what to type, and that nothing happens before 2 characters.
+  xref_hint = 'Type at least 2 characters to search existing ' + target.to_s + '...'
+  if is_xref
+    begin
+      searched = CBGP::Dataset.fields_for(target).find { |f| f[:questionclass] == label_meth }
+      xref_hint = "Type at least 2 characters of the #{searched[:label]} to search existing #{target}..." if searched
+    rescue StandardError
+      nil # fall back to the generic hint
+    end
+  end
   is_multi   = question.cardinality == 'Multiple'
 
   # Normalise existing stored values into an array; always at least one (possibly empty) row
@@ -27,9 +40,9 @@
         type="text"
         name="<%= qid %><%= is_multi ? '[]' : '' %>"
         id="<%= qid %>_ANSWER_<%= idx %>"
-        value="<%= sv %>"
+        value="<%= CGI.escapeHTML(sv) %>"
         list="<%= qid %>_suggestions"
-        placeholder="Type to search existing <%= target %>..."
+        placeholder="Type at least 2 characters to search existing <%= target %>..."
         size="60"
         autocomplete="off"
       />
@@ -86,7 +99,7 @@
         row.id = qid + '_row_' + rowCount;
         row.innerHTML = `
           <input type="text" name="${qid}[]" id="${qid}_ANSWER_${rowCount}"
-                 list="${qid}_suggestions" placeholder="Type to search existing <%= target %>..."
+                 list="${qid}_suggestions" placeholder="Type at least 2 characters to search existing <%= target %>..."
                  size="60" autocomplete="off">
           <button type="button" onclick="this.closest('.std-row').remove()" style="font-size:0.8em;">− remove</button>`;
         container.insertBefore(row, this);
@@ -108,7 +121,7 @@
         <div>
           <input type="text" id="<%= qid %>_SEARCH_<%= idx %>"
                  list="<%= qid %>_suggestions_<%= idx %>"
-                 placeholder="Type to search existing <%= target %>..."
+                 placeholder="<%= CGI.escapeHTML(xref_hint) %>"
                  size="50" autocomplete="off">
           <datalist id="<%= qid %>_suggestions_<%= idx %>"></datalist>
           <% if is_multi %>
@@ -118,7 +131,7 @@
         <div id="<%= qid %>_stored_row_<%= idx %>"
              style="margin-top:4px;<%= sv.empty? ? ' display:none' : '' %>">
           <small>Stored value:&nbsp;</small>
-          <code id="<%= qid %>_DISPLAY_<%= idx %>"><%= sv %></code>
+          <code id="<%= qid %>_DISPLAY_<%= idx %>"><%= CGI.escapeHTML(sv) %></code>
           <span id="<%= qid %>_LABEL_<%= idx %>" class="xref-label"></span>
           <button type="button" id="<%= qid %>_CLEAR_<%= idx %>"
                   style="margin-left:6px; font-size:0.8em;">✕ clear</button>
@@ -126,7 +139,7 @@
         <input type="hidden"
                name="<%= qid %><%= is_multi ? '[]' : '' %>"
                id="<%= qid %>_ANSWER_<%= idx %>"
-               value="<%= sv %>">
+               value="<%= CGI.escapeHTML(sv) %>">
       </div>
       <% end %>
 
@@ -142,6 +155,7 @@
       const targetForm = '<%= target %>';
       const via        = '<%= via %>';
       const labelMeth  = '<%= label_meth %>';
+      const xrefHint   = <%= xref_hint.to_json.gsub('</', '<\\/') %>;
 
       // Initialise one cross-ref row by its numeric suffix.
       // Each call gets its own independent valueMap and timeout — no sharing.
@@ -236,7 +250,7 @@
           <div>
             <input type="text" id="${qid}_SEARCH_${suffix}"
                    list="${qid}_suggestions_${suffix}"
-                   placeholder="Type to search existing ${targetForm}..."
+                   placeholder="${xrefHint}"
                    size="50" autocomplete="off">
             <datalist id="${qid}_suggestions_${suffix}"></datalist>
             <button type="button" onclick="this.closest('.xref-row').remove()" style="font-size:0.8em; margin-left:4px;">− remove</button>

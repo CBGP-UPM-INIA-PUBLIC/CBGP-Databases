@@ -21,8 +21,8 @@ Typing into a cross-reference field searches the target record type by a
 human-readable label — a person's surname, for instance — and shows
 matching suggestions as options to pick from. Choosing one fills in the
 field, but what actually gets stored behind the scenes is a different,
-more stable value than the text that was searched for — an ORCID for a
-person, for example, rather than their name. This matters because names
+more stable value than the text that was searched for — an ORCID or a
+DNI/NIE/PAS number for a person, for example, rather than their name. This matters because names
 change, get spelled differently, or coincide between different people,
 while the stored identifier doesn't; it also means every record that
 links to the same person or project genuinely links to the *same* thing,

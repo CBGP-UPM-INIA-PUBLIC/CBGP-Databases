@@ -10,6 +10,155 @@ the rest are grouped by theme/date as a best-effort mapping. From this point
 forward, every release ships with a matching `VERSION` file bump and an entry
 here.
 
+## [Unreleased]
+Funding Commitments (who is paid by which project, and for what share), the
+Application URL field, and a run of fixes found by trying them in the browser.
+Ontology changes ship in CBGP-Ontology `ba54d03`; this release needs that
+ontology (several fields are renamed).
+
+### Added
+- **Funding Commitments** (member x project share of salary cost): a new Core
+  form `funding_commitment` (own dbname `commitment`) with a member xref, a
+  project xref, a percentage, start/end dates and notes. One record per
+  member-and-project pair. A changed split is recorded by closing the old
+  record (end date) and adding a new one, so the data is a dated ledger.
+  Entirely ontology-defined - no commitment-specific code. A Personnel
+  Project's beneficiary gets an explicit 100% commitment like any other.
+- **Related-records panels** (`local:has-related-records`): a generic
+  ontology facet by which a form lists the records of another form that point
+  back at the open record, with an optional "sum this field over the rows
+  active, warn if it differs from an expected total" rule (`lib/related_records.rb`,
+  `_related_records.erb`). Used for a member's commitments, a project's funded
+  staff, and a commitment's sibling commitments (`local:related-key-field`).
+  - **Warnings look ahead**: checked for today and every future date a record
+    starts or stops ("adds up to 110.00 from 2026-10-14"), each change reported
+    once; past periods and dates with nobody funded are ignored. Advisory only,
+    computed on read, never stored; a 0.05 tolerance covers 2-decimal rounding.
+  - **Shown where you need them**: the record page, a notice after saving, and a
+    "Check these" banner on commitment search results (one check per member,
+    capped at 40 with a note when more were not checked).
+  - Fails open - a bad panel declaration can never stop a record opening.
+  - "Add a new ..." in a panel opens pre-filled with the link back to the open
+    record (`?<questionclass>=<key>` accepted on a blank add form for
+    cross-reference fields only - `CBGP::Dataset#prefill_references`).
+- **URL widget** (`cbgp:url`, object class `URL`) and the **Application URL**
+  field (see Changed). `parse_http_url` / `valid_http_url?` / `url_link_html`
+  in `lib/core.rb`.
+- `number` widget class in the ontology (the locale-aware `_number.erb` widget
+  already existed in code with no ontology widget type).
+- **Saving an edit returns to the search results** it was reached from (new
+  `GET /cbgp/last-search/:database`; delete uses the same helper) with a
+  "Record saved." notice, plus a warning when a panel is out of balance. A new
+  record, or an edit not reached via a search, still shows the saved record.
+  The results page now actually displays flash messages (it never did, so
+  "Record deleted" was never seen).
+- **Cross-reference search boxes say what they search** and that nothing
+  happens before 2 characters, from the field's own ontology label - e.g.
+  "Type at least 2 characters of the Surname(s) to search existing member..."
+  (on add/edit and search forms, including "add another" rows).
+- **Search forms get the same name typeahead as the add/edit forms** for
+  cross-reference fields (search by surname; the stored NIE is what matches).
+- `:references_label` in `CBGP::Dataset.fields_for` field descriptors.
+- Generic **dbname fallback**: `get_questionnaire_sections_query` (hence
+  `fields_for`, `key_method_for_form`) resolves a shared `local:dbname` that is
+  not itself a form class (e.g. `project`, since the project-fields split) to
+  the union of its forms' fields; `fields_for` de-duplicates a question class
+  that sits in several sections. Without it a cross-reference to `project`
+  loaded zero fields and stored UUIDs.
+- **Ontology checker**, in CBGP-Ontology (`check_ontology.rb`,
+  `test_check_ontology.rb`, `SARA_README.md`) - standard-library Ruby, no gems.
+  Reports by class name and **line number** any label with no language tag,
+  any labelled class missing an English or Spanish label, a blank label, a form
+  with no `form-category`/`dbname`/`has-fields`, and a `form-category`/`dbname`
+  without `xml:lang`. Exit status 1 on errors. Untagged comments and duplicate
+  labels are warnings only (untagged comments are simply not shown to users and
+  are often deliberate editor notes). This repo has the gate
+  (`spec/lib/ontology_check_gate_spec.rb`): the suite fails, naming the class,
+  if the ontology file it loads has an error.
+- **Readable SPARQL errors**: `CBGP::SparqlClient` (read clients) and the update
+  client now show Virtuoso's own message plus the offending query. Previously a
+  rejected query surfaced as an unrelated `Encoding::CompatibilityError`
+  whenever the reply or the query had a non-ASCII character (sparql-client
+  joins the raw-byte reply with the UTF-8 query text to build its message).
+  e.g. `Virtuoso 37000 Error SP030 ... End-of-line in a short double-quoted
+  string ... SPARQL query: SELECT ...`.
+
+### Changed
+- **`project_application_code` -> `project_application_url` ("Application
+  URL")**, a full link to the call (e.g. the European Commission topic page
+  with its query string), not the call identifier - requested by the admin
+  team. Only a complete http(s) address is accepted; a bare identifier, `www.`
+  addresses and `javascript:`/`data:`/`ftp:` URLs are refused with a message,
+  never "fixed up" or guessed. **Required on all project forms**, private
+  projects included (by decision: any real address will do - keep the interfaces
+  consistent), **and on the user-facing project form**, which previously had no
+  required fields at all. Stored as typed (trimmed); shown as a
+  `target=_blank rel="noopener noreferrer"` link in search results and beside
+  the field when editing; plain text in the TSV export; searched as a text
+  filter. Whether a valid link goes to the right place is not checked.
+- Project-side member cross-references key on the member's **DNI/NIE/PAS**
+  instead of ORCID (not every member has one): `project_pi_orcid` ->
+  `project_pi_nie`, `project_main_copi_orcid` -> `project_main_copi_nie`,
+  `beneficiary_orcid` -> `beneficiary_nie`,
+  `personnel_project_responsible_pi_orcid` -> `personnel_project_responsible_pi_nie`
+  (classes, methods, labels); `project_dni_nie_pas` is now a member
+  cross-reference too. `publication_cbgp_authors` deliberately stays on ORCID.
+  No data migration - the database held no real data.
+- `member_projects` (free text, unvalidated) removed from the Member form; a
+  member's projects are now derived from their commitments.
+- Search results HTML-escape cell text (it was printed raw).
+- The cross-reference widget HTML-escapes stored and pre-filled values (it
+  printed them raw).
+
+### Fixed
+- **Records were stored under the form name instead of the form's shared
+  `local:dbname`.** `write_dataset_to_db_query` took the storage "database" from
+  `dataset.form_type` (the specific form), so a `personnel_project` was written
+  to `.../personnel_project/context/<id>` and was invisible to any search or
+  cross-reference lookup on the dbname `project`. Now written under the dbname
+  (`storage_dbname_for`), with `dcterms:type` still stamping the true form.
+  Found by a live smoke test; unnoticed only because no project records existed.
+- **Search of a multi-form dbname found nothing**: `execute_search` now takes a
+  form or a dbname - a form is searched under its dbname and restricted to the
+  records that form wrote (`dcterms:type`); the dbname covers every sharing form.
+- **The external-primary-id upsert lookup** searched the form name rather than
+  the dbname and was handed a whole Array for a repeatable primary-id field
+  (`project_internal_code`), which Virtuoso rejected (a 500).
+- **Searching a repeatable field** (an Array of values) built an invalid regex
+  and 500'd; each non-blank value is now its own term and blank rows are ignored.
+- **A double quote or backslash in a search term broke the SPARQL query**:
+  `sparql_regex_escape` emitted `\\"` for a quote (ending the string literal
+  early) and three backslashes for a backslash. The old spec only checked the
+  output *contained* `\"`, which `\\"` also does; the new specs check the query
+  parses.
+- **The cross-reference typeahead offered `["ABC-1"]`** (an Array's `to_s`) as
+  the value to store when the referenced key field is repeatable (a project's
+  internal code): now one plain suggestion per key value.
+- **The European and Private research project forms were missing from the Add
+  and Query menus**: their `form-category`/`dbname` had no `@en` tag and the
+  menu query matched `"Core"@en` exactly. Tagged in the ontology, and the query
+  now compares the category as plain text so a missing tag cannot hide a form.
+
+### Removed
+- `CBGP::Dataset#validate_references` and the per-field `<method>_target_form` /
+  `<method>_key_method` helpers: dead since March 2026 (they read
+  `references_target_form` / `references_via_class`, which `fields_for` has not
+  emitted since), so the "[FOREIGN-KEY] no match" warning never fired.
+  Cross-reference lookup itself is unaffected.
+
+### Tests and docs
+- 928 examples (from ~313). About 400 are one parameterised spec,
+  `weird_identifiers_spec.rb`: project identifiers (internal code, call title)
+  with arbitrary characters - regex metacharacters, quotes, backslashes,
+  HTML/SPARQL injection, non-ASCII and real European Commission / ERC / MSCA /
+  AEI grant numbers - through search, write, save, panel matching, the
+  pre-fill link and page rendering; also run by hand against live Virtuoso.
+  Each fix above has a spec that fails without it.
+- Docs (EN + ES): `data_model.md` worked example (a record pointing at two
+  others, related-records panels); `admin/data_entry.md` (funding commitments,
+  web address fields); `admin/cross_references.md`. The Spanish is machine-
+  drafted and awaits a manual check.
+
 ## [0.17.0] - 2026-08-25
 ### Fixed
 - Test fixtures updated to match Sara's project-fields ontology

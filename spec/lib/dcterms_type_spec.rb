@@ -69,8 +69,8 @@ RSpec.describe 'dcterms:type provenance stamp' do
   describe 'CBGP::Dataset.load_from_params_and_write' do
     it 'passes the true form (not the shared dbname) through to the write, for a Personnel submission' do
       allow(CBGP::Dataset).to receive(:write_dataset_to_db)
-      # personnel_project's real ORCID cross-references (beneficiary_orcid,
-      # personnel_project_responsible_pi_orcid) call get_primary_id via a
+      # personnel_project's real DNI/NIE/PAS cross-references (beneficiary_nie,
+      # personnel_project_responsible_pi_nie) call get_primary_id via a
       # live SPARQL endpoint if not stubbed - this suite must never depend
       # on that.
       allow(CBGP::Dataset).to receive(:get_primary_id).and_return(nil)
@@ -78,12 +78,12 @@ RSpec.describe 'dcterms:type provenance stamp' do
         'database' => 'project',
         'primary_id' => '',
         'project_title' => 'A Personnel Project',
-        'beneficiary_orcid' => '0000-0001-2345-6789',
-        'personnel_project_responsible_pi_orcid' => '0000-0001-2345-6789',
+        'beneficiary_nie' => '12345678Z',
+        'personnel_project_responsible_pi_nie' => '12345678Z',
         'personnel_project_total_funding' => '1000.00',
         'project_funding_entity' => 'Test Funding Entity',
         'project_affiliation' => 'affiliation_upm',
-        'project_application_code' => 'TEST-CODE',
+        'project_application_url' => 'https://example.org/call/TEST-CODE',
         'project_dni_nie_pas' => '12345678A',
         'project_internal_code' => 'TEST-INTERNAL',
         'project_start_date' => '2026-01-01',

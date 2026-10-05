@@ -78,6 +78,7 @@ require_relative '../lib/crossref_parser'
 require_relative '../lib/openaire_parser'
 require_relative '../lib/personnel_matcher'
 require_relative '../lib/loaders'
+require_relative '../lib/related_records'
 
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|

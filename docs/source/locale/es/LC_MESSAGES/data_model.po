@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CBGP-Databases 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 13:05+0200\n"
+"POT-Creation-Date: 2026-10-05 19:56+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es\n"
@@ -34,9 +34,9 @@ msgstr ""
 "Esta página es para quien necesite escribir una consulta SPARQL directa "
 "contra el almacén de tripletes — un informe, un análisis puntual, una "
 "exportación que este sistema todavía no ofrece... — en lugar de usar las "
-"propias pantallas de búsqueda de la aplicación. Aquí se explican las dos cosas que"
-" en realidad forman cada registro, tal como se almacena, y cómo ambas se "
-"conectan con la ontología."
+"propias pantallas de búsqueda de la aplicación. Aquí se explican las dos "
+"cosas que en realidad forman cada registro, tal como se almacena, y cómo "
+"ambas se conectan con la ontología."
 
 #: ../../source/data_model.md:9 de175bbc725640f696ad03650fe24729
 msgid ""
@@ -79,9 +79,9 @@ msgstr ""
 "su conjunto (cuándo se creó, cuándo se modificó por última vez, qué "
 "formulario lo generó). Estas viven en el **grafo por defecto** del "
 "almacén de tripletes, con la propia URI del grafo del registro como "
-"*sujeto*. Se mantienen deliberadamente fuera del grafo con nombre, "
-"de modo que una consulta siempre pueda encontrarlas sin necesidad de "
-"saber antes qué campos tiene el registro."
+"*sujeto*. Se mantienen deliberadamente fuera del grafo con nombre, de "
+"modo que una consulta siempre pueda encontrarlas sin necesidad de saber "
+"antes qué campos tiene el registro."
 
 #: ../../source/data_model.md:26 5ddb4f8d672d4bbe8a9fea78a944e5b8
 msgid ""
@@ -143,9 +143,9 @@ msgid ""
 "from the ontology itself — every Form already carries a bilingual "
 "`rdfs:label`:"
 msgstr ""
-"Como el objeto es una URI de clase real, su etiqueta de visualización se obtiene "
-"automáticamente de la propia ontología — cada Formulario ya lleva un "
-"`rdfs:label` bilingüe:"
+"Como el objeto es una URI de clase real, su etiqueta de visualización se "
+"obtiene automáticamente de la propia ontología — cada Formulario ya lleva"
+" un `rdfs:label` bilingüe:"
 
 #: ../../source/data_model.md:99 892a1401fe61486d88fcd2169d5fa3ef
 msgid ""
@@ -155,8 +155,8 @@ msgid ""
 "fields) for the other place this session's work touched the data model."
 msgstr ""
 "Este valor se genera automáticamente, para todos los registros de cada "
-"formulario, en el momento de guardar — no hay que configurar nada en"
-" la ontología para que un formulario nuevo la reciba. Véase [Campos "
+"formulario, en el momento de guardar — no hay que configurar nada en la "
+"ontología para que un formulario nuevo la reciba. Véase [Campos "
 "calculados](admin/data_entry.md#calculated-fields) para el otro punto en "
 "el que este trabajo también afectó al modelo de datos."
 
@@ -173,9 +173,9 @@ msgid ""
 msgstr ""
 "Una pregunta específica de un formulario, como «¿cuál es el ingreso anual"
 " total en todos los registros de Proyecto Personal?», necesita ambas "
-"capas: `dcterms:type` (en el grafo por defecto) para seleccionar "
-"los registros correctos, y después el grafo con nombre propio de cada uno"
-"de ellos, para extraer de ahí los valores de campo."
+"capas: `dcterms:type` (en el grafo por defecto) para seleccionar los "
+"registros correctos, y después el grafo con nombre propio de cada unode "
+"ellos, para extraer de ahí los valores de campo."
 
 #: ../../source/data_model.md:126 de5b497ed4b1406b87602bbfd05ffe36
 msgid "How this connects to the ontology"
@@ -193,20 +193,21 @@ msgstr ""
 "una cadena de texto arbitraria — lo que hace que los dos diagramas "
 "siguientes sean la misma imagen, vista desde dos ángulos distintos."
 
-#: ../../source/data_model.md:160 001fdec64ffd42ca85fcb01ed7f6ccb0
+#: ../../source/data_model.md:164 001fdec64ffd42ca85fcb01ed7f6ccb0
 msgid ""
 "A Question's `local:answer-block`, when it has one, points at a set of "
 "Answer classes the same way — see [Philosophy & Design](philosophy.md"
 "#how-it-actually-works-without-the-code) for the full ontology-to-form-"
 "rendering path this same class structure also drives."
 msgstr ""
-"El `local:answer-block` de una Pregunta, si existe, apunta "
-"a un conjunto de clases de Respuesta de la misma manera — véase [Filosofía y "
-"Diseño](philosophy.md#how-it-actually-works-without-the-code) para conocer "
-"la ruta completa desde la representación en la ontología hasta el formulario renderizado que también está "
-"controlado por esta misma estructura de clases."
+"El `local:answer-block` de una Pregunta, si existe, apunta a un conjunto "
+"de clases de Respuesta de la misma manera — véase [Filosofía y "
+"Diseño](philosophy.md#how-it-actually-works-without-the-code) para "
+"conocer la ruta completa desde la representación en la ontología hasta el"
+" formulario renderizado que también está controlado por esta misma "
+"estructura de clases."
 
-#: ../../source/data_model.md:165 53377cbe254149d99680d3c02ebabc64
+#: ../../source/data_model.md:169 53377cbe254149d99680d3c02ebabc64
 msgid ""
 "Worked example: is a field required, defaulted, or calculated on this "
 "form?"
@@ -214,7 +215,7 @@ msgstr ""
 "Ejemplo resuelto: ¿es un campo obligatorio, tiene un valor por defecto, o"
 " se calcula en este formulario?"
 
-#: ../../source/data_model.md:167 1def1c8adfa04b6ab84355902401eb43
+#: ../../source/data_model.md:171 1def1c8adfa04b6ab84355902401eb43
 msgid ""
 "The three per-form mechanisms mentioned above (`local:has-defaults`, "
 "`local:has-formulas`, `local:requires-field`) are all declared on the "
@@ -229,24 +230,23 @@ msgstr ""
 "todos en el **Formulario**, no en la Pregunta — porque la misma Pregunta "
 "compartida puede comportarse de forma distinta según qué Formulario la "
 "esté usando. Cada uno de los siguientes usa, a propósito, un campo real "
-"distinto de los formularios Proyecto Personal/de Investigación — el "
-"campo que realmente demuestra ese mecanismo, en lugar de parecer que los "
-"tres se aplican a un campo cuando no es así."
+"distinto de los formularios Proyecto Personal/de Investigación — el campo"
+" que realmente demuestra ese mecanismo, en lugar de parecer que los tres "
+"se aplican a un campo cuando no es así."
 
-#: ../../source/data_model.md:175 5a91b51daa0a4add9b3360122479c077
+#: ../../source/data_model.md:179 5a91b51daa0a4add9b3360122479c077
 msgid "`local:requires-field` — direct"
 msgstr "`local:requires-field` — directo"
 
-#: ../../source/data_model.md:177 72c831d3a78b491bb626ba8427661449
+#: ../../source/data_model.md:181 72c831d3a78b491bb626ba8427661449
 msgid ""
 "This one links the Form straight to the Question, no node in between. "
 "Personnel Project requires Annual income:"
 msgstr ""
 "Este enlaza el Formulario directamente con la Pregunta, sin ningún nodo "
-"intermedio. "
-"Por ejemplo, Proyecto Personal requiere Ingreso anual:"
+"intermedio. Por ejemplo, Proyecto Personal requiere Ingreso anual:"
 
-#: ../../source/data_model.md:184 9ceb071e16154a9184d8617b1b86792d
+#: ../../source/data_model.md:188 9ceb071e16154a9184d8617b1b86792d
 msgid ""
 "`local:has-defaults` and `local:has-formulas` are *not* this simple — "
 "each needs **two** pieces of information (which field, and what "
@@ -257,18 +257,18 @@ msgid ""
 "triple for a default or a formula."
 msgstr ""
 "`local:has-defaults` y `local:has-formulas` *no* son tan simples — cada "
-"uno necesita **dos** datos (campo, y valor/fórmula), no uno "
-"solo, así que necesitan dónde guardar ambos. Los dos pasan por "
-"un **nodo intermedio** en lugar de ser un enlace directo — esta es la parte "
-"que no resulta obvia con solo mirar por encima un triplete como "
-"`local:requires-field cbgp:project_annual_income`, porque no existe un único "
-"triplete equivalente para un valor por defecto o una fórmula."
+"uno necesita **dos** datos (campo, y valor/fórmula), no uno solo, así que"
+" necesitan dónde guardar ambos. Los dos pasan por un **nodo intermedio** "
+"en lugar de ser un enlace directo — esta es la parte que no resulta obvia"
+" con solo mirar por encima un triplete como `local:requires-field "
+"cbgp:project_annual_income`, porque no existe un único triplete "
+"equivalente para un valor por defecto o una fórmula."
 
-#: ../../source/data_model.md:192 a9c340bdf97a4b3a87ceaf9439ab10d7
+#: ../../source/data_model.md:196 a9c340bdf97a4b3a87ceaf9439ab10d7
 msgid "`local:has-defaults` — via an intermediate node"
 msgstr "`local:has-defaults` — mediante un nodo intermedio"
 
-#: ../../source/data_model.md:194 11dad54cf07b4d7995f7fa005c0c0fc0
+#: ../../source/data_model.md:198 11dad54cf07b4d7995f7fa005c0c0fc0
 msgid ""
 "Research Project and Personnel Project each give a *different* starting "
 "value to the same shared demo field, `project_test_default_field` (a "
@@ -281,7 +281,7 @@ msgstr ""
 "mantiene en la ontología específicamente para tener algo real que "
 "señalar):"
 
-#: ../../source/data_model.md:209 929460de3ade4cdebcd89b607b88282b
+#: ../../source/data_model.md:213 929460de3ade4cdebcd89b607b88282b
 msgid ""
 "Personnel Project points at its *own* intermediate node, with its own "
 "different `local:default-value`, for the exact same `local:default-for-"
@@ -290,11 +290,11 @@ msgstr ""
 "Proyecto Personal apunta a su *propio* nodo intermedio, con su propio "
 "`local:default-value` distinto, para el mismo `local:default-for-field`:"
 
-#: ../../source/data_model.md:223 048b8aa3029742699c4bb6a1d4e13fb9
+#: ../../source/data_model.md:227 048b8aa3029742699c4bb6a1d4e13fb9
 msgid "`local:has-formulas` — the same shape, one field computed from another"
 msgstr "`local:has-formulas` — la misma forma, un campo calculado a partir de otro"
 
-#: ../../source/data_model.md:225 953039c88532411089e4515013524326
+#: ../../source/data_model.md:229 953039c88532411089e4515013524326
 msgid ""
 "Personnel Project's CBGP overheads field is calculated *from* Annual "
 "income (not the other way around - Annual income is the input, CBGP "
@@ -304,7 +304,7 @@ msgstr ""
 "Ingreso anual (no al revés — Ingreso anual es la entrada, gastos CBGP es "
 "lo que se calcula):"
 
-#: ../../source/data_model.md:239 1a5d3e0905c643e2b0c0f0a12835e01f
+#: ../../source/data_model.md:243 1a5d3e0905c643e2b0c0f0a12835e01f
 msgid ""
 "In both cases the Form never points at the Question directly - it points "
 "at an in-between node (an ordinary class, named `<form>_<field>_<form- "
@@ -318,12 +318,12 @@ msgstr ""
 "apunta a un nodo intermedio (una clase ordinaria, con el nombre "
 "`<formulario>_<campo>_<formulario-otra-vez>_default`/`_formula` por "
 "convención, pero el nombre en sí no tiene ningún significado para el "
-"código), y es *ese* nodo el que nombra el campo real mediante "
-"`local:default-for-field`/`local:formula-for-field`. Consultar «qué hace "
-"este formulario con este campo» siempre implica un salto a través del "
-"nodo, nunca una tripleta directa de Formulario a Pregunta:"
+"código), y es *ese* nodo el que nombra el campo real mediante `local"
+":default-for-field`/`local:formula-for-field`. Consultar «qué hace este "
+"formulario con este campo» siempre implica un salto a través del nodo, "
+"nunca una tripleta directa de Formulario a Pregunta:"
 
-#: ../../source/data_model.md:271 7123399a25a443a08cbae86515802e78
+#: ../../source/data_model.md:275 7123399a25a443a08cbae86515802e78
 msgid ""
 "Querying the *content* of a record never needs to know any of this — a "
 "field's value is stored and read the same reified way regardless of "
@@ -340,4 +340,76 @@ msgstr ""
 " lo que ocurre *antes* de escribir un valor (validación, prellenado, "
 "cálculo) — véase [Entrada de datos](admin/data_entry.md) para ver cómo es"
 " cada uno desde el lado de rellenar el formulario."
+
+#: ../../source/data_model.md:283 e4e2fa018fc6417e84cb03d58abcea81
+msgid "Worked example: one record that points at two others"
+msgstr "Ejemplo práctico: un registro que apunta a otros dos"
+
+#: ../../source/data_model.md:285 14b65dad2c42403faeeb55c74ee5acb1
+msgid ""
+"A person funded 50/30/20 by three projects is the case where a flat field"
+" can't do the job: \"project X, 50%\" is a *pair*, and a list of projects"
+" next to a separate list of percentages can't be reliably lined up. So "
+"the pair gets its own record — a **Funding Commitment** — whose fields "
+"are two [cross-references](admin/cross_references.md) plus the numbers "
+"that belong to the pairing:"
+msgstr ""
+"Una persona financiada al 50/30/20 por tres proyectos es el caso en el "
+"que un campo plano no sirve: «proyecto X, 50 %» es una *pareja*, y una "
+"lista de proyectos junto a otra lista aparte de porcentajes no se puede "
+"alinear de forma fiable. Por eso la pareja tiene su propio registro — un "
+"**Compromiso de financiación** — cuyos campos son dos [referencias "
+"cruzadas](admin/cross_references.md) más los números que pertenecen a esa"
+" pareja:"
+
+#: ../../source/data_model.md:311 408d6eb562cf44beabdb0432825c43e0
+msgid ""
+"`cbgp:project` there is not a form: since the project forms were split "
+"(European, National/Regional, Private, Personnel) no ontology class is "
+"literally called `project`; it is only the `local:dbname` those forms "
+"share. A cross-reference to a name that is a shared dbname rather than a "
+"form resolves to the **union of the fields of every form using it**, "
+"which is what lets a commitment point at a project whichever form created"
+" it."
+msgstr ""
+"`cbgp:project` ahí no es un formulario: desde que se dividieron los "
+"formularios de proyecto (Europeos, Nacionales/Regionales, Privados, "
+"Personales) ninguna clase de la ontología se llama literalmente "
+"`project`; es solo el `local:dbname` que comparten esos formularios. Una "
+"referencia cruzada a un nombre que es un dbname compartido y no un "
+"formulario se resuelve a la **unión de los campos de todos los "
+"formularios que lo usan**, y eso es lo que permite que un compromiso "
+"apunte a un proyecto sea cual sea el formulario que lo creó."
+
+#: ../../source/data_model.md:318 00e989b355954e97806f2fb0091004fe
+msgid ""
+"The list shown under a member's or project's edit form is declared the "
+"same way as the other per-form mechanisms — an intermediate node that "
+"holds the details, nothing in the code that knows about commitments:"
+msgstr ""
+"La lista que se muestra bajo el formulario de edición de un miembro o de "
+"un proyecto se declara igual que los demás mecanismos por formulario — "
+"mediante un nodo intermedio que contiene los detalles, sin nada en el "
+"código que conozca los compromisos:"
+
+#: ../../source/data_model.md:340 475d998b7f844fd598ded04ffce6e6cc
+msgid ""
+"The project-side panel is the same shape with `related-via "
+"cbgp:commitment_project` and no sum. The warning is computed every time "
+"the page is shown and never stored."
+msgstr ""
+"El panel del lado del proyecto tiene la misma forma, con `related-via "
+"cbgp:commitment_project` y sin suma. El aviso se calcula cada vez que se "
+"muestra la página y nunca se almacena."
+
+#: ../../source/data_model.md:344 29f855e631c546dd8d40d48a69af9a89
+msgid ""
+"To find the commitments themselves in the data, use the same two-layer "
+"shape as the query above — for instance, every commitment for one person "
+"(the stored member value is their DNI/NIE/PAS):"
+msgstr ""
+"Para encontrar los propios compromisos en los datos se usa la misma "
+"estructura de dos capas que en la consulta anterior — por ejemplo, todos "
+"los compromisos de una persona (el valor de miembro almacenado es su "
+"DNI/NIE/PAS):"
 

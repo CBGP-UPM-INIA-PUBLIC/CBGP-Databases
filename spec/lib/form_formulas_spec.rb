@@ -100,11 +100,11 @@ RSpec.describe 'per-form calculated fields' do
         'primary_id' => '',
         'project_title' => 'Chain Test Project',
         'european_private_research_project_funding_institution' => 'funding_institutions_european_commision',
-        'project_application_code' => 'TEST-CODE',
+        'project_application_url' => 'https://example.org/call/TEST-CODE',
         'project_call_for_proposal_title' => 'Test Call',
         'project_dni_nie_pas' => '12345678A',
         'project_internal_code' => 'TEST-INTERNAL',
-        'project_pi_orcid' => '0000-0001-2345-6789',
+        'project_pi_nie' => '12345678Z',
         'project_start_date' => '2026-01-01',
         'project_end_date' => '2026-12-31'
       }

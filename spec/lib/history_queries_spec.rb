@@ -41,8 +41,8 @@ RSpec.describe 'Time machine query layer' do
     end
 
     it 'extracts every value of a Multiple-cardinality field' do
-      triples = field_triples(questionclass: 'project_pi_orcid', values: %w[0000-0001 0000-0002])
-      expect(snapshot_field_values(triples: triples, questionclass: 'project_pi_orcid'))
+      triples = field_triples(questionclass: 'project_pi_nie', values: %w[0000-0001 0000-0002])
+      expect(snapshot_field_values(triples: triples, questionclass: 'project_pi_nie'))
         .to contain_exactly('0000-0001', '0000-0002')
     end
 

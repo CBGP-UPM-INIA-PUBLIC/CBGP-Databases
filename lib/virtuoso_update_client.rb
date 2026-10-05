@@ -3,6 +3,33 @@ require 'net/http/digest_auth'
 require 'sparql/client'
 
 module CBGP
+  # Makes an HTTP error body safe to put in a message. Net::HTTP hands bodies
+  # back as raw bytes (ASCII-8BIT); joining one that contains any non-ASCII
+  # character (Virtuoso's messages quote the offending query text) with an
+  # ordinary UTF-8 string raises Encoding::CompatibilityError - which is what
+  # used to surface INSTEAD of Virtuoso's real error, e.g. a bad-escape
+  # complaint about a search term. Returns a valid UTF-8 copy.
+  def self.readable_http_body(body)
+    body.to_s.dup.force_encoding(Encoding::UTF_8).scrub('?')
+  end
+
+  # SPARQL::Client with readable errors. The gem raises
+  # +MalformedQuery.new(response.body + " Processing query #{query}")+ for a 4xx/5xx
+  # reply, and that String join is what blows up with the encoding error above,
+  # hiding Virtuoso's message. Re-encoding the error body before the gem sees it
+  # lets the original, informative exception through (Virtuoso's own message
+  # plus the query it was processing). Successful replies are left untouched.
+  class SparqlClient < SPARQL::Client
+    def request(query, headers = {}, &block)
+      super(query, headers) do |response|
+        unless response.is_a?(Net::HTTPSuccess) || response.is_a?(Net::HTTPRedirection)
+          response.instance_variable_set(:@body, CBGP.readable_http_body(response.body)) if response.body
+        end
+        block ? block.call(response) : response
+      end
+    end
+  end
+
   # A minimal SPARQL 1.1 Update client for Virtuoso.
   #
   # Virtuoso's SPARQL Update endpoint (+/sparql-auth+) requires HTTP Digest
@@ -36,7 +63,7 @@ module CBGP
       response = post(http, query, auth_header)
 
       unless response.is_a?(Net::HTTPSuccess)
-        raise "Virtuoso SPARQL Update failed: #{response.code} #{response.message}\n#{response.body}"
+        raise "Virtuoso SPARQL Update failed: #{response.code} #{response.message}\n#{CBGP.readable_http_body(response.body)}"
       end
 
       response

@@ -147,7 +147,7 @@ RSpec.describe 'SCD Type 2 history capture' do
       query = write_dataset_to_db_query(dataset: dataset, oldid: 'abc-123')[:query]
 
       expect(self).to have_received(:delete_dataset_query).with(
-        oldid: "#{BASE_URI}personnel_project/context/abc-123",
+        oldid: "#{BASE_URI}project/context/abc-123", # the shared dbname, not the form (see spec/lib/storage_dbname_spec.rb)
         reason: 'superseded',
         detail: 'Title of the project: Old Title → New Title'
       )

@@ -43,8 +43,8 @@ RSpec.describe 'dbname vs. specific-form-class routing', type: :request do
 
   it 'redisplays an invalid admin submission (validation-error path) without a secondary dbname/type crash' do
     # national_regional_research_project's required fields include a real
-    # ORCID cross-reference (project_pi_orcid) - validate_references's
-    # lookup hits a live SPARQL endpoint if not stubbed, which this suite
+    # DNI/NIE/PAS cross-reference (project_pi_nie), and project_internal_code is the
+    # primary id - get_primary_id's lookup hits a live SPARQL endpoint if not stubbed, which this suite
     # must never depend on (same reasoning as spec/lib/form_required_fields_spec.rb).
     allow(CBGP::Dataset).to receive(:get_primary_id).and_return(nil)
     login_as_admin

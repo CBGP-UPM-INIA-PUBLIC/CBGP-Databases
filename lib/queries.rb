@@ -28,7 +28,7 @@ $ontology = RDF::Repository.load(CBGP_KB) # set in configuration.rb and/or in do
 # default with content_type: 'application/n-triples' per call. GraphDB never
 # needed any of this; its content negotiation was stable across a
 # connection's whole request history.
-DATABASE = SPARQL::Client.new("http://#{host}/sparql", headers: { 'Accept' => 'application/sparql-results+json' })
+DATABASE = CBGP::SparqlClient.new("http://#{host}/sparql", headers: { 'Accept' => 'application/sparql-results+json' })
 # Writes: Virtuoso's /sparql-auth requires HTTP Digest auth and rejects Basic
 # outright - confirmed live against a real Virtuoso 07.20 container, no
 # virtuoso.ini setting in that build offers a way around it - hence the
@@ -39,7 +39,7 @@ DATABASE_UPDATE = CBGP::VirtuosoUpdateClient.new(endpoint: "http://#{host}/sparq
 # SCD Type 2 history store — a separate Virtuoso container/process (not a
 # namespaced graph in DATABASE) that holds snapshots of superseded/deleted
 # records. See delete_dataset_query.
-HISTORY_DATABASE = SPARQL::Client.new("http://#{history_host}/sparql", headers: { 'Accept' => 'application/sparql-results+json' })
+HISTORY_DATABASE = CBGP::SparqlClient.new("http://#{history_host}/sparql", headers: { 'Accept' => 'application/sparql-results+json' })
 HISTORY_DATABASE_UPDATE = CBGP::VirtuosoUpdateClient.new(endpoint: "http://#{history_host}/sparql-auth", user: HISTORY_USER, password: HISTORY_PASS)
 
 PREFIXES = "PREFIX cbgp: <https://w3id.org/CBGP-App#>
@@ -76,6 +76,37 @@ GET_DBNAME
   results.first[:dbname].to_s
 end
 
+# Resolves a search scope given as either a form class or a storage dbname
+# into [dbname to look under, form to restrict to (nil = every form on it)].
+# Records are stored under the form's shared dbname (see storage_dbname_for);
+# searching a FORM must therefore look under its dbname and keep only the
+# records that form wrote - identified by the dcterms:type stamp every record
+# carries - while searching the dbname itself covers all forms sharing it
+# (what cross-reference lookups want).
+def search_scope_for(type)
+  dbname = storage_dbname_for(type)
+  [dbname, dbname == type ? nil : type]
+end
+
+# The triple pattern that keeps only records stamped as written by +form+.
+# The stamp is graph metadata (default graph, subject = the record's graph
+# URI), so this sits outside the GRAPH block it constrains.
+def form_scope_pattern(form)
+  form ? "?datasetgraph dcterms:type cbgp:#{validate_local_name!(form, field: 'form')} ." : ''
+end
+
+# The storage dbname a record of +type+ is written under: for a form class,
+# its local:dbname (several forms can share one - e.g. all the project forms
+# store under "project"); for anything else (already a dbname, or unknown),
+# +type+ itself. Never raises - a write must not fail just because the type
+# turned out to be a dbname rather than a form.
+def storage_dbname_for(type)
+  dbname = get_dbname_for_form(form: type)
+  dbname.to_s.strip.empty? ? type : dbname
+rescue StandardError
+  type
+end
+
 def get_questionnaire_types_query(type: 'Core', language: current_language) # rubocop:disable Metrics/MethodLength
   type = validate_local_name!(type, field: 'type')
   language = validate_local_name!(language, field: 'language')
@@ -87,7 +118,11 @@ def get_questionnaire_types_query(type: 'Core', language: current_language) # ru
     SELECT ?questionnaire_type ?questionnaire_label WHERE {
       ?questionnaire_type rdfs:subClassOf cbgp:forms .
       ?questionnaire_type rdfs:label ?questionnaire_label .
-      ?questionnaire_type local:form-category "#{type}"@en .  # is this part of the core database or the user-facing forms
+      ?questionnaire_type local:form-category ?category .  # is this part of the core database or the user-facing forms
+      # Compared as plain text, ignoring any language tag: a category written without @en
+      # (as the European and Private project forms were) silently dropped the form from
+      # every menu when this matched "Core"@en exactly.
+      FILTER (str(?category) = "#{type}")
       FILTER (lang(?questionnaire_label) = "#{language}")
     }
 GET_QUESTIONNAIRE_TYPES
@@ -119,7 +154,39 @@ GET_QUESTIONNAIRE_SECTIONS
   qs = SPARQL.parse(qs)
   result = qs.execute($ontology)
   warn "questionnaire_sections_query result: #{result.inspect}" if ENV['CBGP_DEBUG_SPARQL']
-  result
+  return result unless result.empty?
+
+  get_dbname_sections_query(dbname: questionnaire_type, language: language)
+end
+
+# Fallback for get_questionnaire_sections_query when its argument isn't a
+# form class at all but a shared storage dbname (e.g. "project", which
+# several forms - european_research_project, personnel_project, ... - all
+# store under, and which is itself NOT an ontology class since Sara's
+# project-fields split). Returns the sections of every form sharing that
+# dbname, so the dbname resolves to the union of those forms' fields -
+# needed wherever the only thing known is the storage table, e.g. a
+# cross-reference field whose local:references target is "project": the
+# record found there could have been written by any of the project forms.
+# Same row shape as get_questionnaire_sections_query (?sec, ?label); empty
+# for a name that is neither a form nor a dbname.
+def get_dbname_sections_query(dbname:, language:)
+  dbname = validate_local_name!(dbname, field: 'dbname')
+  language = validate_local_name!(language, field: 'language')
+
+  qs = <<GET_DBNAME_SECTIONS
+    #{PREFIXES}
+
+    SELECT DISTINCT ?sec (str(?seclab) as ?label) WHERE {
+      ?form rdfs:subClassOf cbgp:forms ;
+            local:dbname ?dbname ;
+            local:has-fields ?sec .
+      FILTER (str(?dbname) = "#{dbname}")
+      ?sec rdfs:label ?seclab .
+      FILTER (lang(?seclab) = "#{language}")
+    }
+GET_DBNAME_SECTIONS
+  SPARQL.parse(qs).execute($ontology)
 end
 
 def get_section_questions_query(sectionid:, language: current_language)
@@ -308,6 +375,73 @@ def get_form_triggers_query(form_class:)
   GET_FORM_TRIGGERS
   qs = SPARQL.parse(qs)
   qs.execute($ontology)
+end
+
+# Fetches the related-records panels a form (or every form sharing a
+# dbname) declares: local:has-related-records, a sibling of
+# has-defaults/has-formulas/has-triggers. A panel lists the records of
+# ANOTHER form that point back at the one being viewed - see the
+# related-records-definition class comment in the ontology for the
+# vocabulary, and lib/related_records.rb for how it is rendered.
+#
+#   cbgp:member local:has-related-records cbgp:member_commitments_panel .
+#   cbgp:member_commitments_panel
+#       local:related-form       cbgp:funding_commitment ;
+#       local:related-via        cbgp:commitment_member ;
+#       local:related-sum-field  cbgp:commitment_percentage ;
+#       local:related-expected-total 100 ; ...
+#
+# @param type [String] a form class fragment, or a shared dbname (resolved
+#   to the union of the panels of every form sharing it, same fallback as
+#   get_questionnaire_sections_query)
+# @return [SPARQL::Client::Solutions] one row per panel: ?panel, ?title,
+#   ?related_form (+ its label as ?related_form_label), ?via and, where declared, ?key_field, ?sum_field, ?from_field,
+#   ?to_field, ?expected_total, ?tolerance
+def get_related_records_panels_query(type:, language: current_language)
+  type = validate_local_name!(type, field: 'type')
+  language = validate_local_name!(language, field: 'language')
+  qs = <<~GET_RELATED_PANELS
+    #{PREFIXES}
+    SELECT DISTINCT ?panel (str(?label) as ?title) ?related_form (str(?form_label) as ?related_form_label) ?via ?key_field ?sum_field ?from_field ?to_field ?expected_total ?tolerance WHERE {
+      {
+        cbgp:#{type} local:has-related-records ?panel .
+      } UNION {
+        ?form rdfs:subClassOf cbgp:forms ;
+              local:dbname ?dbname ;
+              local:has-related-records ?panel .
+        FILTER (str(?dbname) = "#{type}")
+      }
+      ?panel rdfs:label ?label .
+      FILTER (lang(?label) = "#{language}")
+      ?panel local:related-form ?related_form ;
+             local:related-via ?via .
+      OPTIONAL { ?related_form rdfs:label ?form_label . FILTER (lang(?form_label) = "#{language}") }
+      OPTIONAL { ?panel local:related-key-field ?key_field }
+      OPTIONAL { ?panel local:related-sum-field ?sum_field }
+      OPTIONAL { ?panel local:related-active-from-field ?from_field }
+      OPTIONAL { ?panel local:related-active-to-field ?to_field }
+      OPTIONAL { ?panel local:related-expected-total ?expected_total }
+      OPTIONAL { ?panel local:related-tolerance ?tolerance }
+    }
+  GET_RELATED_PANELS
+  SPARQL.parse(qs).execute($ontology)
+end
+
+# The columns (question classes of the related form) a related-records panel
+# lists. Order is NOT taken from here - the caller sorts by the related
+# form's own question-order, so the panel always reads like the form itself.
+#
+# @param panel [String] panel node fragment, e.g. "member_commitments_panel"
+# @return [SPARQL::Client::Solutions] rows with ?column (full URI)
+def get_related_records_columns_query(panel:)
+  panel = validate_local_name!(panel, field: 'panel')
+  qs = <<~GET_RELATED_COLUMNS
+    #{PREFIXES}
+    SELECT ?column WHERE {
+      cbgp:#{panel} local:related-column ?column .
+    }
+  GET_RELATED_COLUMNS
+  SPARQL.parse(qs).execute($ontology)
 end
 
 def get_answer_block_query(ablockid:, language: current_language)
@@ -781,8 +915,13 @@ end
 #   (i.e. +load_from_params_and_write+) must pass it explicitly.
 # @return [String] the complete SPARQL UPDATE query string
 def write_dataset_to_db_query(dataset:, oldid: nil, form: nil)
-  database = dataset.form_type
-  form = database if form.to_s.strip.empty?
+  # dataset.form_type is the specific FORM class (that is what load_from_params_and_write
+  # builds the Dataset with, to get the right fields); records are stored under the
+  # form's shared DBNAME so every form on one dbname is found by the same search and
+  # cross-reference lookups. Writing under the form name (as this did until 2026-10-05)
+  # made e.g. a personnel_project invisible to any search of dbname "project".
+  database = storage_dbname_for(dataset.form_type)
+  form = dataset.form_type if form.to_s.strip.empty?
   primary_id = dataset.primary_id
   warn "WRITE DATASET primary_id is #{primary_id}\n\n"
 
@@ -935,7 +1074,8 @@ def sparql_regex_escape(char)
   # parser reduces \\ -> \ first, leaving a single backslash for the regex
   # engine underneath - exactly what was intended all along.
   case char
-  when '"', '\\' then "\\\\#{char}" # must not break out of the SPARQL string literal
+  when '"' then '\\"' # SPARQL string escape for a quote; the regex engine just sees a literal "
+  when '\\' then '\\\\\\\\' # regex-escaped backslash (\\), each doubled for the SPARQL string: four in total
   when '.', '*', '+', '?', '(', ')', '[', ']', '{', '}', '|', '^', '$' then "\\\\#{char}" # XPath regex metacharacters
   else char
   end
@@ -954,6 +1094,14 @@ def build_search_query(search_params:, dataset_type:)
     h[k.to_s.sub(/__not\z/, '')] = true
   end
   field_params = search_params.reject { |k, _v| k.to_s.end_with?('__not') }
+  # A repeatable field (cardinality Multiple) posts its values as an Array -
+  # one search term per non-blank value (each must match; blank rows, e.g. the
+  # empty row a repeatable widget always shows, are not terms at all). Without
+  # this an Array was interpolated into the regex as its Ruby inspect string
+  # (["x"]), which Virtuoso rejected.
+  field_params = field_params.flat_map do |k, v|
+    v.is_a?(Array) ? v.map { |x| x.to_s.strip }.reject(&:empty?).map { |x| [k, x] } : [[k, v]]
+  end
 
   return nil unless field_params.any? do |_k, v|
                       !v.nil? &&
@@ -964,10 +1112,11 @@ def build_search_query(search_params:, dataset_type:)
                     end
 
   # OPTIMIZATION: Use the exact cached fields (with :questionclass, :label, etc.)
-  fields = CBGP::Dataset.fields_for(dataset_type)
+  fields = CBGP::Dataset.fields_for(dataset_type) # the form's own fields (or, for a dbname, every sharing form's)
   warn "\n\n\nFIELDS #{fields}\n\n\n" if ENV['CBGP_DEBUG_SPARQL']
-  datasetPREFIX = "<#{BASE_URI}#{dataset_type}/dataset/>"
-  datasetgraphPREFIX = "<#{BASE_URI}#{dataset_type}/context/>"
+  dbname, scope_form = search_scope_for(dataset_type)
+  datasetPREFIX = "<#{BASE_URI}#{dbname}/dataset/>"
+  datasetgraphPREFIX = "<#{BASE_URI}#{dbname}/context/>"
 
   query = <<~SPARQL
     #{PREFIXES}
@@ -975,8 +1124,9 @@ def build_search_query(search_params:, dataset_type:)
     PREFIX datasetgraph: #{datasetgraphPREFIX}
     SELECT DISTINCT ?datasetgraph
     WHERE {
+      #{form_scope_pattern(scope_form)}
       GRAPH ?datasetgraph {
-        ?dataset a cbgp:#{dataset_type} .
+        ?dataset a cbgp:#{dbname} .
   SPARQL
 
   conditions = []
@@ -1129,15 +1279,15 @@ def search_all_graphs_query(dataset_type:)
   dataset_type = validate_local_name!(dataset_type, field: 'dataset_type')
   # [Unchanged early-exit guard]
 
-  datasetPREFIX = "<#{BASE_URI}#{dataset_type}/dataset/>"
-  datasetgraphPREFIX = "<#{BASE_URI}#{dataset_type}/context/>"
+  dbname, scope_form = search_scope_for(dataset_type)
 
   query = <<~SPARQL
     #{PREFIXES}
     SELECT DISTINCT ?datasetgraph
     WHERE {
+      #{form_scope_pattern(scope_form)}
       GRAPH ?datasetgraph {
-      ?s a cbgp:#{dataset_type}
+      ?s a cbgp:#{dbname}
       }
     }
   SPARQL

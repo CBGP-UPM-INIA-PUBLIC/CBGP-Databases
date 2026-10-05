@@ -84,6 +84,41 @@ RSpec.describe 'related-records panel on the edit page', type: :request do
     expect(last_response.body).to include('&lt;script&gt;alert(1)&lt;&#x2F;script&gt;')
   end
 
+  it 'turns each lookup-able cell after the first into an exact-match search link on the stored value' do
+    fields = [{ questionclass: 'commitment_project', widget: 'text', class: 'string' },
+              { questionclass: 'commitment_funder', widget: 'text', class: 'string' },
+              { questionclass: 'commitment_percentage', widget: 'number', class: 'number' },
+              { questionclass: 'commitment_start_date', widget: 'date', class: 'date' }]
+    row = CBGP::RelatedRecords::Row.new(
+      primary_id: 'c-1', cells: ['My project', 'Funder X', '70,00', '2026-01-01'], active: true,
+      values: [[['P-1', 'My project']], [['F-1', 'Funder X']], [['70', '70,00']], [['2026-01-01', '2026-01-01']]]
+    )
+    pnl = panel(rows: [row])
+    pnl.fields = fields
+    allow(CBGP::RelatedRecords).to receive(:panels_for).and_return([pnl])
+
+    get '/cbgp/dataset/member/m-1'
+
+    expect(last_response.body).to include(
+      'href="/cbgp/dataset/funding_commitment/c-1"', # the first cell still opens the record itself
+      'href="/cbgp/query-dataset/funding_commitment?commitment_funder=F-1&amp;commitment_funder__exact=1"',
+      '>Funder X</a>'
+    )
+    expect(last_response.body).not_to include('commitment_project=P-1') # no search link in the record-link cell
+    expect(last_response.body).not_to include('commitment_percentage=', 'commitment_start_date=') # numbers, dates: plain
+    expect(last_response.body).to include('70,00', '2026-01-01')
+  end
+
+  it 'prints a later cell as plain escaped text when the panel carries no field descriptors' do
+    row = CBGP::RelatedRecords::Row.new(primary_id: 'c-1', cells: ['P', '<i>x</i>'], active: true)
+    allow(CBGP::RelatedRecords).to receive(:panels_for).and_return([panel(rows: [row])])
+
+    get '/cbgp/dataset/member/m-1'
+
+    expect(last_response.body).to include('&lt;i&gt;x&lt;&#x2F;i&gt;')
+    expect(last_response.body).not_to include('search-link')
+  end
+
   it 'renders nothing extra for a form with no panels' do
     allow(CBGP::RelatedRecords).to receive(:panels_for).and_return([])
 

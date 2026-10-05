@@ -17,6 +17,23 @@ Ontology changes ship in CBGP-Ontology `ba54d03`; this release needs that
 ontology (several fields are renamed).
 
 ### Added
+- **Every value is a link**: each value on
+  the search-results table, and in the related-records panels, is a link to an
+  exact-match search for itself - a DNI finds that person, a category all
+  records in it, a project code that project. Always a search, never a direct
+  link to one record, so one rule covers every kind of value. A cross-reference
+  value (e.g. a commitment's member) searches the referenced form's key field;
+  controlled-vocabulary values link on the stored value while showing the
+  label. Plain text, not links: prose (`textfield` widgets, and any value
+  containing a line break) and numbers, amounts and dates (judged on widget and
+  class); `url` fields keep their own external link. The TSV
+  download is untouched. Plumbing: `GET /cbgp/query-dataset/:database` now
+  answers as well as POST, and a `<field>__exact=1` sibling parameter (like
+  `__not`) makes that one field an exact match - typed searches keep the
+  forgiving "contains, ignoring case and accents". New helper `search_link_html`
+  (`lib/core.rb`); no new ontology terms. The results table's record link now
+  reads **VIEW/EDIT** instead of EDIT: people mostly click it to look at a
+  record, and being able to edit it is a bonus.
 - **Funding Commitments** (member x project share of salary cost): a new Core
   form `funding_commitment` (own dbname `commitment`) with a member xref, a
   project xref, a percentage, start/end dates and notes. One record per

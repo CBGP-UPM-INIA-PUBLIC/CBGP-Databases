@@ -99,7 +99,7 @@ end
                 <td class="dataset-id-cell">
                   <% primary_id = dataset.primary_id %>
                   <a href="/cbgp/dataset/<%= @database %>/<%= primary_id %>" class="dataset-link">
-                    EDIT
+                    VIEW/EDIT
                   </a>
                   - -
                   <a href="/cbgp/dataset/delete/<%= @database %>/<%= primary_id %>"
@@ -127,6 +127,14 @@ end
                           <%# a real link per address (full URL as the target, shortened text), never raw stored text %>
                           <% Array(raw_value).each_with_index do |u, i| %>
                             <%= ', ' if i.positive? %><span title="<%= CGI.escapeHTML(u.to_s) %>"><%= url_link_html(u, u.to_s.length > 60 ? u.to_s[0...60] + '...' : u.to_s) %></span>
+                          <% end %>
+                        <% elsif search_linkable_field?(field) %>
+                          <%# each stored value is its own exact-match search link (shown text may be a label, the link uses the stored value) %>
+                          <% Array(raw_value).each_with_index do |v, i| %>
+                            <% shown_one = resolve_display_value(field, v) %>
+                            <%= ', ' if i.positive? %><%= search_link_html(field: field, database: @database, value: v,
+                                                                           text: shown_one.length > 100 ? shown_one[0...100] + '...' : shown_one,
+                                                                           title: shown_one) %>
                           <% end %>
                         <% else %>
                           <span title="<%= CGI.escapeHTML(display_value) %>">

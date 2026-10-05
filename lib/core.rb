@@ -177,6 +177,79 @@ def url_link_html(value, text = nil)
   %(<a href="#{CGI.escapeHTML(value.to_s.strip)}" target="_blank" rel="noopener noreferrer">#{shown}</a>)
 end
 
+# --- Values as search links -------------------------------------------------
+#
+# Every value shown on a page can be a link, and every link is the same
+# thing: an exact-match search for that stored value (GET
+# /cbgp/query-dataset/:database?<field>=<value>&<field>__exact=1 - see
+# build_search_query). Never a direct link to one record, even when only one
+# record would answer: a value like a category or an institution has no single
+# record to open, and treating them all alike means one rule, not one route
+# per kind of value. The result page then offers the usual VIEW/EDIT link.
+
+# What stays plain text. Prose is not something anybody looks up; numbers,
+# amounts and dates are measurements rather than identifiers, and "every
+# record with exactly this amount/day" is rarely the question (range searches
+# on the search form answer that better). Judged on the widget AND the
+# declared class, since some fields have a date widget but a string class.
+FREE_TEXT_WIDGETS = %w[textfield].freeze
+QUANTITY_WIDGETS = %w[number currency date].freeze
+QUANTITY_CLASSES = %w[number currency date integer decimal].freeze
+
+# True if a value of +field+ should be offered as a search link. url-class
+# fields are excluded because they already render as real (external) links.
+def search_linkable_field?(field)
+  return false if field[:class] == 'url'
+
+  widget = field[:widget].to_s.split('#').last
+  return false if FREE_TEXT_WIDGETS.include?(widget) || QUANTITY_WIDGETS.include?(widget)
+
+  !QUANTITY_CLASSES.include?(field[:class].to_s)
+end
+
+# Which [database, questionclass] a value of +field+ is searched under.
+# A cross-reference field stores the key of ANOTHER record (e.g. a member's
+# DNI/NIE/PAS), so its value is looked up in the referenced form's key field -
+# "find the person this DNI belongs to". Any other field is looked up in the
+# database being shown: that is a dbname when the page lists every form sharing
+# it, so a project value finds the records of all the project forms.
+def search_link_target(field, database)
+  target = field[:references_target].to_s
+  via = field[:references_via].to_s.split('#').last.to_s
+  if !target.empty? && !via.empty? && CBGP::Dataset.fields_for(target).any? { |f| f[:questionclass] == via }
+    return [target, via]
+  end
+
+  [database, field[:questionclass].to_s]
+rescue StandardError
+  [database, field[:questionclass].to_s]
+end
+
+def search_link_path(database:, questionclass:, value:)
+  query = URI.encode_www_form(questionclass.to_s => value.to_s, "#{questionclass}__exact" => '1')
+  "/cbgp/query-dataset/#{ERB::Util.url_encode(database.to_s)}?#{query}"
+end
+
+# An <a> that searches +database+ for records whose +field+ holds exactly
+# +value+, showing +text+ (default: the value). Plain escaped text - never a
+# link - for a blank value, a field that is prose, or anything we cannot
+# address, so a doubtful case degrades to what the page showed before.
+# +title+ is the full untruncated text for the tooltip.
+def search_link_html(field:, database:, value:, text: nil, title: nil)
+  shown = CGI.escapeHTML((text || value).to_s)
+  # A value spanning lines is prose whatever its widget says (nobody looks
+  # one up), so it is never a link - a backstop for fields the ontology
+  # declares as a one-line "text" widget but people fill with paragraphs.
+  return shown if value.to_s.strip.empty? || value.to_s.match?(/[\r\n]/) || !search_linkable_field?(field)
+
+  target_db, questionclass = search_link_target(field, database)
+  return shown if target_db.to_s.empty? || questionclass.empty?
+
+  tip = title ? %( title="#{CGI.escapeHTML(title.to_s)}") : ''
+  href = CGI.escapeHTML(search_link_path(database: target_db, questionclass: questionclass, value: value))
+  %(<a href="#{href}" class="search-link"#{tip}>#{shown}</a>)
+end
+
 def resolve_display_value(field, value)
   return format_currency(value) if field[:class] == 'currency'
   return value.to_s unless controlled_vocabulary_field?(field)

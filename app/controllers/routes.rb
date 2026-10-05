@@ -422,43 +422,49 @@ def set_routes
     redirect "/cbgp/search-dataset/#{Rack::Utils.escape_path(params[:database])}"
   end
 
-  post '/cbgp/query-dataset/:database' do
-    @database = params[:database]
-    @questionnaire = generate_questionnaire(questionnaire_type: @database)
-    @fields = CBGP::Dataset.fields_for(@database) # Cached
+  # Answers GET as well as POST: the search form posts, while every value
+  # shown on a result page is a plain link that GETs the same search with
+  # "#{questionclass}__exact=1" (see search_link_html). One handler, so a link
+  # and a typed search can never drift apart.
+  %i[get post].each do |verb|
+    public_send(verb, '/cbgp/query-dataset/:database') do
+      @database = params[:database]
+      @questionnaire = generate_questionnaire(questionnaire_type: @database)
+      @fields = CBGP::Dataset.fields_for(@database) # Cached
 
-    search_params = params.except('database')
-    graphuris = execute_search(search_params: search_params, dataset_type: @database)
+      search_params = params.except('database')
+      graphuris = execute_search(search_params: search_params, dataset_type: @database)
 
-    # BATCH 1: All primary_ids
-    primary_ids_by_graph = batch_retrieve_dataset_ids(graph_uris: graphuris)
+      # BATCH 1: All primary_ids
+      primary_ids_by_graph = batch_retrieve_dataset_ids(graph_uris: graphuris)
 
-    # BATCH 2: All details (already batched)
-    all_details = fetch_datasets_raw_data(graph_uris: graphuris, database: @database)
+      # BATCH 2: All details (already batched)
+      all_details = fetch_datasets_raw_data(graph_uris: graphuris, database: @database)
 
-    # Match details to graphs (preserve order)
-    details_by_graph = all_details.each_with_object({}) do |detail_hash, hash|
-      hash[detail_hash[:dataset]] = detail_hash
-    end
+      # Match details to graphs (preserve order)
+      details_by_graph = all_details.each_with_object({}) do |detail_hash, hash|
+        hash[detail_hash[:dataset]] = detail_hash
+      end
 
-    @datasets = graphuris.map do |graphuri|
-      CBGP::Dataset.load_from_graph(
-        graph: graphuri,
+      @datasets = graphuris.map do |graphuri|
+        CBGP::Dataset.load_from_graph(
+          graph: graphuri,
+          database: @database,
+          pre_fetched_details: details_by_graph[graphuri],
+          pre_fetched_primary_id: primary_ids_by_graph[graphuri]
+        )
+      end
+
+      @result_warnings = CBGP::RelatedRecords.result_warnings(datasets: @datasets, type: @database)
+
+      plain_params = to_plain_hash(search_params.to_h) # Sinatra params object doesn't clone easily, so this makes it a hash
+      session[:last_search] = {
         database: @database,
-        pre_fetched_details: details_by_graph[graphuri],
-        pre_fetched_primary_id: primary_ids_by_graph[graphuri]
-      )
+        params: plain_params
+      }
+
+      erb :search_dataset_resultform, layout: :database_layout
     end
-
-    @result_warnings = CBGP::RelatedRecords.result_warnings(datasets: @datasets, type: @database)
-
-    plain_params = to_plain_hash(search_params.to_h) # Sinatra params object doesn't clone easily, so this makes it a hash
-    session[:last_search] = {
-      database: @database,
-      params: plain_params
-    }
-
-    erb :search_dataset_resultform, layout: :database_layout
   end
 
   # "Time machine" API: duplicates query-dataset's request shape (arbitrary
@@ -487,7 +493,7 @@ def set_routes
     # meaningless here since this route hand-rolls facets/date_ranges rather
     # than going through build_search_query. Left in, a stray flag would
     # become its own bogus, unmatchable facet and force zero results.
-    search_params.reject! { |k, _v| k.to_s.end_with?('__not') }
+    search_params.reject! { |k, _v| k.to_s.end_with?('__not', '__exact') }
     facets = {}
     date_ranges = {}
     search_params.each do |field, value|

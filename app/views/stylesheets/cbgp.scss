@@ -496,6 +496,19 @@ button {
 }
 
 
+/* A value that is a link to an exact-match search for itself (search_link_html).
+   Understated on purpose - a whole table of them must still read as data. */
+#databases a.search-link {
+  color: inherit;
+  text-decoration: underline dotted #114203;
+  text-underline-offset: 3px;
+}
+
+#databases a.search-link:hover {
+  color: #0d5704;
+  text-decoration: underline solid;
+}
+
 /* search results css */
 .download-csv-link {
   float: right;                  /* Aligns nicely to the right of the heading */

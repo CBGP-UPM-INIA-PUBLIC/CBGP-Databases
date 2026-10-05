@@ -1093,7 +1093,17 @@ def build_search_query(search_params:, dataset_type:)
 
     h[k.to_s.sub(/__not\z/, '')] = true
   end
-  field_params = search_params.reject { |k, _v| k.to_s.end_with?('__not') }
+  # A "#{questionclass}__exact" => "1" sibling param (set by the result-page
+  # links, see search_link_html) switches that field from the form's
+  # forgiving "contains, ignoring case and accents" to an exact match on the
+  # stored value - a link on one DNI must not also find every DNI that merely
+  # contains those characters. Typed searches never set it.
+  exact_flags = search_params.keys.each_with_object({}) do |k, h|
+    next unless k.to_s.end_with?('__exact')
+
+    h[k.to_s.sub(/__exact\z/, '')] = true
+  end
+  field_params = search_params.reject { |k, _v| k.to_s.end_with?('__not', '__exact') }
   # A repeatable field (cardinality Multiple) posts its values as an Array -
   # one search term per non-blank value (each must match; blank rows, e.g. the
   # empty row a repeatable widget always shows, are not terms at all). Without
@@ -1193,7 +1203,19 @@ def build_search_query(search_params:, dataset_type:)
 
         val_var = "?value_#{idx}"
 
-        if %w[currency number].include?(field[:class])
+        if exact_flags[questionclass]
+          # The value is compared as the stored text, verbatim: no accent
+          # folding, no currency/number re-parsing (a stored "15000.50" would
+          # be misread in a Spanish locale), nothing regex-shaped to escape.
+          # The raw (unstripped) text is used so a value stored with
+          # surrounding spaces still matches its own link.
+          <<-CONDITION
+          ?dataset sio:SIO_000008 #{attr_var} .
+          #{attr_var} sio:SIO_000300 #{val_var} .
+          #{attr_var} rdf:type cbgp:#{questionclass} .
+          FILTER(STR(#{val_var}) = "#{escape_for_literal(value)}")
+          CONDITION
+        elsif %w[currency number].include?(field[:class])
           # Search input is typed in the current UI language's number
           # convention (e.g. "15.000,50" in Spanish); normalize it to the
           # canonical decimal form the value is actually stored in before

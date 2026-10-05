@@ -32,9 +32,13 @@ module CBGP
   module RelatedRecords
     Panel = Struct.new(
       :title, :related_form, :related_form_label, :columns, :rows, :total, :sum_label, :expected_total, :tolerance,
-      :active_count, :warning, :issues, :as_of, :subject, :add_path, :prefill, keyword_init: true
+      :active_count, :warning, :issues, :as_of, :subject, :add_path, :prefill, :fields, keyword_init: true
     )
-    Row = Struct.new(:primary_id, :cells, :active, :sort_date, keyword_init: true)
+    # +values+ (optional) is, per column, the [stored value, shown text] pairs
+    # behind +cells+, and the panel's +fields+ the matching field descriptors:
+    # what lets the view turn each value into a search link (search_link_html)
+    # rather than only printing the joined text.
+    Row = Struct.new(:primary_id, :cells, :active, :sort_date, :values, keyword_init: true)
 
     # @param entry [CBGP::Dataset] the open record; unsaved ones (no
     #   primary_id) have nothing pointing at them yet
@@ -88,6 +92,7 @@ module CBGP
         Row.new(
           primary_id: ds.primary_id,
           cells: columns.map { |f| display_value(ds, f) },
+          values: columns.map { |f| values_of(ds, f).map { |v| [v, display_one(v, f)] } },
           active: active?(from: date_of(ds, from_field), to: date_of(ds, to_field), as_of: as_of),
           sort_date: date_of(ds, from_field)
         )
@@ -100,7 +105,7 @@ module CBGP
       Panel.new(
         title: declaration[:title].to_s, related_form: related_form,
         related_form_label: declaration[:related_form_label].to_s, columns: columns.map { |f| f[:label] },
-        rows: rows,
+        fields: columns, rows: rows,
         sum_label: sum_field && sum_field[:label],
         add_path: "/cbgp/dataset/#{related_form}",
         # So "add a new ..." opens with the link back to this record already filled in

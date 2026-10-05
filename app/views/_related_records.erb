@@ -31,6 +31,11 @@
                   <% if i.zero? %>
                     <a href="/cbgp/dataset/<%= Rack::Utils.escape_path(panel.related_form) %>/<%= Rack::Utils.escape_path(row.primary_id.to_s) %>"><%= Rack::Utils.escape_html(cell.to_s.empty? ? '(open)' : cell) %></a>
                     <% if current %><em>(this record)</em><% end %>
+                  <% elsif row.values && panel.fields && row.values[i] && panel.fields[i] && !row.values[i].empty? %>
+                    <%# every other value is an exact-match search link, like on the results page %>
+                    <% row.values[i].each_with_index do |(stored, shown), n| %>
+                      <%= ', ' if n.positive? %><%= search_link_html(field: panel.fields[i], database: panel.related_form, value: stored, text: shown) %>
+                    <% end %>
                   <% else %>
                     <%= Rack::Utils.escape_html(cell) %>
                   <% end %>

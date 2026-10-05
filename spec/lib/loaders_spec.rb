@@ -33,6 +33,27 @@ RSpec.describe 'CBGP::Loaders.load_or_fetch_doi' do
     end
   end
 
+  context 'when the DOI is submitted with an https://doi.org/ resolver prefix' do
+    let(:prefixed_doi) { "https://doi.org/#{doi}" }
+
+    before do
+      allow(CBGP::Loaders).to receive(:execute_search)
+        .with(hash_including(search_params: { 'publication_doi' => doi }))
+        .and_return([])
+      allow(CBGP::Parsers).to receive(:match_authors_to_personnel).and_return([])
+    end
+
+    it 'strips the prefix before the dedupe search, the RA lookup, and the parser call' do
+      expect(CBGP::Loaders).to receive(:execute_search)
+        .with(hash_including(search_params: { 'publication_doi' => doi }))
+        .and_return([])
+      allow(CBGP::Parsers).to receive(:resolve_doi_registration_agency).with(hash_including(doi: doi)).and_return('DataCite')
+      expect(CBGP::Parsers).to receive(:datacite_parser).with(hash_including(doi: doi)).and_return({ pub: pub, authors: [] })
+
+      CBGP::Loaders.load_or_fetch_doi(doi: prefixed_doi, database: 'publication')
+    end
+  end
+
   context 'when the DOI is not yet in the database' do
     before do
       allow(CBGP::Loaders).to receive(:execute_search)

@@ -223,3 +223,89 @@ puts
 puts "Done. #{person_count} people, #{version_count} record-versions written, " \
      "#{swap_count} inverted start/end pairs corrected."
 puts "#{MISSED_VALUES.size} controlled-vocabulary value(s) didn't match a real ontology answer id - see #{missed_path}"
+
+# =============================================================================
+# MANUAL HISTORY INJECTION - not part of the load above, never called by it.
+# Preserved 2026-09-29 after verifying it live (created a throwaway test
+# record, injected a fabricated 2015-dated snapshot between two real
+# versions, confirmed Dataset#full_timeline sorted it into the correct
+# position, then deleted the whole test record - no residue). Kept here in
+# case a genuinely backdated event is ever needed later - HIGHLY unlikely
+# ("it's fine if we do these injections completely manually... they may
+# never be needed"), but cheap to keep now that it's built and tested.
+#
+# This bypasses the normal write path entirely: no validation, no
+# calculated fields, no touching the live/current record - it only adds one
+# more item to that record's PAST by hand-writing a snapshot graph straight
+# into HISTORY_DATABASE, exactly the same shape write_dataset_to_db_query's
+# normal history-capture produces, just with a caller-chosen timestamp
+# instead of "now". Use only when the true field values and a true
+# (approximate) date for the missing event are actually known.
+#
+# HOW TIMESTAMP ORDERING WORKS: full_timeline sorts a record's versions by
+# plain STRING comparison of generated_at, not a fixed-width sequence - so
+# there's no real limit on "room" between two existing timestamps. `at:` just
+# has to sort correctly between its intended neighbors; call full_timeline
+# first to see their exact generated_at values before picking one.
+#
+# Example (run manually, in irb/a scratch script - not invoked by this file):
+#
+#   inject_historical_event(
+#     form_type: 'member',
+#     primary_id: 'the-existing-record-uuid',
+#     field_values: { 'member_category' => 'ramon_y_cajal_researcher', 'member_start_date' => '2015-06-15' },
+#     at: '2015-06-15T00:00:00.000000Z',
+#     detail: 'Reconstructed from an old paper contract found in 2026 - see email thread with Sara, 2026-09-29.'
+#   )
+#
+# @param form_type [String] e.g. "member" - the dataset type
+# @param primary_id [String] the EXISTING record's primary_id to inject a
+#   past version for (the record must already exist, current or history)
+# @param field_values [Hash{String=>String,Array}] questionclass => value
+#   (or an Array of values for a Multiple-cardinality field). Typically a
+#   full copy of "what the record looked like" at the fabricated date, not
+#   just the one field that changed - a real snapshot captures every field.
+# @param at [String] the fabricated ISO8601 timestamp (any precision) this
+#   snapshot should sort by
+# @param reason [String] short label, stored as local:history-reason
+# @param detail [String] free-text explanation for anyone reading
+#   local:history-detail later - always say why this was hand-inserted
+# @return [String] the new history snapshot's graph URI
+def inject_historical_event(form_type:, primary_id:, field_values:, at:, reason: 'manually-injected',
+                            detail: 'Backdated event inserted directly, outside the normal write path.')
+  fields = CBGP::Dataset.fields_for(form_type)
+  graph = "#{BASE_URI}#{form_type}/history/#{primary_id}/#{SecureRandom.uuid}"
+  subject = "<#{BASE_URI}#{form_type}/dataset/#{primary_id}>"
+
+  triples = ["#{subject} rdf:type sio:SIO_000089 ;", "  rdf:type cbgp:#{form_type} ."]
+
+  field_values.each do |questionclass, value|
+    field = fields.find { |f| f[:questionclass] == questionclass.to_s }
+    raise ArgumentError, "no #{form_type} field matches questionclass #{questionclass.inspect}" unless field
+
+    Array(value).each_with_index do |v, index|
+      next if v.to_s.strip.empty?
+
+      attr = "<#{graph}#attr_#{questionclass}_#{index}>"
+      triples << "#{subject} sio:SIO_000008 #{attr} ."
+      triples << "#{attr} rdf:type cbgp:#{questionclass} ."
+      triples << "#{attr} sio:SIO_000300 \"#{escape_for_literal(v)}\" ."
+    end
+  end
+
+  query = <<~SPARQL
+    #{PREFIXES}
+    PREFIX prov: <http://www.w3.org/ns/prov#>
+    INSERT DATA {
+      GRAPH <#{graph}> {
+        #{triples.join("\n        ")}
+        <#{graph}> prov:generatedAtTime "#{at}"^^xsd:dateTime ;
+                    local:history-reason "#{escape_for_literal(reason)}" ;
+                    local:history-detail "#{escape_for_literal(detail)}" .
+      }
+    }
+  SPARQL
+
+  HISTORY_DATABASE_UPDATE.update(query)
+  graph
+end

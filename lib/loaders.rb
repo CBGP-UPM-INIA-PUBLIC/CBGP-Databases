@@ -63,6 +63,15 @@ module CBGP
     #   CBGP::Parsers.load_member_index) to reuse across a bulk load; when
     #   nil (the single-DOI path), match_authors_to_personnel loads its own.
     def self.load_or_fetch_doi(doi:, database:, member_index: nil)
+      # Strip an optional doi.org resolver prefix up front, once, so every
+      # downstream use of `doi` (the dedupe search, the RA-resolution lookup,
+      # and the DataCite/Crossref fetch URLs below) sees the bare DOI. Without
+      # this, doi.org/Crossref happen to still resolve a doubled prefix (e.g.
+      # "https://doi.org/https://doi.org/10.xxx") via their own lenient
+      # routing, but that's accidental external behavior, not something this
+      # code should depend on staying true.
+      doi = doi.to_s.strip.sub(%r{\Ahttps?://(dx\.)?doi\.org/}i, '')
+
       # 1. Check if already exists. 'publication_doi' is the real questionclass
       # (was 'newpub4' - a stale reference that predates Sara's 2026-08
       # restructuring; the mismatch made this duplicate check a silent no-op

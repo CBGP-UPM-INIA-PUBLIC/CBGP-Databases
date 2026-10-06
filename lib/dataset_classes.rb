@@ -114,6 +114,12 @@ module CBGP
             questionclass = q.match(/.*?#(\S+)$/)[1] # fragment
             method_name = result[:method]&.to_s&.to_sym # symbol, safe if nil
             klass = result[:class]&.to_s&.downcase || 'string' # fallback
+            # A date-picker field IS a date, whatever class the ontology
+            # happens to declare for it (several were declared as string):
+            # the value type drives coercion, typed storage (xsd:date, see
+            # sparql_literal) and range search, so it must not depend on an
+            # ontology editor remembering to set both widget and class.
+            klass = 'date' if result[:widget].to_s.split(/[#\/]/).last.to_s.downcase == 'date'
             cardinality = result[:cardinality].to_s
             answers_uri = result[:answers].to_s
             sequence = result[:sequence].to_i

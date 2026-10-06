@@ -289,7 +289,7 @@ def inject_historical_event(form_type:, primary_id:, field_values:, at:, reason:
       attr = "<#{graph}#attr_#{questionclass}_#{index}>"
       triples << "#{subject} sio:SIO_000008 #{attr} ."
       triples << "#{attr} rdf:type cbgp:#{questionclass} ."
-      triples << "#{attr} sio:SIO_000300 \"#{escape_for_literal(v)}\" ."
+      triples << "#{attr} sio:SIO_000300 #{sparql_literal(v, field[:class])} ."
     end
   end
 

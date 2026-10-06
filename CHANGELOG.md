@@ -17,6 +17,16 @@ Ontology changes ship in CBGP-Ontology `ba54d03`; this release needs that
 ontology (several fields are renamed).
 
 ### Added
+- **Dates are stored as real dates.** Every date was being saved as a plain
+  string, and Virtuoso silently mis-answers range searches against them
+  ("started by today" returned nothing; "started before 2010" returned 12 of
+  22 members). A date-picker field now always counts as a date (even where
+  the ontology declared it a string), is validated on save, and is written as
+  an `xsd:date`; the search bound is written as `xsd:date("...")`, Virtuoso's
+  documented form (the `"..."^^xsd:date` literal form dropped rows against
+  the real store). `utilities/retype_dates.rb` converts existing records
+  (current and history store; `--dry-run` first). Ontology: seven date
+  fields now declare class Date.
 - **Search arrows on the edit page** (admins only): beside each field's label, a
   small arrow per value the record currently stores opens the same exact-match
   search as the results-page links, in a new window so unsaved edits are not

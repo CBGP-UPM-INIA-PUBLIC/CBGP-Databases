@@ -736,6 +736,32 @@ rescue ArgumentError, TypeError
   raise ArgumentError, "Invalid date: #{value.inspect}"
 end
 
+# The RDF datatype each field class is stored as, when it is not a plain
+# string. Only dates are typed: SPARQL compares an xsd:string with an
+# xsd:date silently wrongly (no error, wrong rows - Virtuoso answered
+# "start <= today" with nothing), so a date has to be a real xsd:date in the
+# store for any range search to be right. Extend here if another class ever
+# needs a real datatype; nothing else in the app is tied to a specific field.
+TYPED_LITERAL_DATATYPES = { 'date' => 'xsd:date' }.freeze
+
+# The SPARQL literal for storing +value+ in a field of class +field_class+:
+# a typed literal for the classes in TYPED_LITERAL_DATATYPES, otherwise a
+# plain escaped string. A value that is not valid for its typed class is
+# refused rather than quietly stored as text (which is exactly the silent
+# failure typing exists to prevent).
+#
+# @param value [Object] already-coerced field value
+# @param field_class [String, nil] the field's declared class (lowercased
+#   here, so 'Date' works)
+# @return [String] e.g. "\"2026-01-31\"^^xsd:date" or "\"text\""
+# @raise [ArgumentError] if a typed class is given an invalid value
+def sparql_literal(value, field_class)
+  datatype = TYPED_LITERAL_DATATYPES[field_class.to_s.downcase]
+  return "\"#{escape_for_literal(value)}\"" unless datatype
+
+  "\"#{validate_date!(value.to_s.strip)}\"^^#{datatype}"
+end
+
 # Validates a value that's about to be interpolated as a bare IRI inside
 # angle brackets (<#{value}>) — a different context from a quoted literal
 # (escape_for_literal) or an ontology local name (validate_local_name!).
@@ -989,13 +1015,13 @@ def write_dataset_to_db_query(dataset:, oldid: nil, form: nil)
         this_attribute = "#{datasetPREFIX.gsub(/[<>]/, '')}#{primary_id}/#{questionclass}_#{index + 1}"
         triples << "dataset:#{primary_id} sio:SIO_000008 <#{this_attribute}> ."
         triples << "<#{this_attribute}> rdf:type cbgp:#{questionclass} ."
-        triples << "<#{this_attribute}> sio:SIO_000300 \"#{escape_for_literal(val)}\" ."
+        triples << "<#{this_attribute}> sio:SIO_000300 #{sparql_literal(val, field[:class])} ."
       end
     else
       this_attribute = "#{datasetPREFIX.gsub(/[<>]/, '')}#{primary_id}/#{questionclass}"
       triples << "dataset:#{primary_id} sio:SIO_000008 <#{this_attribute}> ."
       triples << "<#{this_attribute}> rdf:type cbgp:#{questionclass} ."
-      triples << "<#{this_attribute}> sio:SIO_000300 \"#{escape_for_literal(value)}\" ."
+      triples << "<#{this_attribute}> sio:SIO_000300 #{sparql_literal(value, field[:class])} ."
     end
   end
 
@@ -1201,14 +1227,20 @@ def build_search_query(search_params:, dataset_type:)
         start_date = start_date.to_s.empty? ? nil : validate_date!(start_date)
         end_date = end_date.to_s.empty? ? nil : validate_date!(end_date)
 
+        # The bound is written xsd:date("...") (Virtuoso's documented idiom
+        # for date ranges), NOT "..."^^xsd:date: against the real store the
+        # literal form silently dropped rows (verified 2026-10-06: <= today
+        # matched 12 of 919 members, the function form all 919) while the
+        # function form was right every time. The stored values themselves
+        # are real xsd:date (see sparql_literal) - only the constant is cast.
         date_var = "?datevalue_#{idx}"
         filter = ''
         if start_date && end_date
-          filter = "FILTER (#{date_var} >= \"#{start_date}\"^^xsd:date && #{date_var} <= \"#{end_date}\"^^xsd:date)"
+          filter = "FILTER (#{date_var} >= xsd:date(\"#{start_date}\") && #{date_var} <= xsd:date(\"#{end_date}\"))"
         elsif start_date
-          filter = "FILTER (#{date_var} >= \"#{start_date}\"^^xsd:date)"
+          filter = "FILTER (#{date_var} >= xsd:date(\"#{start_date}\"))"
         elsif end_date
-          filter = "FILTER (#{date_var} <= \"#{end_date}\"^^xsd:date)"
+          filter = "FILTER (#{date_var} <= xsd:date(\"#{end_date}\"))"
         end
 
         <<-CONDITION

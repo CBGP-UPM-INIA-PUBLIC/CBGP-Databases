@@ -54,7 +54,7 @@ RSpec.describe 'SPARQL identifier/date/IRI validation' do
       expect { validate_date!('2026-1-5') }.to raise_error(ArgumentError)
     end
 
-    it 'rejects a value that would break out of the "..."^^xsd:date literal into new FILTER syntax' do
+    it 'rejects a value that would break out of the xsd:date("...") bound into new FILTER syntax' do
       expect do
         validate_date!('2020-01-01"^^xsd:date) } UNION { FILTER(true')
       end.to raise_error(ArgumentError, /Invalid date/)
@@ -97,8 +97,8 @@ RSpec.describe 'SPARQL identifier/date/IRI validation' do
         dataset_type: 'member'
       )
 
-      expect(query).to include('?datevalue_0 >= "2020-01-01"^^xsd:date')
-      expect(query).to include('?datevalue_0 <= "2020-12-31"^^xsd:date')
+      expect(query).to include('?datevalue_0 >= xsd:date("2020-01-01")')
+      expect(query).to include('?datevalue_0 <= xsd:date("2020-12-31")')
     end
 
     it 'raises rather than interpolate an injected start_date into the generated query' do

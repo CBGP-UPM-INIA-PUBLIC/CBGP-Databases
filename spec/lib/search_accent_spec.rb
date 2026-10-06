@@ -163,8 +163,8 @@ RSpec.describe 'accent-insensitive search' do
         dataset_type: 'member'
       )
 
-      expect(query).to include('?datevalue_0 >= "2020-01-01"^^xsd:date')
-      expect(query).to include('?datevalue_0 <= "2020-12-31"^^xsd:date')
+      expect(query).to include('?datevalue_0 >= xsd:date("2020-01-01")')
+      expect(query).to include('?datevalue_0 <= xsd:date("2020-12-31")')
     end
 
     it 'applies accent-insensitive matching regardless of the current UI language' do
@@ -264,7 +264,7 @@ RSpec.describe 'accent-insensitive search' do
         dataset_type: 'member'
       )
 
-      expect(query).to match(/FILTER NOT EXISTS \{[^}]*\?datevalue_0 >= "2020-01-01"\^\^xsd:date[^}]*\}/m)
+      expect(query).to match(/FILTER NOT EXISTS \{[^}]*\?datevalue_0 >= xsd:date\("2020-01-01"\)[^}]*\}/m)
     end
 
     it 'combines a positive field and a negative field, each scoped to its own variables' do

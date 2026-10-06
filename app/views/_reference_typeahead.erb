@@ -9,11 +9,25 @@
   # What the box searches, in the ontology's own words (e.g. "Surname(s)" for a
   # member, "Title of the project" for a project) - so the placeholder says
   # exactly what to type, and that nothing happens before 2 characters.
-  xref_hint = 'Type at least 2 characters to search existing ' + target.to_s + '...'
+  # The thing searched is named by its ontology label in the user's language
+  # ("miembro", not the class name "member"); the hint text itself is interface
+  # text, also from the ontology (ui_typeahead_hint*). A target with no label of
+  # its own (e.g. a bare storage name such as "project") is left out of the
+  # hint rather than shown as a raw class name.
+  target_name = begin
+    named = cached_label_for_id(id: target.to_s)
+    named.to_s.empty? || named == target.to_s ? nil : named.downcase
+  rescue StandardError
+    nil
+  end
+  std_hint  = target_name ? ui_text('typeahead.hint', target: target_name) : ui_text('typeahead.hint_plain')
+  xref_hint = std_hint
   if is_xref
     begin
       searched = CBGP::Dataset.fields_for(target).find { |f| f[:questionclass] == label_meth }
-      xref_hint = "Type at least 2 characters of the #{searched[:label]} to search existing #{target}..." if searched
+      if searched
+        xref_hint = target_name ? ui_text('typeahead.hint_field', field: searched[:label], target: target_name) : ui_text('typeahead.hint_field_plain', field: searched[:label])
+      end
     rescue StandardError
       nil # fall back to the generic hint
     end
@@ -42,12 +56,12 @@
         id="<%= qid %>_ANSWER_<%= idx %>"
         value="<%= CGI.escapeHTML(sv) %>"
         list="<%= qid %>_suggestions"
-        placeholder="Type at least 2 characters to search existing <%= target %>..."
+        placeholder="<%= CGI.escapeHTML(std_hint) %>"
         size="60"
         autocomplete="off"
       />
       <% if is_multi && idx > 0 %>
-        <button type="button" onclick="this.closest('.std-row').remove()" style="font-size:0.8em;">− remove</button>
+        <button type="button" onclick="this.closest('.std-row').remove()" style="font-size:0.8em;">− <%= CGI.escapeHTML(ui_text('typeahead.remove')) %></button>
       <% end %>
     </div>
     <% end %>
@@ -56,7 +70,7 @@
     <datalist id="<%= qid %>_suggestions"></datalist>
 
     <% if is_multi %>
-      <button type="button" id="<%= qid %>_add_btn" style="margin-top:4px;">+ Add another</button>
+      <button type="button" id="<%= qid %>_add_btn" style="margin-top:4px;">+ <%= CGI.escapeHTML(ui_text('typeahead.add_another')) %></button>
     <% end %>
 
     <script>
@@ -99,9 +113,9 @@
         row.id = qid + '_row_' + rowCount;
         row.innerHTML = `
           <input type="text" name="${qid}[]" id="${qid}_ANSWER_${rowCount}"
-                 list="${qid}_suggestions" placeholder="Type at least 2 characters to search existing <%= target %>..."
+                 list="${qid}_suggestions" placeholder="<%= CGI.escapeHTML(std_hint) %>"
                  size="60" autocomplete="off">
-          <button type="button" onclick="this.closest('.std-row').remove()" style="font-size:0.8em;">− remove</button>`;
+          <button type="button" onclick="this.closest('.std-row').remove()" style="font-size:0.8em;">− <%= CGI.escapeHTML(ui_text('typeahead.remove')) %></button>`;
         container.insertBefore(row, this);
         attachStdListener(document.getElementById(qid + '_ANSWER_' + rowCount));
         rowCount++;
@@ -125,16 +139,16 @@
                  size="50" autocomplete="off">
           <datalist id="<%= qid %>_suggestions_<%= idx %>"></datalist>
           <% if is_multi %>
-            <button type="button" onclick="this.closest('.xref-row').remove()" style="font-size:0.8em; margin-left:4px;">− remove</button>
+            <button type="button" onclick="this.closest('.xref-row').remove()" style="font-size:0.8em; margin-left:4px;">− <%= CGI.escapeHTML(ui_text('typeahead.remove')) %></button>
           <% end %>
         </div>
         <div id="<%= qid %>_stored_row_<%= idx %>"
              style="margin-top:4px;<%= sv.empty? ? ' display:none' : '' %>">
-          <small>Stored value:&nbsp;</small>
+          <small><%= CGI.escapeHTML(ui_text('typeahead.stored_value')) %>:&nbsp;</small>
           <code id="<%= qid %>_DISPLAY_<%= idx %>"><%= CGI.escapeHTML(sv) %></code>
           <span id="<%= qid %>_LABEL_<%= idx %>" class="xref-label"></span>
           <button type="button" id="<%= qid %>_CLEAR_<%= idx %>"
-                  style="margin-left:6px; font-size:0.8em;">✕ clear</button>
+                  style="margin-left:6px; font-size:0.8em;">✕ <%= CGI.escapeHTML(ui_text('typeahead.clear')) %></button>
         </div>
         <input type="hidden"
                name="<%= qid %><%= is_multi ? '[]' : '' %>"
@@ -146,7 +160,7 @@
     </div><!-- /#container -->
 
     <% if is_multi %>
-      <button type="button" id="<%= qid %>_add_btn" style="margin-top:4px;">+ Add another</button>
+      <button type="button" id="<%= qid %>_add_btn" style="margin-top:4px;">+ <%= CGI.escapeHTML(ui_text('typeahead.add_another')) %></button>
     <% end %>
 
     <script>
@@ -253,13 +267,13 @@
                    placeholder="${xrefHint}"
                    size="50" autocomplete="off">
             <datalist id="${qid}_suggestions_${suffix}"></datalist>
-            <button type="button" onclick="this.closest('.xref-row').remove()" style="font-size:0.8em; margin-left:4px;">− remove</button>
+            <button type="button" onclick="this.closest('.xref-row').remove()" style="font-size:0.8em; margin-left:4px;">− <%= CGI.escapeHTML(ui_text('typeahead.remove')) %></button>
           </div>
           <div id="${qid}_stored_row_${suffix}" style="display:none; margin-top:4px;">
-            <small>Stored value:&nbsp;</small>
+            <small><%= CGI.escapeHTML(ui_text('typeahead.stored_value')) %>:&nbsp;</small>
             <code id="${qid}_DISPLAY_${suffix}"></code>
             <span id="${qid}_LABEL_${suffix}" class="xref-label"></span>
-            <button type="button" id="${qid}_CLEAR_${suffix}" style="margin-left:6px; font-size:0.8em;">✕ clear</button>
+            <button type="button" id="${qid}_CLEAR_${suffix}" style="margin-left:6px; font-size:0.8em;">✕ <%= CGI.escapeHTML(ui_text('typeahead.clear')) %></button>
           </div>
           <input type="hidden" name="${qid}[]" id="${qid}_ANSWER_${suffix}" value="">`;
 

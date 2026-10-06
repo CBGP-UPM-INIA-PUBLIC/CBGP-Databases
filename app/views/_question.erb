@@ -68,7 +68,7 @@
       <label for="<%= @question.questionid %>_NOT" class="search-negate-label" style="font-size:.75em; margin-left: 8px;">
         <input type="checkbox" id="<%= @question.questionid %>_NOT"
                name="<%= @question.questionid %>__not" value="1">
-        NOT (exclude matches)
+        <%= CGI.escapeHTML(ui_text('search.not_exclude')) %>
       </label>
     <% end %>
   <% else %> <!-- Assume add/edit mode -->

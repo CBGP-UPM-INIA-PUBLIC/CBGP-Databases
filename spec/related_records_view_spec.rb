@@ -181,7 +181,8 @@ RSpec.describe 'related-records panel on the edit page', type: :request do
 
       body = last_response.body
       expect(body).to include('Type at least 2 characters of the Surname(s) to search existing member...')
-      expect(body).to include('Type at least 2 characters of the Title of the project to search existing project...')
+      # the project box's target has no name of its own in the ontology (a bare storage name), so none is shown
+      expect(body).to include('Type at least 2 characters of the Title of the project to search...')
     end
 
     it 'is the same on the search form' do

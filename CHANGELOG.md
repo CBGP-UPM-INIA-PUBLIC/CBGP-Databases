@@ -17,6 +17,21 @@ Ontology changes ship in CBGP-Ontology `ba54d03`; this release needs that
 ontology (several fields are renamed).
 
 ### Added
+- **Interface hints follow the selected language** (first step; Spanish drafted,
+  pending review by a Spanish speaker): the cross-reference typeahead hint ("Type
+  at least 2 characters of the Surname(s) to search existing member..." /
+  "Escriba al menos 2 caracteres de «Apellido(s)» para buscar en «miembro»..."),
+  its captions (remove / add another / stored value / clear), and the search
+  form placeholders and NOT caption. As with every other label, the texts live
+  in the ontology: 15 subclasses of the new `cbgp:ui-text`, one per text, each
+  with English and Spanish `rdfs:label`s (a `%{name}` in a label is filled in
+  by the application). New `ui_text(key, **vars)` helper (`lib/ui_text.rb`);
+  `/cbgp/refresh` re-reads them; the record kind named in a hint is the
+  ontology's own localized form label. `check_ontology.rb` (CBGP-Ontology)
+  now also checks the `%{...}` names match across languages. **Needs the
+  ontology change pushed first.** The rest of the interface text (headings,
+  buttons, messages, pop-ups) is still English and moves onto the same
+  mechanism next.
 - **Every value is a link**: each value on
   the search-results table, and in the related-records panels, is a link to an
   exact-match search for itself - a DNI finds that person, a category all

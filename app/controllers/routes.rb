@@ -119,6 +119,7 @@ def set_routes
     CBGP::Dataset.clear_caches!
     Questionnaire.clear_cache!
     CBGP::Triggers.clear_cache!
+    CBGP::UIText.clear_cache! # interface texts are ontology labels too
     redirect '/cbgp/dashboard'
   end
   # ----------------------------------------------------------------------------

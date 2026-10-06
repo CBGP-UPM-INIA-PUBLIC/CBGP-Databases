@@ -4,7 +4,7 @@
   <input type="text"
          name="<%= @question.questionid %>[display]" 
          id="search-input-<%= @question.questionid %>"
-         placeholder="Type to search categories..."
+         placeholder="<%= CGI.escapeHTML(ui_text('search.categories_type')) %>"
          value=""
          autocomplete="off"
          style="width: 100%; padding: 8px; box-sizing: border-box;" />

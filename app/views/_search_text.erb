@@ -1,4 +1,4 @@
 <!-- @answerblock [:type, :answers, :lang=, :lang, :ablockid=, :answers=, :type=, :ablockid] -->   
 <div class="inputtype">
-  <input type="text" name="<%= @question.questionid %>" value="<%= @thisval %>" id="<%= @question.questionid %>_ANSWER" placeholder="Enter <%= @question.question.downcase %> to filter" style="width: 50%;" />
+  <input type="text" name="<%= @question.questionid %>" value="<%= @thisval %>" id="<%= @question.questionid %>_ANSWER" placeholder="<%= CGI.escapeHTML(ui_text('search.enter_field_to_filter', field: @question.question.downcase)) %>" style="width: 50%;" />
 </div>

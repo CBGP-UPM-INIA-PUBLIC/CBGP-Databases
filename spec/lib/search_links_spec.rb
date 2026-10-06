@@ -199,6 +199,7 @@ RSpec.describe 'the search results page', type: :request do
     allow_any_instance_of(CBGP::DatabasesApp).to receive(:execute_search).and_return(['graph://m-1'])
     allow_any_instance_of(CBGP::DatabasesApp).to receive(:batch_retrieve_dataset_ids).and_return('graph://m-1' => 'm-1')
     allow_any_instance_of(CBGP::DatabasesApp).to receive(:fetch_datasets_raw_data).and_return([])
+    allow_any_instance_of(CBGP::DatabasesApp).to receive(:batch_retrieve_record_forms).and_return({})
     allow(CBGP::Dataset).to receive(:load_from_graph).and_return(record)
     allow(CBGP::RelatedRecords).to receive(:result_warnings).and_return(messages: [], skipped: 0)
   end

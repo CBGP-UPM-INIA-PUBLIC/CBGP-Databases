@@ -17,6 +17,14 @@ Ontology changes ship in CBGP-Ontology `ba54d03`; this release needs that
 ontology (several fields are renamed).
 
 ### Added
+- **Record type column on every search result**: each row says what kind of
+  record it is (e.g. "Personnel Project" vs "National and Regional Research
+  Projects"), per row, so a search of a shared database such as `project` can
+  be read at a glance. It comes from the `dcterms:type` stamp every record
+  carries, read for the whole page in one query (`batch_retrieve_record_forms`),
+  named with the ontology's own (bilingual) form labels. The type is a link
+  listing every record of that form; a record without a stamp shows "-". Also a
+  plain-text column in the TSV download. No ontology change.
 - **Interface hints follow the selected language** (first step; Spanish drafted,
   pending review by a Spanish speaker): the cross-reference typeahead hint ("Type
   at least 2 characters of the Surname(s) to search existing member..." /

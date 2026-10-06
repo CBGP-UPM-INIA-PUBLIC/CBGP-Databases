@@ -1412,6 +1412,30 @@ def multiple_field_sort_key(row:, attr_sym:)
   match ? match[1].to_i : Float::INFINITY
 end
 
+# graph URI => form class (e.g. "personnel_project") for many records at once,
+# read from the dcterms:type stamp each record carries; a record with no stamp
+# is simply absent. One query for the whole results page. Never raises (the
+# page is still useful without its "Record type" column).
+def batch_retrieve_record_forms(graph_uris:)
+  return {} if graph_uris.empty?
+
+  query = <<~SPARQL
+    #{PREFIXES}
+    SELECT ?graph ?form
+    WHERE {
+      VALUES ?graph { #{graph_uris.map { |g| "<#{RDF::URI(g.to_s)}>" }.join(' ')} }
+      ?graph dcterms:type ?form .
+    }
+  SPARQL
+
+  DATABASE.query(query).each_with_object({}) do |row, hash|
+    hash[row[:graph].to_s] = row[:form].to_s.split('#').last
+  end
+rescue StandardError => e
+  warn "[RECORD-FORM] could not read the forms of #{graph_uris.size} results: #{e.class}: #{e.message}"
+  {}
+end
+
 def batch_retrieve_dataset_ids(graph_uris:)
   return {} if graph_uris.empty?
 

@@ -250,6 +250,25 @@ def search_link_html(field:, database:, value:, text: nil, title: nil)
   %(<a href="#{href}" class="search-link"#{tip}>#{shown}</a>)
 end
 
+# The human-readable name of a record's form ("Personnel Project"), in the
+# current language, straight from the ontology's label for the form class;
+# "-" for a record that carries no form stamp.
+def record_type_label(form)
+  return '-' if form.to_s.strip.empty?
+
+  cached_label_for_id(id: form.to_s) || form.to_s
+rescue StandardError
+  form.to_s
+end
+
+# The "Record type" cell: the form's name as a link listing every record of
+# that form (a search with no conditions, restricted to the form).
+def record_type_link_html(form)
+  return CGI.escapeHTML(record_type_label(form)) if form.to_s.strip.empty?
+
+  %(<a href="/cbgp/query-dataset/#{CGI.escapeHTML(ERB::Util.url_encode(form.to_s))}" class="search-link">#{CGI.escapeHTML(record_type_label(form))}</a>)
+end
+
 def resolve_display_value(field, value)
   return format_currency(value) if field[:class] == 'currency'
   return value.to_s unless controlled_vocabulary_field?(field)

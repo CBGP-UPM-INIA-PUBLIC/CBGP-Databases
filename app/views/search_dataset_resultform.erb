@@ -8,11 +8,11 @@ csv_filename = nil
 unless @datasets.empty?
   tsv_content = CSV.generate(col_sep: "\t", force_quotes: true) do |tsv|
     # Header: Dataset ID first, then all field labels
-    tsv << ["Dataset ID"] + @fields.map { |f| f[:label] }
+    tsv << ["Dataset ID", "Record type"] + @fields.map { |f| f[:label] }
 
     # Rows
     @datasets.each do |dataset|
-      row = [dataset.primary_id]
+      row = [dataset.primary_id, record_type_label((@record_forms || {})[dataset.primary_id])]
       @fields.each do |field|
         if field[:method]
           value = dataset.send(field[:method])
@@ -85,6 +85,7 @@ end
                 <!-- <input type="checkbox" id="select-all" /> -->
               </th>
               <th>Action</th>
+              <th>Record type</th>
               <% @fields.each do |field| %>
                 <th><%= field[:label] %></th>
               <% end %>
@@ -108,6 +109,7 @@ end
                     DELETE
                   </a>
                 </td>
+                <td><%= record_type_link_html((@record_forms || {})[dataset.primary_id]) %></td>
                 <% @fields.each do |field| %>
                   <td>
                     <% if field[:method] %>

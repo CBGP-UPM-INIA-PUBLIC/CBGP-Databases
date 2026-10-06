@@ -457,6 +457,7 @@ def set_routes
       end
 
       @result_warnings = CBGP::RelatedRecords.result_warnings(datasets: @datasets, type: @database)
+      @record_forms = record_forms_for_results(graphuris: graphuris, datasets: @datasets)
 
       plain_params = to_plain_hash(search_params.to_h) # Sinatra params object doesn't clone easily, so this makes it a hash
       session[:last_search] = {
@@ -837,7 +838,18 @@ def set_routes
       graphuris = execute_search(search_params: last_search[:params], dataset_type: @database)
       @datasets = graphuris.map { |graphuri| CBGP::Dataset.load_from_graph(graph: graphuri, database: @database) }
       @result_warnings = CBGP::RelatedRecords.result_warnings(datasets: @datasets, type: @database)
+      @record_forms = record_forms_for_results(graphuris: graphuris, datasets: @datasets)
       true
+    end
+
+    # primary_id => form class for the rows of a results page (the "Record
+    # type" column); @datasets is in the same order as +graphuris+.
+    def record_forms_for_results(graphuris:, datasets:) # rubocop:disable Lint/NestedMethodDefinition
+      by_graph = batch_retrieve_record_forms(graph_uris: graphuris)
+      graphuris.zip(datasets).each_with_object({}) do |(graph, dataset), forms|
+        form = by_graph[graph.to_s]
+        forms[dataset.primary_id] = form if form && dataset
+      end
     end
 
     def delete_dataset(database:, primary_id:) # rubocop:disable Lint/NestedMethodDefinition

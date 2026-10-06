@@ -44,6 +44,7 @@ RSpec.describe 'saving returns to the search results', type: :request do
     allow_any_instance_of(CBGP::DatabasesApp).to receive(:execute_search).and_return(['graph://c-1'])
     allow_any_instance_of(CBGP::DatabasesApp).to receive(:batch_retrieve_dataset_ids).and_return('graph://c-1' => 'c-1')
     allow_any_instance_of(CBGP::DatabasesApp).to receive(:fetch_datasets_raw_data).and_return([])
+    allow_any_instance_of(CBGP::DatabasesApp).to receive(:batch_retrieve_record_forms).and_return({})
     allow(CBGP::Dataset).to receive(:load_from_graph).and_return(entry)
   end
 

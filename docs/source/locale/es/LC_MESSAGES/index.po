@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CBGP-Databases 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-09 15:53+0200\n"
+"POT-Creation-Date: 2026-10-06 18:22+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es\n"
@@ -20,20 +20,26 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: ../../source/index.md:8
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/index.md:8
 msgid "Contents"
 msgstr "Contenido"
 
-#: ../../source/index.md:1 9fcb6ad84e4a4a1e93105a42c96a509e
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/index.md:1
+#: 6a2605fc8a394733ad5bbc93b86e217c
 msgid "CBGP-Databases"
 msgstr "Bases de datos del CBGP"
 
-#: ../../source/index.md:3 181dfd8cff0041d48294b2e16772b82c
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/index.md:3
+#: 3befd7869fea45ac87e9faba4d1ca330
 msgid ""
 "An ontology-driven, metaprogrammed database platform for running a "
-"research institute's administration — projects, personnel, and "
-"publications — built so that the people who curate its data model day to "
-"day never need to touch code."
+"research institute's administration — projects, members, and publications"
+" — built so that the people who curate its data model day to day never "
+"need to touch code."
 msgstr ""
-"Una plataforma de base de datos basada en ontologías y metaprogramada para gestionar la administración de un instituto de investigación —proyectos, personal y publicaciones— diseñada para que las personas que se encargan de mantener su modelo de datos día a día nunca tengan que tocar el código."
+"Una plataforma de base de datos basada en ontologías y metaprogramada "
+"para gestionar la administración de un instituto de investigación "
+"—proyectos, miembros y publicaciones—, construida de modo que las "
+"personas que cuidan su modelo de datos día a día nunca necesiten tocar "
+"código."
 

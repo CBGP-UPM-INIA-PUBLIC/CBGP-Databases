@@ -25,8 +25,8 @@ Everything on this page answers one of two shapes of question:
   its deletion), in order.
 - **"What matched *some condition* during a period of time, and
   optionally, what does that add up to?"** — for example, every project
-  of a certain type that was active at some point in a date range, and
-  optionally the total of some numeric field across all of them.
+  with a given status that started within a date range, and optionally the
+  total of some numeric field across all of them.
 
 Both are read this way (not by browsing) precisely because there's no
 in-app screen for this yet — see [History &
@@ -85,29 +85,33 @@ just these):
 
 ## Worked example 2: a question about a period of time
 
-*"Across every Articulo-60 project that was active at some point in the
-first half of 2025, what was the total funding — even counting ones that
-have since been deleted?"*
+*"Across every Awarded project that started in the first half of 2025, what
+was the total funding — even counting ones that have since been deleted?"*
 
 ```
 POST /cbgp/query-history/project
 Content-Type: application/x-www-form-urlencoded
 
-project_type=Articulo-60
+project_status=Awarded
 &project_start_date[start]=2025-01-01
 &project_start_date[end]=2025-06-30
-&sum_field=project_total_funding
+&sum_field=european_private_research_project_total_funding
 ```
 
-The facet parameters (`project_type=...`, a date-range field given as
-`[start]`/`[end]`) work exactly like filling in the search form covered
+The facet parameters (`project_status=...`, an exact match on the stored
+answer, and a date-range field given as `[start]`/`[end]`, which keeps the
+records whose value for that field falls inside the range) work exactly like filling in the search form covered
 in [Search & Queries](admin/search_and_queries.md) — any field on that
 form can be used as a facet here the same way. `sum_field` is optional:
 leave it out to get back the list of matching records without a total.
 Because this reads from the history database rather than the current
 one, a project that matched the criteria and was later deleted is still
 found and still counted — this is the whole point of keeping history in
-the first place, not an incidental side effect.
+the first place, not an incidental side effect. `project` here is the
+storage name shared by every kind of project (European, National/Regional,
+Private, Personnel), so the query covers all of them; a total only adds up
+the records that actually have the summed field (here, the European and
+Private kinds share one funding field, so the others contribute nothing to it).
 
 ```json
 {
@@ -116,7 +120,7 @@ the first place, not an incidental side effect.
       "@type": "local:TimeMachineResult",
       "local:queryType": "temporal-aggregate",
       "local:recordCount": 4,
-      "local:summedField": "project_total_funding",
+      "local:summedField": "european_private_research_project_total_funding",
       "local:totalAmount": "35000.00",
       "local:contributingRecord": [
         {"@id": ".../project/history/.../a"},
@@ -143,7 +147,7 @@ that.
 ## Discovering what fields exist
 
 *"What fields does a Project record have, and what are the legal values
-for its type field?"*
+for its status field?"*
 
 ```
 GET /cbgp/facets/project

@@ -64,6 +64,14 @@ manual refresh). The public default shown above is correct for this
 institute's normal deployment; there's no reason to change it unless
 running a separate, private fork of the ontology for testing.
 
+That includes the application's own interface text — hints inside boxes,
+the captions of small buttons, the names of entries in the Query Data list —
+each of which is a class in the ontology with a label per language, so it can
+be reworded or translated by editing the ontology rather than the
+application; see [Data Model](data_model.md#interface-text-lives-in-the-ontology).
+After editing the ontology, the manual refresh mentioned above is what makes
+a running application pick the change up.
+
 ## Virtuoso connection
 
 ```

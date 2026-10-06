@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CBGP-Databases 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-29 17:19+0200\n"
+"POT-Creation-Date: 2026-10-06 18:22+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es\n"
@@ -19,15 +19,18 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: ../../source/philosophy.md:1 d8703a36d2584ca8bdb0a40d42c31d6d
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:1
+#: faab4d4b399e4db5bd343fc5b0c26e78
 msgid "Philosophy & Design"
 msgstr "Filosofía y Diseño"
 
-#: ../../source/philosophy.md:3 9de44a971aa14630933e90e0fdcf07e0
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:3
+#: 193c9c7d59fa4aa1a189f7ecb11d5ee5
 msgid "The one-sentence version"
 msgstr "La versión de una frase"
 
-#: ../../source/philosophy.md:5 9b0067c7efce4d0f9138ef940cd2cd3a
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:5
+#: 31153d043ea444b4a1e80c0d66684280
 msgid ""
 "Every field, every dropdown, every form, every language label in this "
 "application is read out of a single OWL ontology file at the moment it's "
@@ -37,14 +40,15 @@ msgid ""
 " them?\" It never hardcodes the answer."
 msgstr ""
 "Cada campo, cada lista desplegable, cada formulario y cada etiqueta de "
-"idioma de esta aplicación se lee desde un único archivo de ontología OWL en "
-"el momento en que se necesita — no hay nada escrito en el código del "
+"idioma de esta aplicación se lee desde un único archivo de ontología OWL "
+"en el momento en que se necesita — no hay nada escrito en el código del "
 "programa sobre *qué* registra el instituto, ni sobre *cómo* se ve un "
 "formulario. El código únicamente conoce cómo preguntarle a la ontología "
-"\"¿qué campos tiene un Proyecto, y cómo debo representarlos?\". Nunca se"
-"fija la respuesta de antemano en el código."
+"\"¿qué campos tiene un Proyecto, y cómo debo representarlos?\". Nunca "
+"sefija la respuesta de antemano en el código."
 
-#: ../../source/philosophy.md:12 7a5f1a9e29634dffacc18aeef2154557
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:12
+#: f032b4cf285f435594dc4806745bcf58
 msgid ""
 "That single design choice is what lets the people who actually understand"
 " the institute's data — an administrator, not a programmer — add a field,"
@@ -57,11 +61,13 @@ msgstr ""
 "desplegable o reformulen una etiqueta, simplemente editando la ontología,"
 " sin necesidad de publicar una nueva versión del software."
 
-#: ../../source/philosophy.md:17 91f828a00ee94a14b2e702a1cd7816f9
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:17
+#: 557ffd1624be4c8d874e36b701ee0df2
 msgid "Why this exists"
 msgstr "El porqué de esto"
 
-#: ../../source/philosophy.md:19 90f81ed2d13c42efbbd86b0c567dc042
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:19
+#: ca68c900f9b24220b4241d22c20366e4
 msgid ""
 "The institute's real data is genuinely complicated and keeps changing "
 "shape: people are paid from more than one project at once, roles and "
@@ -82,7 +88,8 @@ msgstr ""
 " cambio depende del tiempo de un desarrollador, y de que cada vez que se "
 "toque el sistema, no se rompa silenciosamente alguna otra cosa. "
 
-#: ../../source/philosophy.md:28 5787ecfa9f81445babe39270112bec63
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:28
+#: ca9efeaf1f8244de858247ce39410ef3
 msgid ""
 "This system was built to remove that bottleneck entirely for the *shape* "
 "of the data — which fields exist, what they're called (in English or "
@@ -100,14 +107,17 @@ msgstr ""
 " con qué otros registros... — mientras se reserva la intervención de un "
 "programador para casos en los que se necesita un *comportamiento* nuevo "
 "(un nuevo tipo de informe, una nueva integración con una base de datos "
-"externa...). Cambiar el aspecto del registro para un Proyecto nunca debería "
-"requerir este último tipo de cambio. Y en este sistema, no lo requiere."
+"externa...). Cambiar el aspecto del registro para un Proyecto nunca "
+"debería requerir este último tipo de cambio. Y en este sistema, no lo "
+"requiere."
 
-#: ../../source/philosophy.md:37 b4d5683634334bb489d621d34247ff40
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:37
+#: 58a350e43677447f85c49a39c54b4835
 msgid "How it actually works, without the code"
 msgstr "Cómo funciona realmente, sin entrar en el código"
 
-#: ../../source/philosophy.md:39 625c5a5289e24761991fae5c3d195428
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:39
+#: 4de97bd571e043c5b9a2b4279b66f09c
 msgid ""
 "Behind the scenes, the ontology is written in "
 "[OWL](https://www.w3.org/OWL/) (the standard language for describing "
@@ -120,25 +130,26 @@ msgid ""
 "searchable lookup into another table...), what order fields appear in, "
 "which fields are required, which dropdown options exist and what they're "
 "labeled in each language, and which fields are actually references to a "
-"record in a *different* table (e.g. a project's \"Responsible PI\" field "
-"is really a lookup into the Personnel table)."
+"record in a *different* table (e.g. a project's \"PI\" field is really a "
+"lookup into the Member table)."
 msgstr ""
 "Detrás de escena, la ontología está escrita en "
-"[OWL](https://www.w3.org/OWL/) (el lenguaje estándar para describir cosas"
-" y sus relaciones en la Web Semántica) y se aloja como un archivo normal "
+"[OWL](https://www.w3.org/OWL/) (el lenguaje estándar para describir cosas "
+"y sus relaciones en la Web Semántica) y alojada como un archivo normal "
 "que la aplicación lee a través de la red. Junto al significado *real* de "
-"una clase — \"un Proyecto tiene un título, una fecha de inicio, un "
-"importe de financiación\" — la ontología también incluye un pequeño "
-"conjunto de instrucciones adicionales específicas para esta aplicación: "
-"qué tipo de campo usar para cada dato (una casilla de texto simple, un "
-"selector de fecha, una lista desplegable, un campo de divisa, una "
-"búsqueda en otra tabla...), en qué orden aparecen los campos, cuáles son "
-"obligatorios, qué opciones tiene cada lista desplegable y cómo se llaman "
-"en cada idioma, y qué campos son en realidad referencias a un registro de"
-" *otra* tabla (por ejemplo, el campo \"IP Responsable\" de un proyecto es"
-" en realidad una búsqueda en la tabla de Personal)."
+"una clase — «un Proyecto tiene un título, una fecha de inicio, un importe "
+"de financiación» — la ontología lleva también un pequeño conjunto de "
+"instrucciones adicionales específicamente para esta aplicación: qué tipo "
+"de casilla dibujar para un campo (una casilla de texto simple, un "
+"selector de fecha, un desplegable, un campo de moneda, una búsqueda en "
+"otra tabla...), en qué orden aparecen los campos, qué campos son "
+"obligatorios, qué opciones de desplegable existen y cómo se llaman en "
+"cada idioma, y qué campos son en realidad referencias a un registro de "
+"una tabla *distinta* (p. ej., el campo «IP» de un proyecto es en realidad "
+"una búsqueda en la tabla de Miembros)."
 
-#: ../../source/philosophy.md:53 98e36b1d6d7747608b64884222e2b5da
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:53
+#: eeb9a858fb4e481394b38b85b97ee415
 msgid ""
 "When an administrator opens a form, the application asks the ontology "
 "\"what does a Project look like right now?\", gets back that list of "
@@ -152,11 +163,13 @@ msgstr ""
 " campo a la ontología, aparecerá en el formulario la próxima vez que "
 "alguien lo cargue — sin esperar a una nueva versión del software."
 
-#: ../../source/philosophy.md:59 5d8cb67327ee488bae273cdc3d62ff08
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:59
+#: 492b0305663c42ed838b3a347dbe1f4f
 msgid "Strict separation of code from structure"
 msgstr "Separación estricta entre el código y la estructura"
 
-#: ../../source/philosophy.md:61 52bf38c3faf24ccc852fe48bae2236bf
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:61
+#: 51ef460ac15e43f4b1fd5a50ae0f7adf
 msgid ""
 "It's worth being precise about what this means, because it's easy to "
 "undersell: the application's code does not contain the word \"Project,\" "
@@ -181,7 +194,8 @@ msgstr ""
 "registros que coincidan con ella\". La ontología es el único lugar que "
 "dice qué es lo que el instituto está registrando realmente."
 
-#: ../../source/philosophy.md:72 555a89b2f85c494ca2b6911590e08149
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:72
+#: 3e2ca9ee3ad043579d33976deacb7bf8
 msgid ""
 "This is also why the system can safely be handed to people who don't "
 "write code: the worst a mistake in the ontology can do is produce a "
@@ -195,11 +209,13 @@ msgstr ""
 " de seguridad ni hacer caer el servidor, como sí podría hacerlo un cambio"
 " de código, ya que las rutas de código en sí nunca cambian."
 
-#: ../../source/philosophy.md:78 019c6d8b813d4bd8975475e3c6c2986d
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:78
+#: 4af9205c7c9b4bb2b76ab466f47692ca
 msgid "Multilingual by the same mechanism, not as an afterthought"
 msgstr "Multilingüe gracias al mismo mecanismo, no como algo añadido después"
 
-#: ../../source/philosophy.md:80 37cabf89131a44da808eb5de4513a748
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:80
+#: 31f1de8822444f4886873bc08ed2b579
 msgid ""
 "Every label, every dropdown option, and every help tooltip in the "
 "ontology is written once per language (English and Spanish today) as "
@@ -211,20 +227,43 @@ msgid ""
 "to each class in the ontology, not building a new feature."
 msgstr ""
 "Cada etiqueta, cada opción de un desplegable y cada texto de ayuda en la "
-"ontología se escribe una vez por idioma (inglés y español, por el momento) "
-"como datos normales en la misma clase — no como un archivo de traducción "
-"aparte, que haya que mantener sincronizado a mano. La aplicación en "
-"ejecución muestra un pequeño selector de idioma en la parte superior de "
-"cada página; al cambiarlo, se vuelve a leer la *misma* ontología, "
-"simplemente pidiendo la etiqueta en español en lugar de en inglés. Añadir"
-" un tercer idioma más adelante consistiría en añadir una tercera etiqueta"
-" a cada clase de la ontología,y no en construir una función nueva."
+"ontología se escribe una vez por idioma (inglés y español, por el "
+"momento) como datos normales en la misma clase — no como un archivo de "
+"traducción aparte, que haya que mantener sincronizado a mano. La "
+"aplicación en ejecución muestra un pequeño selector de idioma en la parte"
+" superior de cada página; al cambiarlo, se vuelve a leer la *misma* "
+"ontología, simplemente pidiendo la etiqueta en español en lugar de en "
+"inglés. Añadir un tercer idioma más adelante consistiría en añadir una "
+"tercera etiqueta a cada clase de la ontología,y no en construir una "
+"función nueva."
 
-#: ../../source/philosophy.md:89 cb0b3486c8594fb8a51ad7992a0a33b1
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:89
+#: 0828f38075ea42c28f886fbb698f131c
+msgid ""
+"The same goes for the smaller pieces of text around the fields — the "
+"hints inside boxes, the captions of buttons, the notes beside a field, "
+"the names of the entries in the Query Data list: each is a class in the "
+"ontology with a label per language (see [Data Model](data_model.md"
+"#interface-text-lives-in-the-ontology)). A few older parts of the "
+"interface are still written directly into the application in English; "
+"they are being moved across as they are touched."
+msgstr ""
+"Lo mismo ocurre con los fragmentos de texto más pequeños que rodean a los "
+"campos — las sugerencias dentro de las casillas, los rótulos de los "
+"botones, las notas junto a un campo, los nombres de las entradas de la "
+"lista Query Data: cada uno es una clase de la ontología con una etiqueta "
+"por idioma (véase [Modelo de "
+"datos](data_model.md#interface-text-lives-in-the-ontology)). Algunas "
+"partes más antiguas de la interfaz siguen escritas directamente en inglés "
+"en la aplicación; se van trasladando a medida que se tocan."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:96
+#: d7b5bdb8dadf4bf1b6ced9cbb9008be7
 msgid "Is this novel? Where it sits relative to other approaches"
 msgstr "¿Es esto novedoso? Cómo se sitúa frente a otros enfoques"
 
-#: ../../source/philosophy.md:91 806b829039064dfd840d9d774d72ebd4
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:98
+#: f0a65e9b9d3b469ba2f5a297d47d3c0d
 msgid ""
 "Generating a database and a CRUD (create/read/update/delete) interface "
 "from a schema is not a new idea — it's the whole premise behind Ruby on "
@@ -239,14 +278,15 @@ msgstr ""
 "(read)/actualizar (update)/eliminar (delete)) a partir de un esquema no "
 "es una idea nueva — es la premisa completa detrás del \"scaffolding\" de "
 "Ruby on Rails y del sitio de administración de Django, y detrás de las "
-"plataformas \"de bajo código\" (\"low-code\") más recientes, como Airtable"
-" o NocoDB. Vale la pena ser explícitos sobre porqué este proyecto es algo"
-" realmente distinto, y no solo otro más en la lista, y sobre los "
+"plataformas \"de bajo código\" (\"low-code\") más recientes, como "
+"Airtable o NocoDB. Vale la pena ser explícitos sobre porqué este proyecto"
+" es algo realmente distinto, y no solo otro más en la lista, y sobre los "
 "antecedentes reales más cercanos a él — porque la respuesta en realidad "
 "es \"más cercano de lo que se podría pensar, pero no igual a nada de uso "
 "extendido\":"
 
-#: ../../source/philosophy.md:100 f0b2687fc21d44758236b316c3b3ea56
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:107
+#: ac15163609ab4431a9a83f5cc07c56c7
 msgid ""
 "**Rails/Django scaffolding** generates code and database tables *from* a "
 "schema at development time; after that, the schema lives in migration "
@@ -263,7 +303,8 @@ msgstr ""
 "atajo de productividad para programadores, no una herramienta que se "
 "entrega a alguien no programa."
 
-#: ../../source/philosophy.md:106 c6a36e43543640a993c87cf7267f1192
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:113
+#: 7d2f1a2a3ebf483cbe7065158aab0ade
 msgid ""
 "**Low-code platforms** (Airtable, NocoDB, and similar) do let non-"
 "programmers add fields and change forms through a UI, which is the "
@@ -275,10 +316,10 @@ msgstr ""
 " similares) sí permiten a quien no programa añadir campos y modificar "
 "formularios mediante una interfaz de usuario, que es lo más parecido a "
 "nivel superficial. Pero el esquema que usan es interno y exclusivo de esa"
-" plataforma — no es una descripción portátil y basada en "
-"estándares. "
+" plataforma — no es una descripción portátil y basada en estándares. "
 
-#: ../../source/philosophy.md:111 70bb64f88971471d8f4a819d861abf85
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:118
+#: 554c304a31934fc69b46290023c35a37
 msgid ""
 "**[CEDAR Workbench](https://arxiv.org/abs/1905.06480)** (Stanford/Center "
 "for Expanded Data Annotation and Retrieval) is much closer in spirit: it "
@@ -304,7 +345,8 @@ msgstr ""
 "define el formulario. En nuestro caso, no existe en absoluto una capa de "
 "plantilla independiente: la ontología de dominio *es* la plantilla."
 
-#: ../../source/philosophy.md:121 0c70a638fdcf49ad86d7092c27a6ecc9
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:128
+#: 2d77da8ab8cb45f397e38005335a3297
 msgid ""
 "**[VIVO](https://www.w3.org/community/vivo/)**, the ontology-based "
 "research-information system used by many universities, is probably the "
@@ -323,16 +365,17 @@ msgstr ""
 "probablemente el sistema de producción completo más parecido a este: está"
 " construido alrededor de una ontología OWL (VIVO-ISF) y usa ontologías "
 "adicionales de \"configuración de la aplicación\" y de \"modelo de "
-"visualización\", específicamente para controlar su interfaz. Esto es "
-"muy similar al enfoque de este proyecto — con la diferencia de"
-" que VIVO mantiene la ontología de visualización/configuración como una "
-"ontología auxiliar separada de la ontología del dominio, mientras "
-"que aquí las directivas de la interfaz de usuario (tipo de campo, orden "
-"de los campos, listas de respuestas, referencias cruzadas...), son "
-"propiedades de anotación directamente sobre las *mismas* clases del "
-"dominio. Es decir, un solo archivo de ontología, no dos asociados."
+"visualización\", específicamente para controlar su interfaz. Esto es muy "
+"similar al enfoque de este proyecto — con la diferencia de que VIVO "
+"mantiene la ontología de visualización/configuración como una ontología "
+"auxiliar separada de la ontología del dominio, mientras que aquí las "
+"directivas de la interfaz de usuario (tipo de campo, orden de los campos,"
+" listas de respuestas, referencias cruzadas...), son propiedades de "
+"anotación directamente sobre las *mismas* clases del dominio. Es decir, "
+"un solo archivo de ontología, no dos asociados."
 
-#: ../../source/philosophy.md:132 e8597dd973484e96b6b3eb6c53db9c6e
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:139
+#: fb49e88519b544b7a190c95cf9310534
 msgid ""
 "**Wikibase** (the software behind Wikidata) drives its entity-editing "
 "forms from property *datatypes* — a property declared as \"quantity,\" "
@@ -355,7 +398,8 @@ msgstr ""
 "propiedades tipadas) en lugar de una jerarquía completa de clases OWL con"
 " listas de campos, orden y árboles de respuestas multilingües por clase."
 
-#: ../../source/philosophy.md:141 e015850453d24175ac536e87bb088d3a
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:148
+#: a353f765db0f4f74af0e80d68b1e8a4f
 msgid ""
 "**[SHACL](https://www.w3.org/TR/shacl/) combined with the [DASH "
 "vocabulary](https://datashapes.org/forms.html)** is the closest "
@@ -375,14 +419,15 @@ msgid ""
 msgstr ""
 "**[SHACL](https://www.w3.org/TR/shacl/) combinado con el [vocabulario "
 "DASH](https://datashapes.org/forms.html)** es el antecedente *basado en "
-"estándares* más cercano que se ha encontrado para este patrón en concreto. SHACL"
-" es el estándar del W3C para describir restricciones sobre datos RDF (por"
-" ejemplo, \"esta clase debe tener exactamente un título, de tipo cadena "
-"de texto\"); el vocabulario DASH lo extiende con anotaciones específicas "
-"de interfaz — `dash:editor`, `dash:singleLine`, `dash:defaultViewForRole`"
-" — de modo que una *SHACL shape* (\"forma\") puede llevar a la vez reglas"
-" de validación e instrucciones de representación visual, y herramientas "
-"como [Schímatos](https://github.com/schimatos/schimatos.org) y [shacl-"
+"estándares* más cercano que se ha encontrado para este patrón en "
+"concreto. SHACL es el estándar del W3C para describir restricciones sobre"
+" datos RDF (por ejemplo, \"esta clase debe tener exactamente un título, "
+"de tipo cadena de texto\"); el vocabulario DASH lo extiende con "
+"anotaciones específicas de interfaz — `dash:editor`, `dash:singleLine`, "
+"`dash:defaultViewForRole` — de modo que una *SHACL shape* (\"forma\") "
+"puede llevar a la vez reglas de validación e instrucciones de "
+"representación visual, y herramientas como "
+"[Schímatos](https://github.com/schimatos/schimatos.org) y [shacl-"
 "form](https://github.com/ULB-Darmstadt/shacl-form) generan formularios de"
 " edición reales directamente a partir de \"SHACL shapes\" anotadas de "
 "esta manera. Esto es conceptualmente lo mismo que hace este proyecto — "
@@ -391,7 +436,8 @@ msgstr ""
 "clases OWL simples y un pequeño vocabulario `local:` hecho a medida en "
 "lugar de SHACL/DASH."
 
-#: ../../source/philosophy.md:157 6114feaf812d40edacde577bee4c98f1
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:164
+#: 7366bbe89cb946d4b7ef9c51217996fc
 msgid ""
 "Put together: the idea of using a schema to drive a form is old, and the "
 "idea of layering UI hints onto a semantic schema has real, if narrowly-"
@@ -414,21 +460,23 @@ msgstr ""
 " una jerarquía completa de clases OWL como única fuente de verdad para el"
 " modelo del dominio, con directivas de widget/orden/referencia-cruzada"
 "/etiqueta-multilingüe por clase incorporadas directamente en esa misma "
-"ontología en lugar de en una segunda ontología enlazada, y el mismo mecanismo extendido para reconstruir "
-"el aspecto que tenía un registro en cualquier momento del pasado (gracias a la "
-"función de historial SCD)— todo "
-"en una única herramienta administrativa de producción construida para "
-"personas curadoras que no programan, y no en un prototipo de "
+"ontología en lugar de en una segunda ontología enlazada, y el mismo "
+"mecanismo extendido para reconstruir el aspecto que tenía un registro en "
+"cualquier momento del pasado (gracias a la función de historial SCD)— "
+"todo en una única herramienta administrativa de producción construida "
+"para personas curadoras que no programan, y no en un prototipo de "
 "investigación ni en un entorno de pruebas para la autoría de metadatos. "
 "Si existen antecedentes que hagan exactamente esta combinación, no son "
-"ampliamente conocidos — lo cual es tanto una invitación a seguir buscando,"
-" como una afirmación de originalidad."
+"ampliamente conocidos — lo cual es tanto una invitación a seguir "
+"buscando, como una afirmación de originalidad."
 
-#: ../../source/philosophy.md:171 258f764b90fa4eb1bfa231b5346bd3b2
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:178
+#: 2bdc83f55e274db981a747c4cef83aac
 msgid "Why not adopt SHACL/DASH directly?"
 msgstr "¿Por qué no adoptar SHACL/DASH directamente?"
 
-#: ../../source/philosophy.md:173 76056ff09eca48fab96f913479d0dafc
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:180
+#: 6788f53c8aa74820b0defad6c6b7547d
 msgid ""
 "Given how close SHACL plus the DASH vocabulary comes to this project's "
 "own approach, it's a fair question why this system uses a small purpose-"
@@ -439,10 +487,12 @@ msgstr ""
 "Dado lo cerca que están SHACL y el vocabulario DASH del enfoque propio de"
 " este proyecto, es una pregunta razonable porqué este sistema usa un "
 "pequeño vocabulario `local:` hecho a medida en lugar de esos estándares "
-"del W3C o de la comunidad directamente. Dos razones principales, una sobre "
-"para qué sirve SHACL y otra sobre lo que este sistema necesitaba además:"
+"del W3C o de la comunidad directamente. Dos razones principales, una "
+"sobre para qué sirve SHACL y otra sobre lo que este sistema necesitaba "
+"además:"
 
-#: ../../source/philosophy.md:179 b9ce95ea51b1470e89f653d332aebda2
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:186
+#: e84078baca0947b3bd2682b88472bf59
 msgid ""
 "**SHACL solves a different primary problem than this system needed "
 "solved.** SHACL's core purpose is *validating* that RDF data conforms to "
@@ -459,21 +509,22 @@ msgid ""
 msgstr ""
 "**SHACL resuelve un problema principal distinto del que este sistema "
 "necesitaba resolver.** El propósito central de SHACL es *validar* que los"
-" datos RDF cumplen con una shape — algo del tipo \"esta clase debe tener exactamente un"
-" título, de tipo cadena de texto\". DASH añade indicaciones de interfaz "
-"sobre ese vocabulario de validación como una extensión, no como su "
-"objetivo principal de diseño. El requisito central de nuestro sistema va en "
-"la dirección contraria: mostrar primero un *formulario* funcional, "
-"ordenado y multilingüe, con la validación como una parte de ello, no como "
-"punto de partida. Unas clases OWL simples con un pequeño vocabulario "
-"de anotación a medida fueron sencillamente el camino más directo para "
-"\"leer una clase, obtener un formulario\" — y OWL ya era la elección "
-"natural para las partes de la ontología que llevan el significado real "
-"del dominio (como, \"¿qué *es* un Proyecto?\"), así que reutilizarlo también para las"
-" anotaciones de interfaz significaba el uso un solo lenguaje de modelado en todo "
-"el sistema, no dos."
+" datos RDF cumplen con una shape — algo del tipo \"esta clase debe tener "
+"exactamente un título, de tipo cadena de texto\". DASH añade indicaciones"
+" de interfaz sobre ese vocabulario de validación como una extensión, no "
+"como su objetivo principal de diseño. El requisito central de nuestro "
+"sistema va en la dirección contraria: mostrar primero un *formulario* "
+"funcional, ordenado y multilingüe, con la validación como una parte de "
+"ello, no como punto de partida. Unas clases OWL simples con un pequeño "
+"vocabulario de anotación a medida fueron sencillamente el camino más "
+"directo para \"leer una clase, obtener un formulario\" — y OWL ya era la "
+"elección natural para las partes de la ontología que llevan el "
+"significado real del dominio (como, \"¿qué *es* un Proyecto?\"), así que "
+"reutilizarlo también para las anotaciones de interfaz significaba el uso "
+"un solo lenguaje de modelado en todo el sistema, no dos."
 
-#: ../../source/philosophy.md:191 42801da078ac4dd893daa14f6ba42697
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:198
+#: 77b9127bfd6547b2abfa348b31bb491e
 msgid ""
 "**The data storage pattern underneath predates, and doesn't match, how "
 "SHACL-validated data is normally shaped.** Every value in this system is "
@@ -501,14 +552,15 @@ msgstr ""
 " y reconstruir después la forma exacta que tenía un registro con "
 "anterioridad, nodo de atributo por nodo de atributo (véase la página "
 "[Modelo de datos](data_model.md) para conocer la forma completa, "
-"incluidos los metadatos a nivel de grafo junto a ella). Las "
-"SHACL shapes están diseñadas para validar el estilo de triplete directo; "
-"adoptar SHACL/DASH como esquema principal habría significado abandonar "
-"el patrón de almacenamiento (un rediseño mucho mayor, que afectaría "
-"también al mecanismo de historial) o bien escribir shapes que, de todos "
-"modos, no se parecerían al SHACL idiomático."
+"incluidos los metadatos a nivel de grafo junto a ella). Las SHACL shapes "
+"están diseñadas para validar el estilo de triplete directo; adoptar "
+"SHACL/DASH como esquema principal habría significado abandonar el patrón "
+"de almacenamiento (un rediseño mucho mayor, que afectaría también al "
+"mecanismo de historial) o bien escribir shapes que, de todos modos, no se"
+" parecerían al SHACL idiomático."
 
-#: ../../source/philosophy.md:206 c33c2233f0144b1c909f92337c0f2a5e
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:213
+#: 2125e54782fa4dae8f8fe86be63edfb1
 msgid ""
 "None of that rules out SHACL for the future — a SHACL shapes file "
 "*generated from* this ontology, purely as a read-only artifact other "
@@ -517,22 +569,24 @@ msgid ""
 "the ontology-plus-`local:`-vocabulary approach as the thing actually "
 "driving the running application."
 msgstr ""
-"Nada de esto descarta el uso de SHACL en el futuro — un archivo de SHACL shapes "
-"*generado a partir* de esta ontología, puramente como un artefacto de "
-"solo lectura que otras herramientas compatibles con estándares pudieran "
-"usar para entender o validar los datos exportados, sería una adición "
-"genuinamente útil y de bajo riesgo. Simplemente no sustituiría al enfoque"
-" de ontología + vocabulario `local:` como lo que realmente controla la "
-"aplicación en ejecución."
+"Nada de esto descarta el uso de SHACL en el futuro — un archivo de SHACL "
+"shapes *generado a partir* de esta ontología, puramente como un artefacto"
+" de solo lectura que otras herramientas compatibles con estándares "
+"pudieran usar para entender o validar los datos exportados, sería una "
+"adición genuinamente útil y de bajo riesgo. Simplemente no sustituiría al"
+" enfoque de ontología + vocabulario `local:` como lo que realmente "
+"controla la aplicación en ejecución."
 
-#: ../../source/philosophy.md:213 01f4bd4c334947c69e3f51a81bf1402f
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:220
+#: 979057e2d13f418d9ad330f3cb9fb1d2
 msgid "A reusable pattern, not a one-off"
 msgstr "Un patrón reutilizable, no algo de una sola vez"
 
-#: ../../source/philosophy.md:215 29dd732d19524f9f930f6ff0f513b0d6
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:222
+#: 8fb1fbc3b460448998f8ebc25f283077
 msgid ""
 "None of the application code described above knows anything about "
-"projects, personnel, or publications specifically — it only knows how to "
+"projects, members, or publications specifically — it only knows how to "
 "read *some* ontology and render *whatever* it finds. That means the same "
 "codebase can become an entirely different administrative tool just by "
 "pointing it at a different ontology and a different (empty) triple store:"
@@ -545,27 +599,28 @@ msgid ""
 "snapshot every change\" engine exactly once, well, and let it serve many "
 "different domains over time."
 msgstr ""
-"Nada del código de la aplicación descrito anteriormente \"conoce\" nada "
-"sobre proyectos, personal o publicaciones en concreto — solo sabe leer "
-"*alguna* ontología y mostrar *lo que sea* que encuentre. Eso significa "
-"que la misma base de código puede convertirse en una herramienta "
-"administrativa completamente distinta con solo apuntarla a otra ontología"
-" y otro almacén de tripletes (vacío): un inventario de equipos de "
-"laboratorio, un seguimiento de cumplimiento de subvenciones, una base de "
-"datos de colecciones de museo... — cualquier cosa que pueda describirse como"
-" un conjunto de registros tipados con campos — sin escribir código de "
-"aplicación nuevo. La ontología es lo único que habría que cambiar. Esa "
-"reutilización es un objetivo de diseño deliberado, no es algo trivial: "
-"se trataba de construir el motor de \"leer una ontología, mostrarla, guardar lo que "
-"llega, y dejar que un mecanismo de historial independiente capture cada "
-"cambio\" una sola vez, bien hecho, y dejar que sirva a muchos dominios "
-"distintos a lo largo del tiempo."
+"Nada del código de la aplicación descrito anteriormente «conoce» nada "
+"sobre proyectos, miembros o publicaciones en concreto — solo sabe leer "
+"*alguna* ontología y mostrar *lo que* encuentre. Eso significa que la "
+"misma base de código puede convertirse en una herramienta administrativa "
+"totalmente distinta con solo apuntarla a otra ontología y a un almacén de "
+"tripletas distinto (vacío): un registro de equipamiento de laboratorio, "
+"un control del cumplimiento de ayudas, una base de datos de colecciones "
+"de un museo — cualquier cosa que pueda describirse como un conjunto de "
+"registros tipados con campos — sin escribir código de aplicación nuevo. "
+"La ontología es lo único que habría que cambiar. Esa reutilización es un "
+"objetivo de diseño deliberado, no un accidente: construir una sola vez, y "
+"bien, el motor de «leer una ontología, mostrarla, guardar lo que vuelva y "
+"dejar que un mecanismo de historial independiente tome una instantánea de "
+"cada cambio», y dejar que sirva a muchos dominios distintos con el tiempo."
 
-#: ../../source/philosophy.md:229 e194fdfc88b54189b525543de3cf8396
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:236
+#: b1f4b1c8f1f547c5b2e291441ddc262f
 msgid "Further reading"
 msgstr "Para más información..."
 
-#: ../../source/philosophy.md:231 08c786c9cf9d464b83d28c68407dd7a2
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:238
+#: 7cb50091ac1141bfad261246670b3c72
 msgid ""
 "[VIVO Open Research Networking Community "
 "Group](https://www.w3.org/community/vivo/)"
@@ -573,21 +628,25 @@ msgstr ""
 "[VIVO Open Research Networking Community "
 "Group](https://www.w3.org/community/vivo/)"
 
-#: ../../source/philosophy.md:232 a01271a67bff44a1a2c219fec8d463f1
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:239
+#: 628da724380d494da64c59b1264c45a6
 msgid "[The CEDAR Workbench (arXiv)](https://arxiv.org/abs/1905.06480)"
 msgstr "[The CEDAR Workbench (arXiv)](https://arxiv.org/abs/1905.06480)"
 
-#: ../../source/philosophy.md:233 946b00af897a4887be4ac5f1a919e333
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:240
+#: 43141bf160ae4d2fb0f5e05c7aadc4e7
 msgid "[SHACL (W3C Recommendation)](https://www.w3.org/TR/shacl/)"
 msgstr "[SHACL (Recomendación del W3C)](https://www.w3.org/TR/shacl/)"
 
-#: ../../source/philosophy.md:234 6bba0ae183ed468caf6e3957523a5b6a
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:241
+#: 673a39502c8049678f08773eee5ce5d7
 msgid "[Form Generation using SHACL and DASH](https://datashapes.org/forms.html)"
 msgstr ""
 "[Generación de formularios con SHACL y "
 "DASH](https://datashapes.org/forms.html)"
 
-#: ../../source/philosophy.md:235 41b323e32aef41ada9ed46da9d374fa9
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/philosophy.md:242
+#: c8e66207b2774c54a6a761fafa064b41
 msgid ""
 "[Schímatos: A SHACL-Based Web-Form Generator for Knowledge Graph "
 "Editing](https://github.com/schimatos/schimatos.org)"

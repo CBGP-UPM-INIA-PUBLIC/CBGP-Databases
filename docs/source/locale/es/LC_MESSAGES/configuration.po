@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CBGP-Databases 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-25 12:32+0200\n"
+"POT-Creation-Date: 2026-10-06 18:01+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es\n"
@@ -19,24 +19,26 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: ../../source/configuration.md:1 eaaace78a7da4c488132cc039598fc61
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:1
+#: cbfed75618634426abc9d2dce92c4dd5
 msgid "Configuration"
 msgstr "Configuración"
 
-#: ../../source/configuration.md:3 f3eeea1f04ef4523ad7fc665107a6071
-#, fuzzy
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:3
+#: 11337b5d1aee475f9ddbab6b6d99b9df
 msgid ""
 "Once the two Virtuoso containers exist (see "
 "[Installation](installation.md)), the application needs a `.env` file "
 "telling it how to reach them and a few other things. Copy the template "
 "and fill it in:"
 msgstr ""
-"Una vez que existen los dos repositorios de GraphDB (véase "
-"[Instalación](installation.md)), la aplicación necesita un archivo `.env`"
-" que le indique cómo llegar a ellos, además de algunas otras cosas. Copie"
-" la plantilla y complétela:"
+"Una vez que existen los dos contenedores de Virtuoso (véase "
+"[Instalación](installation.md)), la aplicación necesita un archivo `.env` "
+"que le diga cómo llegar a ellos y algunas cosas más. Copie la plantilla y "
+"rellénela:"
 
-#: ../../source/configuration.md:11 f361a40fe1f7470fa251b24ed3bae912
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:11
+#: e1a32554ad9e4e58857765ca3a707f34
 msgid ""
 "`.env` is deliberately excluded from version control (it holds real "
 "passwords) — `.env.example` is the checked-in template with safe "
@@ -52,7 +54,8 @@ msgstr ""
 "aparece en `.env.example`, vale la pena señalarlo — significa que esta "
 "página o la plantilla se han desincronizado del código."
 
-#: ../../source/configuration.md:18 b4d784fd7e404f9d8e382886a16e051c
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:18
+#: 6aa65d06890a4576a1451351db2d6fb3
 msgid ""
 "The application refuses to start at all if a handful of these are missing"
 " — that's deliberate, so a misconfigured instance fails immediately and "
@@ -63,11 +66,13 @@ msgstr ""
 "de inmediato y de forma evidente al arrancar, en lugar de servir una "
 "pantalla de inicio de sesión rota."
 
-#: ../../source/configuration.md:22 acedeb40542245a0ba6277593155e8cc
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:22
+#: 5d11db5d24c94f5fb87fb693057d48aa
 msgid "Login accounts"
 msgstr "Cuentas de acceso"
 
-#: ../../source/configuration.md:28 3260ac586b334e79aca69e2937f2bfb0
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:28
+#: fdd5ea61ef024a1380e420a5de87092b
 msgid ""
 "Every login this instance accepts, as a single-line JSON object. Each "
 "entry's key is the username; `password` is checked as plain text against "
@@ -88,7 +93,8 @@ msgstr ""
 " envío, descritos en la [Guía de Usuario](user_guide.md)). Añada tantas "
 "cuentas como haga falta, una entrada por persona."
 
-#: ../../source/configuration.md:41 f7a877192faa41cf9aa2561ef5e8c29c
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:41
+#: 87c3933a6c9d4ee7be85bcd361c54a82
 msgid ""
 "A long, random, secret string used to cryptographically sign session "
 "cookies — anyone who knows this value could forge a logged-in session, so"
@@ -99,7 +105,8 @@ msgstr ""
 "valor podría falsificar una sesión iniciada, así que trátela igual que "
 "una contraseña. Genere una, por ejemplo, con:"
 
-#: ../../source/configuration.md:49 586cfaa64a9c4c719126fae75da60cd8
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:49
+#: eacd7d32a75f4f1f84c670e9c2df2afb
 msgid ""
 "There's no way to \"rotate\" this without invalidating every currently "
 "logged-in session (which is harmless — people just have to log in again),"
@@ -110,11 +117,13 @@ msgstr ""
 "tiene que volver a iniciar sesión), así que cambiarlo es seguro en "
 "cualquier momento."
 
-#: ../../source/configuration.md:53 ba9e471688b3495994e16c35291bf74a
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:53
+#: 68b61872689c42c6bd04cabdcf31b29e
 msgid "Ontology"
 msgstr "Ontología"
 
-#: ../../source/configuration.md:59 5149d96c37da47908f9f72bfba10abf2
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:59
+#: 44cb0083f1ac4e60bb829e966002ccb3
 msgid ""
 "Where the application reads its ontology from — this is what makes the "
 "whole system work the way described in [Philosophy & "
@@ -133,13 +142,35 @@ msgstr ""
 "valor predeterminado público que se muestra arriba es el correcto para la"
 " implementación normal de este centro; no ha"
 
-#: ../../source/configuration.md:67 cf5ea50e3ad94263bd73f927342a07a4
-#, fuzzy
-msgid "Virtuoso connection"
-msgstr "Conexión con GraphDB"
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:67
+#: 2b89ae9864eb44b8b504adf41bd8a092
+msgid ""
+"That includes the application's own interface text — hints inside boxes, "
+"the captions of small buttons, the names of entries in the Query Data "
+"list — each of which is a class in the ontology with a label per "
+"language, so it can be reworded or translated by editing the ontology "
+"rather than the application; see [Data Model](data_model.md#interface-"
+"text-lives-in-the-ontology). After editing the ontology, the manual "
+"refresh mentioned above is what makes a running application pick the "
+"change up."
+msgstr ""
+"Eso incluye el propio texto de la interfaz de la aplicación —las "
+"sugerencias dentro de las casillas, los rótulos de los botones pequeños, "
+"los nombres de las entradas de la lista Query Data—, cada uno de los "
+"cuales es una clase de la ontología con una etiqueta por idioma, de modo "
+"que puede reformularse o traducirse editando la ontología y no la "
+"aplicación; véase [Modelo de "
+"datos](data_model.md#interface-text-lives-in-the-ontology). Después de "
+"editar la ontología, la actualización manual mencionada antes es lo que "
+"hace que una aplicación en funcionamiento recoja el cambio."
 
-#: ../../source/configuration.md:76 e76d12f7c0cb4895bab67e916931a8e4
-#, fuzzy
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:75
+#: 84a7f1a0739b4667809fdc1b3a94ad2c
+msgid "Virtuoso connection"
+msgstr "Conexión con Virtuoso"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:84
+#: 63a4eca47919414a83e0ff1fc9c8c4f2
 msgid ""
 "`VIRTUOSO_HOST`/`VIRTUOSO_HISTORY_HOST` are where each of the two "
 "Virtuoso containers listens — `localhost:18890`/`localhost:18891` are "
@@ -150,15 +181,18 @@ msgid ""
 "in a Docker deployment (see [Installation](installation.md)'s note about "
 "this)."
 msgstr ""
-"`GRAPHDB_HOST` es dónde escucha GraphDB en sí — `localhost:7200` es "
-"correcto cuando la aplicación se ejecuta directamente en la misma máquina"
-" que GraphDB; al ejecutarse con `docker compose`, este valor se sustituye"
-" automáticamente para acceder al contenedor `graphdb` por su nombre de "
-"servicio, por lo que es seguro dejarlo en su valor por defecto incluso en"
-" un despliegue con Docker (véase la nota al respecto en "
+"`VIRTUOSO_HOST`/`VIRTUOSO_HISTORY_HOST` indican dónde escucha cada uno de "
+"los dos contenedores de Virtuoso — `localhost:18890`/`localhost:18891` "
+"son correctos cuando la aplicación se ejecuta directamente en la misma "
+"máquina que Virtuoso; al ejecutarla con `docker compose`, ambos se "
+"sustituyen automáticamente para llegar a los contenedores "
+"`virtuoso-current`/`virtuoso-history` por el nombre de su servicio, de "
+"modo que se pueden dejar con los valores por defecto incluso en un "
+"despliegue con Docker (véase la nota sobre esto en "
 "[Instalación](installation.md))."
 
-#: ../../source/configuration.md:84 7002fb007017495daf65dc89e01754b8
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:92
+#: 80b2e8f14d4e4bc49bc10c79f586f1a8
 msgid ""
 "`VIRTUOSO_USER` is almost always `dba` — Virtuoso's built-in superuser; "
 "this application doesn't currently provision a separate least-privilege "
@@ -167,29 +201,35 @@ msgid ""
 "[Installation](installation.md)); editing it in `.env` later doesn't "
 "retroactively change a running container's actual password."
 msgstr ""
+"`VIRTUOSO_USER` es casi siempre `dba` — el superusuario integrado de "
+"Virtuoso; esta aplicación no crea por ahora un rol SPARQL independiente "
+"con privilegios mínimos. `VIRTUOSO_PASS` es la contraseña de esa cuenta — "
+"se establece una sola vez, la primera vez que arranca cada contenedor de "
+"Virtuoso (véase [Instalación](installation.md)); editarla después en "
+"`.env` no cambia retroactivamente la contraseña real de un contenedor que "
+"ya está en marcha."
 
-#: ../../source/configuration.md:91 344de9a0238f4f4dbcf023204c3fa33b
-#, fuzzy
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:99
+#: a82a0ab023cb49e4b5c81fbeda1b4885
 msgid ""
 "Two optional variables, `HISTORY_USER`/`HISTORY_PASS`, exist only for the"
 " unusual case where the history store needs *different* credentials than "
 "the current-state one — leave them unset (the normal case) and they "
 "quietly reuse `VIRTUOSO_USER`/`VIRTUOSO_PASS`."
 msgstr ""
-"`GRAPHDB_DBNAME` y `GRAPHDB_HISTORY` deben coincidir exactamente con los "
-"dos IDs creados durante la [Instalación](installation.md) — un solo "
-"carácter que no coincida aquí, es la causa más habitual de que una "
-"instancia recién instalada no muestre datos o no arranque. Dos variables "
-"opcionales, `HISTORY_USER`/`HISTORY_PASS`, existen solo para el caso "
-"inusual en que el repositorio de historial necesite credenciales "
-"*distintas* de las del repositorio de estado actual — si se dejan sin "
-"definir (el caso normal) reutilizarán `GRAPHDB_USER`/`GRAPHDB_PASS`."
+"Dos variables opcionales, `HISTORY_USER`/`HISTORY_PASS`, existen solo "
+"para el caso poco habitual en que el almacén de historial necesite "
+"credenciales *distintas* de las del almacén de estado actual — déjelas "
+"sin definir (lo normal) y reutilizan en silencio "
+"`VIRTUOSO_USER`/`VIRTUOSO_PASS`."
 
-#: ../../source/configuration.md:96 30752ac05c1e41cbbb91ae4c3b1de198
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:104
+#: 7c3966ae437b4dda942ae28416675028
 msgid "Admin email notifications"
 msgstr "Notificaciones por correo al administrador"
 
-#: ../../source/configuration.md:109 687c7166c0ea47d2b5b57f953d5d3cce
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:117
+#: 7eacb02537854b59a63a057beac7a03d
 msgid ""
 "Whenever someone submits a form through the public-facing User side of "
 "the application (see [User Guide](user_guide.md)), an email goes out to "
@@ -214,12 +254,96 @@ msgstr ""
 "correctos, igual que al configurar cualquier otra aplicación para enviar "
 "correo a través de él."
 
-#: ../../source/configuration.md:119 de9265995b674a4b8451a570563b694a
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:127
+#: aeb687045bf34b65a2f00921c5fc7548
+msgid "Activity triggers"
+msgstr "Disparadores de actividad"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:134
+#: 0c1b9e01708a4714937ebe46d43b79a8
+msgid ""
+"The ontology can declare that selecting a specific answer (e.g. marking a"
+" new member \"approved\"), or creating a new record of a specific form, "
+"should send an email — see `local:has-triggers` in the ontology "
+"documentation. Ontology triggers only ever reference a *symbolic* "
+"recipient key (e.g. `\"photo_id_scheduler\"`), never a literal address — "
+"the ontology is synced publicly (w3id.org, GitHub Pages), so no real "
+"person's email address can live in it. `TRIGGER_RECIPIENTS` is where each"
+" key actually resolves to an address, on this deployment only; it's a "
+"JSON object, kept on one line, same convention as `CBGP_USERS`. If an "
+"ontology trigger references a key that isn't listed here, only that one "
+"trigger silently fails (logged via `warn`, not fatal) — nothing else is "
+"affected, the same fail-safe pattern as a malformed `has-formulas`/`has-"
+"defaults` entry elsewhere in the ontology."
+msgstr ""
+"La ontología puede declarar que seleccionar una respuesta concreta (p. "
+"ej., marcar a un miembro nuevo como «aprobado»), o crear un registro "
+"nuevo de un formulario concreto, debe enviar un correo — véase "
+"`local:has-triggers` en la documentación de la ontología. Los "
+"disparadores de la ontología solo hacen referencia a una clave de "
+"destinatario *simbólica* (p. ej. `\"photo_id_scheduler\"`), nunca a una "
+"dirección literal — la ontología se sincroniza públicamente (w3id.org, "
+"GitHub Pages), por lo que ninguna dirección de correo de una persona real "
+"puede vivir en ella. `TRIGGER_RECIPIENTS` es donde cada clave se resuelve "
+"realmente en una dirección, solo en este despliegue; es un objeto JSON, "
+"en una sola línea, con la misma convención que `CBGP_USERS`. Si un "
+"disparador de la ontología hace referencia a una clave que no figura "
+"aquí, solo ese disparador falla en silencio (se registra con `warn`, no "
+"es fatal) — nada más se ve afectado, el mismo patrón a prueba de fallos "
+"que una entrada `has-formulas`/`has-defaults` mal formada en otra parte "
+"de la ontología."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:148
+#: bb9a1a4315de4210981c40e29d16cba2
+msgid ""
+"Both settings are optional. Without `TRIGGER_RECIPIENTS`, any ontology "
+"trigger asking for a recipient key simply fails (logged, no email sent). "
+"Without `APP_BASE_URL`, trigger emails' \"open this record\" links "
+"default to `http://localhost:4567`, which is only correct for local "
+"development — set it to this deployment's real external URL in "
+"production."
+msgstr ""
+"Ambos ajustes son opcionales. Sin `TRIGGER_RECIPIENTS`, cualquier "
+"disparador de la ontología que pida una clave de destinatario simplemente "
+"falla (se registra, no se envía ningún correo). Sin `APP_BASE_URL`, los "
+"enlaces «abrir este registro» de los correos de los disparadores son por "
+"defecto `http://localhost:4567`, que solo es correcto para el desarrollo "
+"local — en producción, indique la URL externa real de este despliegue."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:154
+#: 8fecb2587db54a918219676aa54664b5
+msgid "Verbose SPARQL/debug logging"
+msgstr "Registro detallado de SPARQL y depuración"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:156
+#: 5c1c9c0149c94aaf997ac228e55cebde
+msgid ""
+"Set `CBGP_DEBUG_SPARQL=true` (any truthy string) to re-enable a large "
+"volume of `warn`-based debug logging that is silent by default: full "
+"generated SPARQL query text, raw result-set dumps, and internal field-"
+"cache tracing. It's off by default because printing this on every query "
+"is expensive enough to visibly slow down a bulk operation (e.g. loading "
+"many publications by DOI at once) — turn it on only while actively "
+"debugging a query-shape problem, not for routine operation."
+msgstr ""
+"Defina `CBGP_DEBUG_SPARQL=true` (cualquier cadena verdadera) para "
+"reactivar un gran volumen de registros de depuración basados en `warn` "
+"que por defecto están en silencio: el texto completo de las consultas "
+"SPARQL generadas, volcados de conjuntos de resultados en bruto y trazas "
+"de la caché interna de campos. Está desactivado por defecto porque "
+"imprimir esto en cada consulta es lo bastante costoso como para "
+"ralentizar visiblemente una operación masiva (p. ej., cargar muchas "
+"publicaciones por DOI de una vez) — actívelo solo mientras se depura "
+"activamente un problema con la forma de una consulta, no para el "
+"funcionamiento habitual."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:164
+#: 810a824336724bec8bd9a7fa3d9a04b4
 msgid "A note on security"
 msgstr "Una nota sobre seguridad"
 
-#: ../../source/configuration.md:121 c9e97c9cdf12478d945fb2c5aa1ac331
-#, fuzzy
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:166
+#: 219a8e36398848bba8198c6da5cbb90f
 msgid ""
 "Every password and secret on this page — login passwords inside "
 "`CBGP_USERS`, `VIRTUOSO_PASS`, `NOTIFY_PW`, `CBGP_SECRET` — lives *only* "
@@ -229,16 +353,17 @@ msgid ""
 " the application controls. There's nothing there for someone to break "
 "into and steal, because none of it is stored there in the first place."
 msgstr ""
-"Cada contraseña y secreto de esta página — contraseñas de acceso dentro "
-"de `CBGP_USERS`, `GRAPHDB_PASS`, `NOTIFY_PW`, `CBGP_SECRET` — existe "
-"*únicamente* como una variable de entorno que la aplicación lee una vez "
-"al arrancar. No hay ninguna base de datos de usuarios/contraseñas dentro "
-"de la propia aplicación: ninguna tabla de cuentas, ningún hash de "
-"contraseña, nada almacenado en GraphDB ni en ningún otro lugar que la "
-"aplicación controle. No hay nada que alguien pueda vulnerar y robar, "
-"porque en primer lugar, nada de eso se almacena ahí."
+"Todas las contraseñas y secretos de esta página — las contraseñas de "
+"acceso dentro de `CBGP_USERS`, `VIRTUOSO_PASS`, `NOTIFY_PW`, "
+"`CBGP_SECRET` — existen *solo* como una variable de entorno que la "
+"aplicación lee una vez al arrancar. No hay ninguna base de datos de "
+"usuarios y contraseñas dentro de la propia aplicación: ni tabla de "
+"cuentas, ni contraseñas cifradas, nada guardado en Virtuoso ni en ningún "
+"otro lugar que controle la aplicación. No hay nada que alguien pueda "
+"reventar y robar, porque nada de eso se guarda allí en primer lugar."
 
-#: ../../source/configuration.md:129 f0b53acf60c343eb9adf42763ba39c74
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:174
+#: 50223dbb3d694aaeb5f3ed07b8a464f6
 msgid ""
 "`.env` is the *convenient* way to supply these values — a plain file that"
 " gets read once at startup — not the *only* way, and not a requirement. "
@@ -266,11 +391,13 @@ msgstr ""
 "use normalmente para secretos — la aplicación no sabe, ni le importa, qué"
 " mecanismo se los proporcionó."
 
-#: ../../source/configuration.md:141 973654925b784944a1d41dd2de1d69c7
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:186
+#: 972994d65da34e7189450ff814922ca6
 msgid "After changing `.env`"
 msgstr "Después de modificar `.env`"
 
-#: ../../source/configuration.md:143 0dbaad5d9e754eba92a842c129d89069
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:188
+#: 6ca9dcf7ddea4c0bbb610dc147eb1db4
 msgid ""
 "The application only reads `.env` once, at startup — editing it while the"
 " application is already running has no effect until it's restarted:"
@@ -279,11 +406,13 @@ msgstr ""
 " aplicación ya está en marcha no tiene ningún efecto hasta que se "
 "reinicia:"
 
-#: ../../source/configuration.md:146 bea558bb6aec4465bf2531c0f1c837b6
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:191
+#: fdd6afcef8f14a979a0e202b22470901
 msgid "Running natively: stop and re-run `ruby run.rb`."
 msgstr "Ejecución nativa: deténgala y vuelva a ejecutar `ruby run.rb`."
 
-#: ../../source/configuration.md:147 65d3e51f751c462da35d507fdfcbb480
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:192
+#: 1d27fed1d97f4a8faac1d104d6346f57
 msgid ""
 "Running via `docker compose`: `docker compose up -d` again picks up a "
 "changed `.env` automatically (Docker Compose re-creates a container whose"
@@ -293,7 +422,8 @@ msgstr ""
 "recoge automáticamente un `.env` modificado (Docker Compose recrea "
 "cualquier contenedor cuya configuración haya cambiado)."
 
-#: ../../source/configuration.md:151 cd03bd74b83e4f0f84ca682e4cdde380
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/configuration.md:196
+#: 62916e83b1ad45f3adff9486663ddfc3
 msgid ""
 "Note that this is different from *ontology* changes, which the running "
 "application picks up on the next `/cbgp/refresh` without needing a "

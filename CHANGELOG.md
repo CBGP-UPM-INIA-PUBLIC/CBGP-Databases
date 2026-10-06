@@ -17,6 +17,19 @@ Ontology changes ship in CBGP-Ontology `ba54d03`; this release needs that
 ontology (several fields are renamed).
 
 ### Added
+- **Documentation brought up to date** (English and Spanish, the whole
+  site). New: the search features (the all-types entry, Show all records,
+  `today`, "or no value", the "what is running now?" recipe, Record type and
+  the value links), curating a member's project submission and the project
+  forms, conditionally required fields, typed dates, and interface text in the
+  ontology. **Backup & Migration is rewritten for Virtuoso** (it still
+  described GraphDB): online backup, cold copy, a nightly script, restore and
+  server migration, every command run for real and each restore compared with
+  the original store. Corrected: the data-model worked examples (they named
+  ontology nodes that no longer exist), the Time Travel examples (fields that
+  no longer exist), the DOI importer's matching rules, "Personnel" → "Member",
+  export columns. The Spanish pages that were behind (Installation,
+  Configuration, Backup) are translated again.
 - **Project forms: one shared PI, a Comments box, and two fields removed.**
   Every project form (and the user-facing one) now has the same PI field
   (`project_pi_nie`, a member lookup, required) - Personnel projects had their

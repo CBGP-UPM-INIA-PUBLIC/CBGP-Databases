@@ -56,7 +56,10 @@ The export contains exactly the columns currently shown in the results
 table — the same fields, in the same order, with the same
 controlled-vocabulary labels and cross-reference values already resolved
 to their readable form (see [Cross-References](cross_references.md)) —
-plus one extra first column identifying which record each row belongs
-to. A field that holds more than one value (see [Data
+plus two extra columns at the start: the record's identifier, and its
+**Record type** (which form wrote it; see [Search &
+Queries](search_and_queries.md#reading-the-results)). Dates are written
+as `YYYY-MM-DD`. An export of an all-types search contains the fields all
+the kinds have in common, like the list on screen. A field that holds more than one value (see [Data
 Entry](data_entry.md)) exports all of them in a single cell, separated by
 commas.

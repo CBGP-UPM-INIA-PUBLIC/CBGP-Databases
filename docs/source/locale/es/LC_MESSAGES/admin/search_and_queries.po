@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CBGP-Databases 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-09 16:58+0200\n"
+"POT-Creation-Date: 2026-10-06 18:01+0200\n"
 "PO-Revision-Date: 2026-07-09 16:58+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es\n"
@@ -19,15 +19,18 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: ../../source/admin/search_and_queries.md:1 1025282c78e1456f82a7995b9d11c2b3
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:1
+#: ac9dd0b8ffc7471c83424b124d694988
 msgid "Search & Queries"
 msgstr "Búsqueda y consultas"
 
-#: ../../source/admin/search_and_queries.md:3 cbb3c56ff66d494dbeed4ce8c1889c49
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:3
+#: 19aa3740ee6245f78afce69acca22703
 msgid "Finding the search screen"
 msgstr "Encontrar la pantalla de búsqueda"
 
-#: ../../source/admin/search_and_queries.md:5 730f1ff2ee3449c9819e0e59a29c1c0b
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:5
+#: 95b4ed8483e44c5f99bd1d0e47a723c9
 msgid ""
 "Every record type reachable from the dashboard (see [Data "
 "Entry](data_entry.md)) has its own search screen, built the same "
@@ -39,65 +42,230 @@ msgid ""
 "several searches for records matching *all* of them at once — there's no "
 "way to search for \"either this or that\" within a single search."
 msgstr ""
-"Cada tipo de registro al que se puede acceder desde el panel de control (véase "
-"[Entrada de datos](data_entry.md)) cuenta con su propia pantalla de "
-"búsqueda, diseñada de la misma manera basada en la ontología que los "
-"formularios de añadir/editar — los campos disponibles para búsqueda y"
-" el tipo de entrada que acepta cada uno, provienen de la misma fuente y"
-" siguen las mismas reglas descritas en la sección \"El formulario en sí\" "
-"de [Entrada de datos](data_entry.md). Rellenar un solo campo y dejar "
-"el resto en blanco busca solo por ese campo; rellenar varios busca "
-"registros que coincidan con *todos* ellos a la vez — no hay forma de "
-"buscar \"esto o aquello\" dentro de una misma búsqueda."
+"Cada tipo de registro al que se puede acceder desde el panel de control "
+"(véase [Entrada de datos](data_entry.md)) cuenta con su propia pantalla "
+"de búsqueda, diseñada de la misma manera basada en la ontología que los "
+"formularios de añadir/editar — los campos disponibles para búsqueda y el "
+"tipo de entrada que acepta cada uno, provienen de la misma fuente y "
+"siguen las mismas reglas descritas en la sección \"El formulario en sí\" "
+"de [Entrada de datos](data_entry.md). Rellenar un solo campo y dejar el "
+"resto en blanco busca solo por ese campo; rellenar varios busca registros"
+" que coincidan con *todos* ellos a la vez — no hay forma de buscar \"esto"
+" o aquello\" dentro de una misma búsqueda."
 
-#: ../../source/admin/search_and_queries.md:16 872a262ce86140c081b2a67a70849b91
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:16
+#: 9e8a2c72ea204ac992e7bffb4e1de923
 msgid ""
 "Screenshot needed: `docs/source/_static/screenshots/admin-search-"
 "form.png` — a search screen showing a mix of field types, and a results "
 "list below it."
 msgstr ""
-"Captura de pantalla necesaria: "
-"`docs/source/_static/screenshots/admin-search-form.png` — una pantalla "
-"de búsqueda mostrando una mezcla de tipos de campo, y una lista de "
-"resultados debajo."
+"Captura de pantalla necesaria: `docs/source/_static/screenshots/admin-"
+"search-form.png` — una pantalla de búsqueda mostrando una mezcla de tipos"
+" de campo, y una lista de resultados debajo."
 
-#: ../../source/admin/search_and_queries.md:21 195a1704c9d54a9ab8c6578d466507cc
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:21
+#: 8f356c16d28c4c3d8e73ea5481eda1d4
 msgid ""
 "![Search form](../_static/screenshots/admin-search-form.png) *A search "
 "form, with results shown below.*"
 msgstr ""
-"![Formulario de búsqueda](../_static/screenshots/admin-search-form.png)"
-" *Un formulario de búsqueda, con los resultados mostrados debajo.*"
+"![Formulario de búsqueda](../_static/screenshots/admin-search-form.png) "
+"*Un formulario de búsqueda, con los resultados mostrados debajo.*"
 
-#: ../../source/admin/search_and_queries.md:21 521139806a4f4d2a9a44490aab6a1f67
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:21
+#: e90c935367ea4a8a8c909281a111d726
 msgid "Search form"
 msgstr "Formulario de búsqueda"
 
-#: ../../source/admin/search_and_queries.md:24 663552662d6646d4bf0d277e2c131cb0
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:24
+#: 5ef7df958fe64fdf9a4350d172f36013
+msgid "Searching every kind of project at once"
+msgstr "Buscar en todos los tipos de proyecto a la vez"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:26
+#: 3c195675fe2a47dd8037d64465f4ed53
+msgid ""
+"Some record types come in several kinds that are stored together: a "
+"project can be a European, a National/Regional, a Private or a Personnel "
+"Project, each with its own add/edit form and some fields of its own, but "
+"all of them are *projects*, and a question like \"what projects are "
+"running now?\" does not care which kind a project is. For every group of "
+"forms stored together like this, the **Query Data** list on the dashboard"
+" has one extra entry, named after the group — **Projects (all types)**. "
+"It appears only in the Query Data list: it is a way of *searching*, not a"
+" form, so it is never offered under Add Data."
+msgstr ""
+"Algunos tipos de registro se presentan en varias variantes que se "
+"almacenan juntas: un proyecto puede ser un Proyecto Europeo, "
+"Nacional/Regional, Privado o de Personal, cada uno con su propio "
+"formulario de alta/edición y algunos campos propios, pero todos son "
+"*proyectos*, y una pregunta como «¿qué proyectos están en curso ahora?» "
+"no depende de la variante de cada proyecto. Para cada grupo de "
+"formularios almacenados juntos de este modo, la lista **Query Data** del "
+"panel de control tiene una entrada adicional, con el nombre del grupo: "
+"**Proyectos (todos los tipos)**. Aparece solo en la lista Query Data: es "
+"una forma de *buscar*, no un formulario, por lo que nunca se ofrece en "
+"Add Data."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:36
+#: ccaf92911c164975a25bd2f298f64a50
+msgid ""
+"Its search screen offers only the fields that **every** kind has in "
+"common (title, internal code, application URL, PI, start date, end date, "
+"status, and so on), since a field that only some kinds have can't be "
+"asked of a group that includes the others. The results list then shows "
+"those same fields, plus a **Record type** column saying which form wrote "
+"each record (see [Reading the results](#reading-the-results) below). "
+"Opening a record from that list always opens it under its own form, with "
+"all of that form's fields — see [Data Entry](data_entry.md#editing-and-"
+"deleting-an-existing-record)."
+msgstr ""
+"Su pantalla de búsqueda ofrece únicamente los campos que tienen en común "
+"**todas** las variantes (título, código interno, URL de la solicitud, IP, "
+"fecha de inicio, fecha de fin, estado, etc.), ya que un campo que solo "
+"tienen algunas variantes no se puede preguntar a un grupo que incluye a "
+"las demás. La lista de resultados muestra esos mismos campos, más una "
+"columna **Record type** (tipo de registro) que indica qué formulario "
+"escribió cada registro (véase [Leer los resultados](#reading-the-results) "
+"más abajo). Abrir un registro desde esa lista lo abre siempre con su "
+"propio formulario, con todos los campos de ese formulario — véase "
+"[Entrada de datos](data_entry.md#editing-and-deleting-an-existing-record)."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:46
+#: 12ee9ff04c034252b7eac1223d6006cc
+msgid ""
+"Screenshot needed: `docs/source/_static/screenshots/admin-all-types-"
+"search.png` — the dashboard's Query Data dropdown open, showing "
+"\"Projects (all types)\" among the single-form entries."
+msgstr ""
+"Captura de pantalla necesaria: "
+"`docs/source/_static/screenshots/admin-all-types-search.png` — el "
+"desplegable Query Data del panel de control abierto, mostrando «Proyectos "
+"(todos los tipos)» entre las entradas de un solo formulario."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:51
+#: f1ed4ccdd65b4de3bf3704fbbfc2c69c
+msgid ""
+"![The all-types entry in the Query Data list](../_static/screenshots"
+"/admin-all-types-search.png) *The all-types entry appears alongside the "
+"individual forms in Query Data.*"
+msgstr ""
+"![La entrada de todos los tipos en la lista Query "
+"Data](../_static/screenshots/admin-all-types-search.png) *La entrada de "
+"todos los tipos aparece junto a los formularios individuales en Query "
+"Data.*"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:51
+#: ee93c886a8074d558dfda8bf2044f915
+msgid "The all-types entry in the Query Data list"
+msgstr "La entrada de todos los tipos en la lista Query Data"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:54
+#: bed6ed3a1e27426b9f90f812e5563fc9
+msgid ""
+"**For the ontology editor:** nothing needs declaring for this to work — "
+"the application adds the entry for any storage name (`local:dbname`) that"
+" more than one *Core* form uses. Only the entry's *name* is text you can "
+"set: add an interface text (see [Data Model](../data_model.md#interface-"
+"text-lives-in-the-ontology)) called `ui_dbname_<name>` — "
+"`ui_dbname_project` is what gives \"Projects (all types)\" and "
+"\"Proyectos (todos los tipos)\". Without one, the entry is called "
+"\"`<name>` (all types)\". The forms offered for the common fields are the"
+" ones in the same list as Add Data; a cut-down form that members fill in "
+"themselves (see [User Guide](../user_guide.md)) stores under the same "
+"name but is not counted, so it does not shrink the list of common fields."
+" Its records still appear in the results, with blanks where it has no "
+"such field."
+msgstr ""
+"**Para quien edite la ontología:** no hace falta declarar nada para que "
+"esto funcione: la aplicación añade la entrada para cualquier nombre de "
+"almacenamiento (`local:dbname`) que utilice más de un formulario *Core*. "
+"Lo único que se puede definir es el *nombre* de la entrada: añada un "
+"texto de interfaz (véase [Modelo de "
+"datos](../data_model.md#interface-text-lives-in-the-ontology)) llamado "
+"`ui_dbname_<nombre>`; `ui_dbname_project` es lo que da «Projects (all "
+"types)» y «Proyectos (todos los tipos)». Sin él, la entrada se llama "
+"«`<nombre>` (all types)». Los formularios que se tienen en cuenta para "
+"los campos comunes son los de la misma lista que Add Data; un formulario "
+"reducido que los miembros rellenan ellos mismos (véase la [Guía del "
+"usuario](../user_guide.md)) se almacena bajo el mismo nombre pero no "
+"cuenta, de modo que no reduce la lista de campos comunes. Sus registros "
+"siguen apareciendo en los resultados, con huecos donde no tiene ese campo."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:66
+#: f6308a86eed6489dba10aa874332d1cf
+msgid "Listing everything"
+msgstr "Listar todo"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:68
+#: ff5346eaf9e7429a9e1aed8ffd2ad009
+msgid ""
+"Every search screen has a **Show all records** link at the top. It lists "
+"every record of that type, ignoring anything typed into the form."
+msgstr ""
+"Cada pantalla de búsqueda tiene un enlace **Mostrar todos los registros** "
+"en la parte superior. Lista todos los registros de ese tipo, ignorando lo "
+"que se haya escrito en el formulario."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:71
+#: 71f34e51a3ef41f68081aaf677419a31
+msgid ""
+"Submitting the form with every box empty does **not** do this, on "
+"purpose: it says \"Nothing was entered to search for\" and offers the "
+"Show all link. A stray press of Enter on a record type with hundreds of "
+"rows would otherwise start a very large listing, and a blank search is "
+"far more often a mistake than a request."
+msgstr ""
+"Enviar el formulario con todas las casillas vacías **no** hace esto, a "
+"propósito: muestra «No se ha introducido nada que buscar» y ofrece el "
+"enlace Mostrar todos los registros. Una pulsación accidental de Intro en "
+"un tipo de registro con cientos de filas iniciaría un listado muy grande, "
+"y una búsqueda en blanco es casi siempre un error más que una petición."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:78
+#: 926d412715444b29880df4ed1bd9f945
+msgid ""
+"Very long lists are slow to build. When this was written, listing every "
+"Member (several hundred records) took on the order of tens of seconds, "
+"because the application builds the whole page in one go; paging the "
+"results is not implemented yet."
+msgstr ""
+"Las listas muy largas tardan en construirse. Cuando esto se escribió, "
+"listar todos los Miembros (varios cientos de registros) tardaba del orden "
+"de decenas de segundos, porque la aplicación construye la página entera "
+"de una vez; la paginación de los resultados aún no está implementada."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:84
+#: d40c75e1f2d74809a06b534a91a846df
 msgid "Text searches are partial and accent-insensitive"
 msgstr "Las búsquedas de texto son parciales e insensibles a las tildes"
 
-#: ../../source/admin/search_and_queries.md:26 9b8f37bd00e7494fa7c62106f1ada6dd
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:86
+#: 906c47d53cd243b389f47664e45c5ee8
 msgid ""
 "A text search doesn't require typing the whole value, and doesn't require"
 " getting accents right. Both of the following behave the way most people "
 "expect rather than the way a database literally stores things:"
 msgstr ""
-"Una búsqueda de texto no requiere escribir el valor completo, ni "
-"acertar con las tildes.Los dos ejemplos siguientes se comportan de la manera en que la mayoría de la gente "
-"espera, en lugar de cómo una base de datos almacena literalmente la información:"
+"Una búsqueda de texto no requiere escribir el valor completo, ni acertar "
+"con las tildes.Los dos ejemplos siguientes se comportan de la manera en "
+"que la mayoría de la gente espera, en lugar de cómo una base de datos "
+"almacena literalmente la información:"
 
-#: ../../source/admin/search_and_queries.md:30 092af720ae98400a9bd4173b7428d7f6
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:90
+#: b7245353f280461e8190812135c4a6cd
 msgid ""
 "**Partial matches.** Searching `garcía` finds *\"María García López\"* — "
 "the search term just has to appear somewhere in the value, not match it "
 "exactly."
 msgstr ""
-"**Coincidencias parciales.** Buscar `garcía` encuentra *\"María García López\" "
-"— el término de búsqueda solo tiene que aparecer en algún lugar"
-" del valor, no coincidir exactamente con él."
+"**Coincidencias parciales.** Buscar `garcía` encuentra *\"María García "
+"López\" — el término de búsqueda solo tiene que aparecer en algún lugar "
+"del valor, no coincidir exactamente con él."
 
-#: ../../source/admin/search_and_queries.md:33 cd3da07b1ff54239b5913505ae7b1c17
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:93
+#: 68753da30ab841789162b28d28aa94af
 msgid ""
 "**Accent-insensitive matches.** Searching `maria` finds *\"María\"*, and "
 "searching `maría` also finds plain *\"Maria\"* — accented and unaccented "
@@ -106,27 +274,30 @@ msgid ""
 " is simply how every text search works."
 msgstr ""
 "**Coincidencias insensibles a las tildes.** Buscar `maria` encuentra "
-"*«María»*, y buscar `maría` también encuentra *\"Maria\"* sin tilde — "
-"las letras tildadas y sin tildar se tratan como equivalentes en "
-"ambos sentidos, en todos los idiomas. No existe una casilla aparte de "
-"\"ignorar tildes\" que haya que recordar marcar; así es simplemente "
-"cémo funciona toda búsqueda de texto."
+"*«María»*, y buscar `maría` también encuentra *\"Maria\"* sin tilde — las"
+" letras tildadas y sin tildar se tratan como equivalentes en ambos "
+"sentidos, en todos los idiomas. No existe una casilla aparte de \"ignorar"
+" tildes\" que haya que recordar marcar; así es simplemente cémo funciona "
+"toda búsqueda de texto."
 
-#: ../../source/admin/search_and_queries.md:39 823f05af5ed84a1faee48432f38e2748
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:99
+#: fa43d5ec33b94a9c932c02637cea1364
 msgid ""
 "This applies uniformly to every free-text and dropdown-choice field "
 "across every record type — there's no list of fields where it does or "
 "doesn't apply."
 msgstr ""
-"Esto se aplica de manera uniforme a todos los campos de texto libre y "
-"de selección desplegable en todos los tipos de registro — no existe "
-"una lista de campos donde se aplique o no."
+"Esto se aplica de manera uniforme a todos los campos de texto libre y de "
+"selección desplegable en todos los tipos de registro — no existe una "
+"lista de campos donde se aplique o no."
 
-#: ../../source/admin/search_and_queries.md:44 f4c93412534f4be79498dbd339df40de
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:104
+#: b3dc66cb464949049f7bef29a67414bd
 msgid "Currency fields"
 msgstr "Campos de moneda"
 
-#: ../../source/admin/search_and_queries.md:46 d21592048c1c41acafda410809f13453
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:106
+#: 65548d2a1e5744b98884fb34ff3c4dbf
 msgid ""
 "A currency field's search box accepts a number typed in whichever format "
 "matches the currently selected language (see the language switch "
@@ -140,24 +311,26 @@ msgid ""
 "in-spreadsheets) for how the same underlying value later appears in a "
 "downloaded spreadsheet."
 msgstr ""
-"El cuadro de búsqueda de un campo de moneda acepta un número escrito en"
-" el formato correspondiente al idioma seleccionado en cada momento "
-"(véase el selector de idioma mencionado en [Filosofía y "
+"El cuadro de búsqueda de un campo de moneda acepta un número escrito en "
+"el formato correspondiente al idioma seleccionado en cada momento (véase "
+"el selector de idioma mencionado en [Filosofía y "
 "diseño](../philosophy.md)) — por ejemplo `15,000.50` en inglés o "
 "`15.000,50` en español — y encuentra los registros cuyo valor, una vez "
 "normalizado a la misma forma interna almacenada, contiene lo escrito. "
-"Escribir `15000` coincide con un valor almacenado de `15.000,50`; "
-"**no** busca una cantidad mayor o menor que el número escrito — no hay "
-"búsqueda por rango de tipo \"al menos\" / \"como máximo\" en los campos de "
-"moneda, sólo este tipo de coincidencia de valor. Véase "
+"Escribir `15000` coincide con un valor almacenado de `15.000,50`; **no** "
+"busca una cantidad mayor o menor que el número escrito — no hay búsqueda "
+"por rango de tipo \"al menos\" / \"como máximo\" en los campos de moneda,"
+" sólo este tipo de coincidencia de valor. Véase "
 "[Exportaciones](exports.md#currency-in-spreadsheets) para saber cómo "
 "aparece después ese mismo valor en una hoja de cálculo descargada."
 
-#: ../../source/admin/search_and_queries.md:58 ff8154c24022407fa4dbec17c55570b7
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:118
+#: d9ed611765a040b897eeca00d393040e
 msgid "Date fields"
 msgstr "Campos de fecha"
 
-#: ../../source/admin/search_and_queries.md:60 e09147d98cf64d61a66287083b831483
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:120
+#: 720ae1e651b44e99a4e0f7da941bb75a
 msgid ""
 "A date field offers two boxes, a start and an end, either of which can be"
 " left blank: filling in only a start finds everything on or after that "
@@ -166,16 +339,195 @@ msgid ""
 msgstr ""
 "Un campo de fecha ofrece dos cuadros, uno de inicio y otro de fin, "
 "cualquiera de los cuales puede dejarse en blanco: rellenar solo el de "
-"inicio encuentra todo lo que sea en esa fecha o posterior, rellenar "
-"solo el de fin encuentra todo lo que sea en esa fecha o anterior, y "
-"rellenar ambos encuentra todo lo que quede entre medias (incluyendo "
-"ambos extremos)."
+"inicio encuentra todo lo que sea en esa fecha o posterior, rellenar solo "
+"el de fin encuentra todo lo que sea en esa fecha o anterior, y rellenar "
+"ambos encuentra todo lo que quede entre medias (incluyendo ambos "
+"extremos)."
 
-#: ../../source/admin/search_and_queries.md:65 e0037a66ba4645dc98d4af10521be55d
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:125
+#: c2512c60f5c74813ba521a1d3484bc3e
+msgid ""
+"Dates are kept as real dates, not as text (see [Data "
+"Model](../data_model.md#how-values-are-typed)), which is what makes these"
+" comparisons reliable. A date that is not a real calendar date — `30 "
+"February`, say — is refused when a record is saved rather than stored as "
+"something that looks like a date but would compare wrongly."
+msgstr ""
+"Las fechas se guardan como fechas reales, no como texto (véase [Modelo de "
+"datos](../data_model.md#how-values-are-typed)), y eso es lo que hace "
+"fiables estas comparaciones. Una fecha que no es una fecha real del "
+"calendario — `30 de febrero`, por ejemplo — se rechaza al guardar el "
+"registro en lugar de almacenarse como algo que parece una fecha pero se "
+"compararía mal."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:131
+#: b509dc1dd8b040b4ac4b1b2a3299ebfe
+msgid ""
+"**`today`.** In a saved link or bookmark — not in the date picker — a "
+"date may be written as the word `today`, meaning the day the search is "
+"*run* rather than the day the link was made. That is what lets a "
+"bookmarked \"running now\" search stay correct next week. See [What is "
+"running now?](#what-is-running-now) below for the recipe it was made for."
+msgstr ""
+"**`today`.** En un enlace guardado o un marcador —no en el selector de "
+"fecha— una fecha puede escribirse como la palabra `today` (hoy), que "
+"significa el día en que se *ejecuta* la búsqueda y no el día en que se "
+"creó el enlace. Eso es lo que permite que un marcador de «en curso ahora» "
+"siga siendo correcto la semana que viene. Véase [¿Qué está en curso "
+"ahora?](#what-is-running-now) más abajo para la receta para la que se "
+"creó."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:138
+#: 12b9fd7890fd4c64ab48f0e55bf6a01d
+msgid "Excluding matches, and \"or no value\""
+msgstr "Excluir coincidencias y «o sin valor»"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:140
+#: b5739064e55c4276a21cff694c62b5ee
+msgid ""
+"Next to every field on a search screen are two tick boxes that change how"
+" that one field is used:"
+msgstr ""
+"Junto a cada campo de una pantalla de búsqueda hay dos casillas que "
+"cambian cómo se usa ese campo:"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:143
+#: c414bfee7a474bc7acb71a72c2b38e48
+msgid ""
+"**NOT (exclude matches)** turns the field around: it finds the records "
+"that do **not** match what was typed — *including* records where the "
+"field is empty, since \"doesn't match\" is true of them too."
+msgstr ""
+"**NO (excluir coincidencias)** invierte el campo: encuentra los registros "
+"que **no** coinciden con lo escrito, *incluidos* los registros en los que "
+"el campo está vacío, ya que «no coincide» es también cierto para ellos."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:146
+#: 814bbdb0bfc84230ba38700108b21d10
+msgid ""
+"**or no value** widens the field the other way: it finds records that "
+"match what was typed **or** that have no value in that field at all."
+msgstr ""
+"**o sin valor** amplía el campo en el otro sentido: encuentra los "
+"registros que coinciden con lo escrito **o** que no tienen ningún valor "
+"en ese campo."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:149
+#: 01847b16658d45f38ed3aafb60579933
+msgid ""
+"All the fields on a search screen are still combined with *and*; these "
+"two boxes are the only way to say \"or\" or \"not\", and each applies to "
+"the one field it sits beside. If both are ticked on the same field, NOT "
+"wins (the two would contradict each other)."
+msgstr ""
+"Todos los campos de una pantalla de búsqueda se siguen combinando con "
+"*y*; estas dos casillas son la única forma de decir «o» o «no», y cada "
+"una se aplica al único campo junto al que está. Si ambas están marcadas "
+"en el mismo campo, gana NO (las dos se contradirían)."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:155
+#: fac6088f6847401ea72e8ef0fc1c6b06
+msgid "What is running now?"
+msgstr "¿Qué está en curso ahora?"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:157
+#: 2fa45d08599642b9b66ad40977b4c9fc
+msgid ""
+"\"Currently running\" means a project that **has started** and **has not "
+"ended** — and a project with no end date counts as not having ended. That"
+" is two date conditions and one \"or no value\":"
+msgstr ""
+"«En curso» significa un proyecto que **ha empezado** y **no ha "
+"terminado**; y un proyecto sin fecha de fin cuenta como que no ha "
+"terminado. Son dos condiciones de fecha y un «o sin valor»:"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:161
+#: 9db9ebe56cb940c4bc6801f579b89da6
+msgid ""
+"Each date field on the search screen has two boxes, labelled **Start "
+"Date** and **End Date** (the beginning and end of the range being asked "
+"about — not to be confused with the project's own start and end dates):"
+msgstr ""
+"Cada campo de fecha de la pantalla de búsqueda tiene dos casillas, "
+"rotuladas **Start Date** y **End Date** (el principio y el final del "
+"intervalo por el que se pregunta, que no deben confundirse con las fechas "
+"de inicio y de fin del propio proyecto):"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:165
+#: 1eea5149ce7b418aadfee1b78a3447b6
+msgid ""
+"In the project's **Start date** field, fill in only the second box (*End "
+"Date*) with today's date: *started on or before today*."
+msgstr ""
+"En el campo **Fecha de inicio** del proyecto, rellene solo la segunda "
+"casilla (*End Date*) con la fecha de hoy: *empezó hoy o antes*."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:167
+#: 660d75bc11f348d1a95338b391a67e87
+msgid ""
+"In the project's **End date** field, fill in only the first box (*Start "
+"Date*) with today's date: *ends on or after today*. Then tick **or no "
+"value** beside that field: *or has no end date at all*."
+msgstr ""
+"En el campo **Fecha de fin** del proyecto, rellene solo la primera "
+"casilla (*Start Date*) con la fecha de hoy: *termina hoy o después*. "
+"Después marque **o sin valor** junto a ese campo: *o no tiene fecha de "
+"fin*."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:170
+#: 4e404bbf68094223b3f661777b25f350
+msgid ""
+"Optionally, set **Funding status** to narrow it further — `Awarded` for "
+"what is actually funded, say."
+msgstr ""
+"Opcionalmente, indique el **Estado de financiación** para acotar más, por "
+"ejemplo `Concedido` para lo que está realmente financiado."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:173
+#: c01a1ddb717a465d951fa27ca4fa3907
+msgid ""
+"Run on **Projects (all types)** this answers the question whichever kind "
+"of project each one is. The same search, written as a link that is always"
+" \"as of today\":"
+msgstr ""
+"Ejecutada sobre **Proyectos (todos los tipos)**, esta búsqueda responde a "
+"la pregunta sea cual sea el tipo de cada proyecto. La misma búsqueda, "
+"escrita como un enlace que siempre es «a fecha de hoy»:"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:181
+#: 0a727a8290ab4ba89b6fb2b9e4ff44a9
+msgid ""
+"\"Which projects are pending an award?\" is the same idea with a "
+"different field: **Funding status** set to `Proposed`, and nothing else."
+msgstr ""
+"«¿Qué proyectos están pendientes de concesión?» es la misma idea con otro "
+"campo: **Estado de financiación** con el valor `Propuesto`, y nada más."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:184
+#: a5a74e4c934d428183f10c0564f618d1
+msgid ""
+"Two things are deliberately *not* in the results. A project that has not "
+"started yet is not running, and a project submitted by a member through "
+"the user-facing form (see [Data Entry](data_entry.md#curating-a-project-"
+"submitted-by-a-member)) has no start date until someone curates it and it"
+" is awarded — so it will not appear here, and that is correct, not a gap."
+" Search by **Funding status** to find those."
+msgstr ""
+"Hay dos cosas que *no* están en los resultados, a propósito. Un proyecto "
+"que aún no ha empezado no está en curso, y un proyecto enviado por un "
+"miembro mediante el formulario para usuarios (véase [Entrada de "
+"datos](data_entry.md#curating-a-project-submitted-by-a-member)) no tiene "
+"fecha de inicio hasta que alguien lo clasifica y se concede, por lo que "
+"no aparecerá aquí, y eso es correcto, no una laguna. Busque por **Estado "
+"de financiación** para encontrarlos."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:191
+#: 74043e49fa01472ca0c09e44499f7e26
 msgid "Cross-reference fields"
 msgstr "Campos de referencia cruzada"
 
-#: ../../source/admin/search_and_queries.md:67 6e0cdfae6293455b959a14540c3686e4
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:193
+#: de9fbafe810a44e8a233a10fd34efad9
 msgid ""
 "Fields that link to another record type (for example, searching "
 "Publications by an author's name) work the same searchable, typeahead way"
@@ -184,28 +536,125 @@ msgid ""
 "lookup works."
 msgstr ""
 "Los campos que enlazan con otro tipo de registro (por ejemplo, buscar "
-"Publicaciones por el nombre de un autor) funcionan de la misma manera, con búsqueda y autocompletado,"
-" que al agregar o editar un registro; consulta — véase [Referencias cruzadas](cross_references.md) para "
-"la explicación completa de cómo funciona esa búsqueda."
+"Publicaciones por el nombre de un autor) funcionan de la misma manera, "
+"con búsqueda y autocompletado, que al agregar o editar un registro; "
+"consulta — véase [Referencias cruzadas](cross_references.md) para la "
+"explicación completa de cómo funciona esa búsqueda."
 
-#: ../../source/admin/search_and_queries.md:73 fc9ef202a419486e9834b70842e1e825
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:200
+#: 634f03d9e2db43f793fdd9c1c4fbdb5b
 msgid "Reading the results"
 msgstr "Leer los resultados"
 
-#: ../../source/admin/search_and_queries.md:75 653310a9349d4fefbea097f42ffd6f86
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:202
+#: e4535a48340c41168f52c94e85583640
 msgid ""
-"Results appear as a list below the search form; opening one from the list"
+"Results appear as a list below the search form. Opening one from the list"
 " is also how an existing record is reached for editing or deleting — see "
 "[Data Entry](data_entry.md)'s \"Editing and deleting an existing record\""
 " section, and [History & Snapshots](history_and_snapshots.md) for what "
 "those two actions really do. The same result list is also the starting "
 "point for a spreadsheet export — see [Exports](exports.md)."
 msgstr ""
-"Los resultados aparecen como una lista debajo del formulario de "
-"búsqueda; abrir uno desde la lista es también la forma de llegar a un "
-"registro existente para editarlo o eliminarlo — véase la sección "
-"\"Editar y eliminar un registro existente"\ de [Entrada de "
-"datos](data_entry.md), así como [Historial e instantáneas](history_and_snapshots.md)"
-" para saber qué hacen realmente esas dos acciones. La misma lista de "
-"resultados es también el punto de partida para una exportación a hoja "
-"de cálculo — véase [Exportaciones](exports.md)."
+"Los resultados aparecen como una lista debajo del formulario de búsqueda. "
+"Abrir uno desde la lista es también la forma de llegar a un registro "
+"existente para editarlo o eliminarlo; véanse la sección «Editar y "
+"eliminar un registro existente» de [Entrada de datos](data_entry.md) y "
+"[Historial e instantáneas](history_and_snapshots.md) para saber lo que "
+"realmente hacen esas dos acciones. La misma lista de resultados es "
+"también el punto de partida de una exportación a hoja de cálculo; véase "
+"[Exportaciones](exports.md)."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:209
+#: f50d5f1071d143f9acb8931b38ce935c
+msgid ""
+"**Record type.** Every results list has a **Record type** column naming "
+"the form that wrote each record (\"Personnel Project\", \"National and "
+"Regional Research Projects\", …) — it is what tells the kinds apart in an"
+" all-types search. Records written before the application kept this "
+"information show it blank. The name is itself a link to a search listing "
+"every record of that form."
+msgstr ""
+"**Record type.** Cada lista de resultados tiene una columna **Record "
+"type** (tipo de registro) con el nombre del formulario que escribió cada "
+"registro («Proyecto Personal», «Proyectos de Investigación Nacionales y "
+"Regionales», …); es lo que distingue las variantes en una búsqueda de "
+"todos los tipos. Los registros escritos antes de que la aplicación "
+"guardara esta información la muestran en blanco. El nombre es a su vez un "
+"enlace a una búsqueda que lista todos los registros de ese formulario."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:216
+#: decf7a4c6e944498b2592d10ad4e4b0c
+msgid ""
+"**Every value is a link.** Most values in the list are links, and every "
+"one does the same thing: it searches the same record type for records "
+"holding **exactly** that value. Click a funding institution to see every "
+"project it funds; click a status to list everything with that status. (A "
+"search typed into the form matches \"contains this text\"; a link matches"
+" the whole value — a link on one DNI must not also find every other DNI "
+"that happens to contain those digits.) The result is an ordinary results "
+"page, so you can keep narrowing from there."
+msgstr ""
+"**Cada valor es un enlace.** La mayoría de los valores de la lista son "
+"enlaces, y todos hacen lo mismo: buscan, en el mismo tipo de registro, "
+"los registros que contienen **exactamente** ese valor. Haga clic en una "
+"institución financiadora para ver todos los proyectos que financia; haga "
+"clic en un estado para listar todo lo que tiene ese estado. (Una búsqueda "
+"escrita en el formulario coincide con «contiene este texto»; un enlace "
+"coincide con el valor completo: un enlace sobre un DNI no debe encontrar "
+"también todos los demás DNI que contengan esos dígitos.) El resultado es "
+"una página de resultados normal, de modo que puede seguir acotando desde "
+"ahí."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:225
+#: 7943013600b44b83863f8581c4ff5ba5
+msgid ""
+"A value that points at *another* record — a PI, a member — links to the "
+"search of that other record type for that person, so one click takes you "
+"from a project to the person."
+msgstr ""
+"Un valor que apunta a *otro* registro —un IP, un miembro— enlaza con la "
+"búsqueda de ese otro tipo de registro para esa persona, de modo que un "
+"solo clic lleva de un proyecto a la persona."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:228
+#: 69533f4696264a4180e7ef417c5d05ad
+msgid ""
+"Values that are not looked up by their exact content stay plain text: "
+"free-text and multi-line notes, numbers and amounts, and dates (use the "
+"range boxes for those). Web addresses are already links to their own "
+"page."
+msgstr ""
+"Los valores que no se buscan por su contenido exacto siguen siendo texto "
+"sin enlace: las notas de texto libre y de varias líneas, los números e "
+"importes y las fechas (para estos use las casillas de intervalo). Las "
+"direcciones web ya son enlaces a su propia página."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:232
+#: 667d1301acfe4910aa5095c313d70dc9
+msgid ""
+"On the **edit page**, an administrator also sees a small arrow beside "
+"each field that has a stored value; it opens the same exact-match search "
+"for that value in a **new window**, so unsaved changes on the page are "
+"not lost. The arrow always uses the value *saved* in the record, not what"
+" is currently typed in the box."
+msgstr ""
+"En la **página de edición**, un administrador ve además una pequeña "
+"flecha junto a cada campo que tiene un valor guardado; abre la misma "
+"búsqueda de coincidencia exacta de ese valor en una **ventana nueva**, "
+"para que no se pierdan los cambios sin guardar de la página. La flecha "
+"usa siempre el valor *guardado* en el registro, no lo que esté escrito en "
+"ese momento en la casilla."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/search_and_queries.md:238
+#: 9ce31e88bbb04ddeb308b328a1d43e61
+msgid ""
+"Every such link is a plain address of the form `/cbgp/query-"
+"dataset/<record type>?<field>=<value>&<field>__exact=1`, so the same "
+"search can be saved as a bookmark or pasted into an email."
+msgstr ""
+"Cada uno de estos enlaces es una dirección sencilla de la forma "
+"`/cbgp/query-dataset/<tipo de "
+"registro>?<campo>=<valor>&<campo>__exact=1`, de modo que la misma "
+"búsqueda puede guardarse como marcador o pegarse en un correo."
+

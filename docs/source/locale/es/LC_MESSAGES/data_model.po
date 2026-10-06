@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CBGP-Databases 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-05 19:56+0200\n"
+"POT-Creation-Date: 2026-10-06 18:22+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es\n"
@@ -19,11 +19,13 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: ../../source/data_model.md:1 1be8249c9d0f4567a3a2783063650bef
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:1
+#: 3de79d4ec2c84d0e9e826fb78081d279
 msgid "Data Model"
 msgstr "Modelo de datos"
 
-#: ../../source/data_model.md:3 f11d2d0411804a2baf3ba069acfa7f26
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:3
+#: 99e61a0123334d9580cde51129193532
 msgid ""
 "This page is for anyone who needs to write a raw SPARQL query against the"
 " triple store directly — a report, a one-off analysis, an export this "
@@ -38,7 +40,8 @@ msgstr ""
 "cosas que en realidad forman cada registro, tal como se almacena, y cómo "
 "ambas se conectan con la ontología."
 
-#: ../../source/data_model.md:9 de175bbc725640f696ad03650fe24729
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:9
+#: 7d7677de12f1451185c75c7986fe86f3
 msgid ""
 "If you only ever use the web app, you don't need this page — see [Data "
 "Entry](admin/data_entry.md) and [Search & "
@@ -50,11 +53,13 @@ msgstr ""
 "consultas](admin/search_and_queries.md). Esto es un nivel por debajo de "
 "eso."
 
-#: ../../source/data_model.md:13 3e3744012b8247e3ac59070d24a948b0
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:13
+#: cb6b9ae703f7493aa377df6f3c73cf92
 msgid "Two layers, one record"
 msgstr "Dos capas, un solo registro"
 
-#: ../../source/data_model.md:15 02e4e38e5ec84b39b4c0dd68ef7be397
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:15
+#: 4eb93e4b5c364c1980399e859f9936da
 msgid ""
 "Every record lives in its own **named graph** — a self-contained bucket "
 "of triples, one per record, identified by its own URI (e.g. "
@@ -66,7 +71,8 @@ msgstr ""
 "URI (por ejemplo, `.../project/context/<uuid>`). Pero un registro se "
 "describe con tripletes en **dos lugares distintos**, no en uno solo:"
 
-#: ../../source/data_model.md:20 92028e6b4a5640d795ce6496106fb54c
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:20
+#: 0a5748df49c54d1f8e4f3ddcb2de4fbf
 msgid ""
 "**Graph metadata** — a handful of triples *about* the record as a whole "
 "(when it was created, when it last changed, which form produced it). "
@@ -83,7 +89,8 @@ msgstr ""
 "modo que una consulta siempre pueda encontrarlas sin necesidad de saber "
 "antes qué campos tiene el registro."
 
-#: ../../source/data_model.md:26 5ddb4f8d672d4bbe8a9fea78a944e5b8
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:26
+#: 8777f5b0ded948ff843a19c0dc98706d
 msgid ""
 "**Graph content** — the record's actual field values, *inside* the named "
 "graph. Every field is stored as a small node of its own (a *reified "
@@ -97,7 +104,8 @@ msgstr ""
 "instantánea y reconstruirse más tarde — véase [Viaje en el "
 "tiempo](time_travel.md)."
 
-#: ../../source/data_model.md:57 61e75c287a5c461eaf703b388446025e
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:57
+#: f4d9839f91c842b9918c5d7eb5bd4779
 msgid ""
 "`dcterms:created`/`dcterms:modified`/`dcterms:type` are real, standard "
 "[Dublin Core](https://www.dublincore.org/specifications/dublin-core/dcmi-"
@@ -116,11 +124,134 @@ msgstr ""
 "para exactamente esta forma de \"algo tiene un atributo que tiene un "
 "valor\"."
 
-#: ../../source/data_model.md:65 086face35ec84769994a0bdde262ffa4
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:65
+#: 1fdf1c74cab2453c9139c64f914ec32d
+msgid "How values are typed"
+msgstr "Cómo se tipan los valores"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:67
+#: d72c565666294cd68d924afccce3dd9d
+msgid ""
+"Every field value is an RDF *literal* on the attribute node (the "
+"`sio:SIO_000300` triple above). Most are plain text — including currency "
+"amounts, which are kept in their canonical decimal form (`15000.50`) — "
+"but **dates are real dates**: a literal of datatype `xsd:date`."
+msgstr ""
+"Cada valor de campo es un *literal* RDF en el nodo de atributo (el triple"
+" `sio:SIO_000300` de más arriba). La mayoría son texto simple —incluidos "
+"los importes de moneda, que se guardan en su forma decimal canónica "
+"(`15000.50`)—, pero **las fechas son fechas reales**: un literal de tipo "
+"`xsd:date`."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:78
+#: dc12e7d16c9c473bb85e7dac07c94621
+msgid ""
+"This is not cosmetic. A SPARQL comparison between a plain-text literal "
+"and a date does not raise an error on this triple store — it quietly "
+"gives the wrong rows. (When this was found, \"projects started on or "
+"before today\" returned nothing and \"starting after today\" returned "
+"everything, for dates stored as text.) Typed dates compare correctly, and"
+" so does every date-range search."
+msgstr ""
+"Esto no es cosmético. En este almacén de tripletas, una comparación "
+"SPARQL entre un literal de texto simple y una fecha no produce ningún "
+"error: da, en silencio, las filas equivocadas. (Cuando se descubrió, "
+"«proyectos que empezaron hoy o antes» no devolvía nada y «que empiezan "
+"después de hoy» devolvía todos, con las fechas guardadas como texto.) Las"
+" fechas tipadas se comparan correctamente, y también lo hace toda "
+"búsqueda por intervalo de fechas."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:85
+#: 740b10683e0e4ae080caeb13b73ef8f4
+msgid "How a field comes to be a date, and what gets checked:"
+msgstr "Cómo un campo llega a ser una fecha y qué se comprueba:"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:87
+#: e4236633d8fd40beb0f80df11da81a97
+msgid ""
+"A field is treated as a date if its **widget** is a date picker, "
+"*whatever object-class the ontology declares for it*. (Several date-"
+"picker fields were once declared as strings; the application no longer "
+"depends on the two being kept in step. Declaring `local:object-class "
+"Date` for them, as the ontology now does, just says what is already "
+"meant.)"
+msgstr ""
+"Un campo se trata como fecha si su **widget** es un selector de fecha, "
+"*sea cual sea la clase de objeto que la ontología declare para él*. "
+"(Varios campos con selector de fecha estaban declarados como cadenas; la "
+"aplicación ya no depende de que ambas cosas se mantengan al mismo tiempo."
+" Declarar `local:object-class Date` para ellos, como hace ahora la "
+"ontología, solo dice lo que ya se quiere decir.)"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:92
+#: ca23a8d44b364e49bc8c2459d367a98c
+msgid ""
+"The value is parsed and normalised to `YYYY-MM-DD` when a record is "
+"saved, and a value that is not a real calendar date is **refused**, not "
+"stored as text."
+msgstr ""
+"El valor se analiza y se normaliza a `YYYY-MM-DD` al guardar un registro,"
+" y un valor que no es una fecha real del calendario se **rechaza**, no se"
+" guarda como texto."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:95
+#: f3bbe91a2c0c497b990fd318cbfdac39
+msgid ""
+"Reading a date back, and every display and export, uses the same `YYYY-"
+"MM-DD` text as before, so nothing downstream changes."
+msgstr ""
+"Al leer una fecha de vuelta, y en toda visualización y exportación, se "
+"usa el mismo texto `YYYY-MM-DD` de antes, de modo que nada de lo que "
+"viene después cambia."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:98
+#: 5eea7aafd6914757852413583f59732d
+msgid ""
+"**Writing queries.** In SPARQL, compare a stored date with the **function"
+" form** of the bound, not a typed literal:"
+msgstr ""
+"**Escribir consultas.** En SPARQL, compare una fecha guardada con la "
+"**forma de función** del límite, no con un literal tipado:"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:115
+#: 9d47563727094ac1bf378f2cdb003a5c
+msgid ""
+"The `xsd:date(\"…\")` form is the one Virtuoso's own [date-range "
+"documentation](http://docs.openlinksw.com/virtuoso/virtuosotipsandtricksmanagedaterangequery/)"
+" uses. On the full set of member records here, the `\"…\"^^xsd:date` "
+"literal form silently dropped rows (12 of 919 for \"on or before today\")"
+" while the function form returned all of them; the cause was not "
+"established, so treat this as an observed behaviour of this store rather "
+"than a documented rule."
+msgstr ""
+"La forma `xsd:date(\"…\")` es la que usa la propia [documentación de "
+"Virtuoso sobre intervalos de "
+"fechas](http://docs.openlinksw.com/virtuoso/virtuosotipsandtricksmanagedaterangequery/)."
+" Con el conjunto completo de registros de miembros de aquí, la forma de "
+"literal `\"…\"^^xsd:date` descartaba filas en silencio (12 de 919 para "
+"«hoy o antes») mientras que la forma de función devolvía todas; no se "
+"estableció la causa, así que debe tratarse como un comportamiento "
+"observado de este almacén y no como una regla documentada."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:122
+#: 04f397daf21149f5be0afda3589c666e
+msgid ""
+"Records written before this change hold their dates as text. They are "
+"converted with a one-off script — see [Backup & "
+"Migration](backup_and_migration.md#retyping-dates-stored-as-text)."
+msgstr ""
+"Los registros escritos antes de este cambio guardan sus fechas como "
+"texto. Se convierten con un script de una sola vez; véase [Copias de "
+"seguridad y migración](backup_and_migration.md#retyping-dates-stored-as-"
+"text)."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:126
+#: d456d9cc239d4a63a4cd8060778a72a5
 msgid "`dcterms:type`: which form wrote this record"
 msgstr "`dcterms:type`: qué formulario creó este registro"
 
-#: ../../source/data_model.md:67 e38cd412ff9b4fbb9d09fafe77764e04
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:128
+#: cca20fe46fa1400cb6b998d96a860c45
 msgid ""
 "Several record types share one underlying table (Research Project and "
 "Personnel Project both live under the `project` dbname, for example), so "
@@ -137,7 +268,8 @@ msgstr ""
 "al escribir una consulta — **su valor es la propia URI de clase de la "
 "ontología del formulario**, no una simple cadena de texto:"
 
-#: ../../source/data_model.md:84 79e67e01d67b408c986b67ad3682ed0b
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:145
+#: 89c588405f754a39a9fe4cb65b133f8c
 msgid ""
 "Because the object is a real class URI, its display label comes for free "
 "from the ontology itself — every Form already carries a bilingual "
@@ -147,7 +279,8 @@ msgstr ""
 "obtiene automáticamente de la propia ontología — cada Formulario ya lleva"
 " un `rdfs:label` bilingüe:"
 
-#: ../../source/data_model.md:99 892a1401fe61486d88fcd2169d5fa3ef
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:160
+#: 7f04c770a51b47f1949c38ef3a077de5
 msgid ""
 "This stamp is written automatically, for every record on every form, at "
 "save time — there is nothing to configure in the ontology for a new form "
@@ -160,11 +293,84 @@ msgstr ""
 "calculados](admin/data_entry.md#calculated-fields) para el otro punto en "
 "el que este trabajo también afectó al modelo de datos."
 
-#: ../../source/data_model.md:104 78b2a6447d664fc5ba64d66f4f802e2b
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:165
+#: fac9221754184a32ac3990ff0eefd4d4
+msgid "Core and user-facing forms, and sharing a dbname"
+msgstr "Formularios Core y para usuarios, y compartir un dbname"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:167
+#: 940276cb49484fb084e1f77b60384ca6
+msgid ""
+"A form declares which **category** it belongs to with `local:form-"
+"category`: `Core` for the forms administrators add and edit records with "
+"(the ones listed under Add Data and Query Data), `UserFacing` for the "
+"smaller forms the User side offers. Several forms of either category can "
+"share one `local:dbname` — the four Core project forms and the user-"
+"facing project form all store under `project` — and a record's "
+"`dcterms:type` says which one wrote it."
+msgstr ""
+"Un formulario declara a qué **categoría** pertenece con `local:form-"
+"category`: `Core` para los formularios con los que los administradores "
+"añaden y editan registros (los que aparecen en Add Data y Query Data), "
+"`UserFacing` para los formularios más pequeños que ofrece el lado de "
+"Usuario. Varios formularios de cualquiera de las dos categorías pueden "
+"compartir un mismo `local:dbname` —los cuatro formularios Core de "
+"proyecto y el formulario de proyecto para usuarios se almacenan todos "
+"bajo `project`— y el `dcterms:type` de un registro dice cuál lo escribió."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:174
+#: 762791fc13ba4d1a8678200e91de50db
+msgid "Two consequences, both generic (nothing here is about projects):"
+msgstr ""
+"Dos consecuencias, ambas genéricas (nada de esto trata de proyectos en "
+"particular):"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:176
+#: 8494b857264d4d5693dd057868cd32ea
+msgid ""
+"A **cross-reference** to a shared dbname resolves to the *union* of every"
+" form's fields, as described in the worked example below, so a reference "
+"can point at a record whichever form created it. A **search** of the "
+"shared dbname is the opposite: it can only meaningfully ask a question "
+"that *every* record can answer, so its form and result columns are the "
+"fields that all the **Core** forms have in common ([Search & "
+"Queries](admin/search_and_queries.md#searching-every-kind-of-project-at-"
+"once)). `UserFacing` forms are left out of that intersection, otherwise a"
+" cut-down form would shrink it to almost nothing."
+msgstr ""
+"Una **referencia cruzada** a un dbname compartido se resuelve en la "
+"*unión* de los campos de todos los formularios, como se describe en el "
+"ejemplo resuelto de más abajo, de modo que una referencia puede apuntar a"
+" un registro sea cual sea el formulario que lo creó. Una **búsqueda** del"
+" dbname compartido es lo contrario: solo puede preguntar con sentido lo "
+"que *todos* los registros pueden responder, así que su formulario y sus "
+"columnas de resultados son los campos que tienen en común todos los "
+"formularios **Core** ([Búsqueda y consultas](admin/search_and_queries.md"
+"#searching-every-kind-of-project-at-once)). Los formularios `UserFacing` "
+"quedan fuera de esa intersección; de lo contrario, un formulario reducido"
+" la dejaría casi vacía."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:185
+#: 026855bc09db41b2b95cfb88831db165
+msgid ""
+"A record still stamped with a `UserFacing` form can be **curated**: "
+"opened under a Core form of the same dbname and saved, which rewrites the"
+" stamp and nothing else about its identity. See [Data "
+"Entry](admin/data_entry.md#curating-a-project-submitted-by-a-member)."
+msgstr ""
+"Un registro que sigue marcado con un formulario `UserFacing` puede "
+"**clasificarse**: abrirse con un formulario Core del mismo dbname y "
+"guardarse, lo que reescribe la marca y nada más de su identidad. Véase "
+"[Entrada de datos](admin/data_entry.md#curating-a-project-submitted-"
+"by-a-member)."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:190
+#: 80a51d7a52964677ba0b9bb23ad1ffc9
 msgid "Crossing both layers in one query"
 msgstr "Cruzando ambas capas en una sola consulta"
 
-#: ../../source/data_model.md:106 c08799ce01184a5ca7c182eb28140b1b
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:192
+#: c2e36b5ea3284fa0991f3a858d5a554c
 msgid ""
 "A form-scoped question, like \"what's the total Annual income across "
 "every Personnel Project record,\" needs both layers together: "
@@ -177,11 +383,13 @@ msgstr ""
 "registros correctos, y después el grafo con nombre propio de cada unode "
 "ellos, para extraer de ahí los valores de campo."
 
-#: ../../source/data_model.md:126 de5b497ed4b1406b87602bbfd05ffe36
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:212
+#: fa7dcb1387e44e54ba6cbbf850a48e0c
 msgid "How this connects to the ontology"
 msgstr "Cómo se conecta esto con la ontología"
 
-#: ../../source/data_model.md:128 c47ef8f136624534a8b85ff02d8cd44f
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:214
+#: f7d1d1426187449e8c1814d482731852
 msgid ""
 "Every predicate used above (`cbgp:personnel_project`, "
 "`cbgp:project_annual_income`) is a class declared in the ontology, not an"
@@ -193,7 +401,8 @@ msgstr ""
 "una cadena de texto arbitraria — lo que hace que los dos diagramas "
 "siguientes sean la misma imagen, vista desde dos ángulos distintos."
 
-#: ../../source/data_model.md:164 001fdec64ffd42ca85fcb01ed7f6ccb0
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:254
+#: f394128619ee4d3f8354fd12f43b928a
 msgid ""
 "A Question's `local:answer-block`, when it has one, points at a set of "
 "Answer classes the same way — see [Philosophy & Design](philosophy.md"
@@ -207,7 +416,109 @@ msgstr ""
 " formulario renderizado que también está controlado por esta misma "
 "estructura de clases."
 
-#: ../../source/data_model.md:169 53377cbe254149d99680d3c02ebabc64
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:260
+#: 8594eed8446b4846852be66022f2f29d
+msgid "Interface text lives in the ontology"
+msgstr "El texto de la interfaz vive en la ontología"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:262
+#: d241f6a705c545c2a0cfce464af7778e
+msgid ""
+"Field labels and answers come from the ontology, and so does the *other* "
+"text a person reads on a page: the hints inside boxes, the captions of "
+"small buttons, the notes beside a field, and the names of the entries in "
+"the Query Data list. Each piece of text is a class that is a subclass of "
+"`cbgp:ui-text`, and its `rdfs:label` in each language is what the person "
+"sees — so the people who maintain the ontology can reword or translate it"
+" without a programmer."
+msgstr ""
+"Las etiquetas y respuestas de los campos vienen de la ontología, y "
+"también el *otro* texto que una persona lee en una página: las "
+"sugerencias dentro de las casillas, los rótulos de los botones pequeños, "
+"las notas junto a un campo y los nombres de las entradas de la lista "
+"Query Data. Cada texto es una clase que es subclase de `cbgp:ui-text`, y "
+"su `rdfs:label` en cada idioma es lo que ve la persona; así, quienes "
+"mantienen la ontología pueden reformularlo o traducirlo sin un "
+"programador."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:276
+#: eb39b99033624ff89a843df1fb63237a
+msgid ""
+"**The name is the key.** The code asks for a text by a dotted key, such "
+"as `search.show_all`, and the class is that key with the dots turned into"
+" underscores and `ui_` in front: `ui_search_show_all`."
+msgstr ""
+"**El nombre es la clave.** El código pide un texto mediante una clave con"
+" puntos, como `search.show_all`, y la clase es esa clave con los puntos "
+"convertidos en guiones bajos y `ui_` delante: `ui_search_show_all`."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:279
+#: 71f1541f50e040429d2c0fbcf42e365e
+#, python-brace-format
+msgid ""
+"**Placeholders.** A `%{name}` in a text is filled in by the code, for "
+"example `\"Showing all records (%{count}).\"`. Every language of a text "
+"must use exactly the same placeholders."
+msgstr ""
+"**Marcadores de posición.** Un `%{name}` en un texto lo rellena el "
+"código, por ejemplo `\"Showing all records (%{count}).\"`. Todos los "
+"idiomas de un texto deben usar exactamente los mismos marcadores."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:282
+#: de4c29a2cdc94ed89fd4b12f88145773
+msgid ""
+"**Fallbacks.** A text missing in the current language shows its English "
+"version; one missing entirely shows its key, which makes the gap visible "
+"on the page rather than raising an error."
+msgstr ""
+"**Alternativas.** Un texto que falta en el idioma actual muestra su "
+"versión en inglés; uno que falta por completo muestra su clave, lo que "
+"hace visible el hueco en la página en lugar de provocar un error."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:285
+#: 9074400a59954313837970338a1e388d
+msgid ""
+"**Characters.** Because these texts are printed into HTML attributes and "
+"scripts, they may not contain a double quote, a back-tick, `<`, `>`, a "
+"backslash or `${`."
+msgstr ""
+"**Caracteres.** Como estos textos se imprimen dentro de atributos HTML y "
+"scripts, no pueden contener comillas dobles, una comilla invertida, `<`, "
+"`>`, una barra invertida ni `${`."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:288
+#: 6c83a7c30de2453c8a03a36ddbc49232
+#, python-brace-format
+msgid ""
+"**Names of search entries.** A group of forms stored together (see above)"
+" is named by `ui_dbname_<dbname>` — `ui_dbname_project` is \"Projects "
+"(all types)\" — and, if there is none, by the generic "
+"`ui_dbname_all_types`, \"`%{name}` (all types)\"."
+msgstr ""
+"**Nombres de las entradas de búsqueda.** Un grupo de formularios "
+"almacenados juntos (véase más arriba) se nombra con `ui_dbname_<dbname>` "
+"—`ui_dbname_project` es «Projects (all types)»— y, si no existe, con el "
+"genérico `ui_dbname_all_types`, «`%{name}` (all types)»."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:293
+#: e53f981a54724ef7bcf8f662b5bbfb9c
+msgid ""
+"`check_ontology.rb` rejects a text whose languages disagree on "
+"placeholders or that contains a forbidden character, and the "
+"application's own tests fail if the code asks for a key the ontology "
+"doesn't have. A text that is still hard-coded in English in the "
+"application (some older parts) is not yet one of these; moving it into "
+"the ontology is only a matter of adding the class and asking for the key."
+msgstr ""
+"`check_ontology.rb` rechaza un texto cuyos idiomas no coinciden en los "
+"marcadores o que contiene un carácter prohibido, y las propias pruebas de"
+" la aplicación fallan si el código pide una clave que la ontología no "
+"tiene. Un texto que aún está escrito en inglés en el código de la "
+"aplicación (algunas partes más antiguas) todavía no es uno de estos; "
+"pasarlo a la ontología consiste solo en añadir la clase y pedir la clave."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:300
+#: a1a9648415094f55ab0b9f7f782dbd92
 msgid ""
 "Worked example: is a field required, defaulted, or calculated on this "
 "form?"
@@ -215,137 +526,214 @@ msgstr ""
 "Ejemplo resuelto: ¿es un campo obligatorio, tiene un valor por defecto, o"
 " se calcula en este formulario?"
 
-#: ../../source/data_model.md:171 1def1c8adfa04b6ab84355902401eb43
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:302
+#: f27b2277535f46c1a824f718d86bae81
 msgid ""
-"The three per-form mechanisms mentioned above (`local:has-defaults`, "
-"`local:has-formulas`, `local:requires-field`) are all declared on the "
-"**Form**, not on the Question — because the same shared Question can "
-"behave differently depending on which Form is using it. Each one below "
-"uses a different real field from the Personnel/Research Project forms, on"
-" purpose - the field that actually demonstrates that mechanism, rather "
-"than pretending all three apply to one field they don't."
+"The per-form mechanisms mentioned above (`local:has-defaults`, `local"
+":has-formulas`, `local:requires-field`, and the conditional variant of "
+"the last one, covered at the end) are all declared on the **Form**, not "
+"on the Question — because the same shared Question can behave differently"
+" depending on which Form is using it. Each one below uses a different "
+"real field from the Personnel and European Commission Project forms, on "
+"purpose - the field that actually demonstrates that mechanism, rather "
+"than pretending all of them apply to one field they don't."
 msgstr ""
-"Los tres mecanismos por formulario mencionados arriba (`local:has-"
-"defaults`, `local:has-formulas`, `local:requires-field`) se declaran "
-"todos en el **Formulario**, no en la Pregunta — porque la misma Pregunta "
-"compartida puede comportarse de forma distinta según qué Formulario la "
-"esté usando. Cada uno de los siguientes usa, a propósito, un campo real "
-"distinto de los formularios Proyecto Personal/de Investigación — el campo"
-" que realmente demuestra ese mecanismo, en lugar de parecer que los tres "
-"se aplican a un campo cuando no es así."
+"Los mecanismos por formulario mencionados arriba (`local:has-defaults`, "
+"`local:has-formulas`, `local:requires-field` y la variante condicional de "
+"este último, que se explica al final) se declaran todos en el "
+"**Formulario**, no en la Pregunta, porque la misma Pregunta compartida "
+"puede comportarse de forma distinta según el Formulario que la use. Cada "
+"uno de los que siguen usa un campo real distinto de los formularios de "
+"Proyecto Personal y de Proyecto de la Comisión Europea, a propósito: el "
+"campo que realmente demuestra ese mecanismo, en lugar de fingir que todos "
+"se aplican a un campo al que no se aplican."
 
-#: ../../source/data_model.md:179 5a91b51daa0a4add9b3360122479c077
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:311
+#: 57b4bc221bb64b9b80efa4bb69e045cc
 msgid "`local:requires-field` — direct"
 msgstr "`local:requires-field` — directo"
 
-#: ../../source/data_model.md:181 72c831d3a78b491bb626ba8427661449
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:313
+#: 43411d0f44f34934881944c9d30ec0dd
 msgid ""
 "This one links the Form straight to the Question, no node in between. "
-"Personnel Project requires Annual income:"
+"Personnel Project requires its Total funding:"
 msgstr ""
 "Este enlaza el Formulario directamente con la Pregunta, sin ningún nodo "
-"intermedio. Por ejemplo, Proyecto Personal requiere Ingreso anual:"
+"intermedio. Proyecto Personal requiere su Financiación total:"
 
-#: ../../source/data_model.md:188 9ceb071e16154a9184d8617b1b86792d
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:320
+#: 5848c34451cf4de686fd87524d628137
 msgid ""
 "`local:has-defaults` and `local:has-formulas` are *not* this simple — "
 "each needs **two** pieces of information (which field, and what "
 "value/formula), not one, so each needs somewhere to hold both. Both go "
 "through an **intermediate node** instead of a direct link - this is the "
 "part that isn't obvious just from skimming a triple like `local:requires-"
-"field cbgp:project_annual_income`, because there is no equivalent single "
-"triple for a default or a formula."
+"field cbgp:personnel_project_total_funding`, because there is no "
+"equivalent single triple for a default or a formula."
 msgstr ""
 "`local:has-defaults` y `local:has-formulas` *no* son tan simples — cada "
-"uno necesita **dos** datos (campo, y valor/fórmula), no uno solo, así que"
-" necesitan dónde guardar ambos. Los dos pasan por un **nodo intermedio** "
-"en lugar de ser un enlace directo — esta es la parte que no resulta obvia"
-" con solo mirar por encima un triplete como `local:requires-field "
-"cbgp:project_annual_income`, porque no existe un único triplete "
-"equivalente para un valor por defecto o una fórmula."
+"uno necesita **dos** datos (qué campo, y qué valor/fórmula), no uno solo, "
+"así que cada uno necesita un lugar donde guardar ambos. Los dos pasan por "
+"un **nodo intermedio** en lugar de un enlace directo — esta es la parte "
+"que no resulta obvia con solo echar un vistazo a una tripleta como "
+"`local:requires-field cbgp:personnel_project_total_funding`, porque no "
+"hay una única tripleta equivalente para un valor por defecto o una "
+"fórmula."
 
-#: ../../source/data_model.md:196 a9c340bdf97a4b3a87ceaf9439ab10d7
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:328
+#: 48eebc11e13943a9bae851f366e85467
 msgid "`local:has-defaults` — via an intermediate node"
 msgstr "`local:has-defaults` — mediante un nodo intermedio"
 
-#: ../../source/data_model.md:198 11dad54cf07b4d7995f7fa005c0c0fc0
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:330
+#: 7d6a278fec0e48208a17f58fee2f0a62
 msgid ""
-"Research Project and Personnel Project each give a *different* starting "
-"value to the same shared demo field, `project_test_default_field` (a "
-"disposable sandbox field kept in the ontology specifically so this has "
-"something real to point at):"
+"Every Core project form gives the shared *Funding status* field the same "
+"starting value, `Proposed` — but each does it through its **own** node, "
+"which is what would let one form start from a different value without "
+"touching the others. Personnel Project's:"
 msgstr ""
-"Proyecto de Investigación y Proyecto Personal dan cada uno un valor "
-"inicial *distinto* al mismo campo de demostración compartido, "
-"`project_test_default_field` (un campo de prueba desechable que se "
-"mantiene en la ontología específicamente para tener algo real que "
-"señalar):"
+"Cada formulario Core de proyecto da al campo compartido *Estado de "
+"financiación* el mismo valor inicial, `Proposed` — pero cada uno lo hace "
+"mediante su **propio** nodo, lo que permitiría que un formulario empezara "
+"con un valor distinto sin tocar los demás. El de Proyecto Personal:"
 
-#: ../../source/data_model.md:213 929460de3ade4cdebcd89b607b88282b
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:345
+#: 044199a956ac4286952592238483d5cf
 msgid ""
-"Personnel Project points at its *own* intermediate node, with its own "
-"different `local:default-value`, for the exact same `local:default-for-"
-"field`:"
+"The European Commission Research Project form points at *its own* node, "
+"`cbgp:european_research_project_status_default`, for the exact same "
+"`local:default-for-field`."
 msgstr ""
-"Proyecto Personal apunta a su *propio* nodo intermedio, con su propio "
-"`local:default-value` distinto, para el mismo `local:default-for-field`:"
+"El formulario de Proyecto de Investigación de la Comisión Europea apunta "
+"a *su propio* nodo, `cbgp:european_research_project_status_default`, para "
+"el mismo `local:default-for-field`."
 
-#: ../../source/data_model.md:227 048b8aa3029742699c4bb6a1d4e13fb9
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:349
+#: 1ac47f93df434f679fb711cbabd2dc5e
 msgid "`local:has-formulas` — the same shape, one field computed from another"
 msgstr "`local:has-formulas` — la misma forma, un campo calculado a partir de otro"
 
-#: ../../source/data_model.md:229 953039c88532411089e4515013524326
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:351
+#: fae50e51dccd40eb923a405f0e3c8106
 msgid ""
-"Personnel Project's CBGP overheads field is calculated *from* Annual "
-"income (not the other way around - Annual income is the input, CBGP "
-"overheads is what gets computed):"
+"On the European Commission Research Project form, *Total overheads* is "
+"calculated *from* *Total funding* (not the other way around — Total "
+"funding is the input, Total overheads is what gets computed):"
 msgstr ""
-"El campo de gastos CBGP de Proyecto Personal se calcula *a partir de* "
-"Ingreso anual (no al revés — Ingreso anual es la entrada, gastos CBGP es "
-"lo que se calcula):"
+"En el formulario de Proyecto de Investigación de la Comisión Europea, el "
+"*Total de costes indirectos* se calcula *a partir de* la *Financiación "
+"total* (no al revés — la Financiación total es la entrada, el Total de "
+"costes indirectos es lo que se calcula):"
 
-#: ../../source/data_model.md:243 1a5d3e0905c643e2b0c0f0a12835e01f
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:365
+#: a98c6a3a93544a2da13531d7cd178d63
 msgid ""
 "In both cases the Form never points at the Question directly - it points "
-"at an in-between node (an ordinary class, named `<form>_<field>_<form- "
-"again>_default`/`_formula` by convention, but the name itself carries no "
-"meaning to the code), and *that* node is what names the actual field via "
-"`local:default-for-field`/`local:formula-for-field`. Querying \"what does"
-" this form do with this field\" always means one hop through the node, "
-"never a direct Form-to-Question triple:"
+"at an in-between node (an ordinary class, named after the form and the "
+"field by convention, but the name itself carries no meaning to the code),"
+" and *that* node is what names the actual field via `local:default-for-"
+"field`/`local:formula-for-field`. Querying \"what does this form do with "
+"this field\" always means one hop through the node, never a direct Form-"
+"to-Question triple:"
 msgstr ""
 "En ambos casos el Formulario nunca apunta a la Pregunta directamente — "
-"apunta a un nodo intermedio (una clase ordinaria, con el nombre "
-"`<formulario>_<campo>_<formulario-otra-vez>_default`/`_formula` por "
-"convención, pero el nombre en sí no tiene ningún significado para el "
-"código), y es *ese* nodo el que nombra el campo real mediante `local"
-":default-for-field`/`local:formula-for-field`. Consultar «qué hace este "
-"formulario con este campo» siempre implica un salto a través del nodo, "
-"nunca una tripleta directa de Formulario a Pregunta:"
+"apunta a un nodo intermedio (una clase ordinaria, con un nombre basado "
+"por convención en el formulario y el campo, pero el nombre en sí no "
+"significa nada para el código), y *ese* nodo es el que nombra el campo "
+"real mediante `local:default-for-field`/`local:formula-for-field`. "
+"Consultar «qué hace este formulario con este campo» significa siempre dar "
+"un salto a través del nodo, nunca una tripleta directa de Formulario a "
+"Pregunta:"
 
-#: ../../source/data_model.md:275 7123399a25a443a08cbae86515802e78
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:396
+#: 9fe4020ed5764c40b47bdc86528bb6ad
+msgid "Conditional requirements"
+msgstr "Requisitos condicionales"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:398
+#: ee452fc86d4147159c517e09727fa838
+msgid ""
+"`local:requires-field` is unconditional. A field that is required only "
+"*sometimes* needs more pieces of information — which field, which other "
+"field decides, and which answers make it required — so, like defaults and"
+" formulas, it goes through an intermediate node. The start date of a "
+"European Commission Research Project is required once the project is "
+"Awarded:"
+msgstr ""
+"`local:requires-field` es incondicional. Un campo que es obligatorio solo"
+" *a veces* necesita más datos —qué campo, qué otro campo decide y qué "
+"respuestas lo hacen obligatorio—, así que, como los valores por defecto y"
+" las fórmulas, pasa por un nodo intermedio. La fecha de inicio de un "
+"Proyecto de Investigación de la Comisión Europea es obligatoria cuando el"
+" proyecto está Concedido:"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:416
+#: 41477dcdf28f42cda11f98031df68189
+msgid ""
+"`local:conditional-requirement-when-answer` can be repeated, meaning "
+"\"any of these answers\". The answers are the stored answer classes "
+"(`Awarded`, not its translated label), so a rule works the same in every "
+"language. One node holds **one** field, so two fields that become "
+"required together (a start and an end date) get one node each. A field "
+"with a conditional rule should *not* also carry an unconditional `local"
+":requires-field` on the same form, or it is simply always required."
+msgstr ""
+"`local:conditional-requirement-when-answer` puede repetirse, y significa "
+"«cualquiera de estas respuestas». Las respuestas son las clases de "
+"respuesta almacenadas (`Awarded`, no su etiqueta traducida), de modo que "
+"una regla funciona igual en todos los idiomas. Un nodo contiene **un** "
+"campo, así que dos campos que pasan a ser obligatorios a la vez (una "
+"fecha de inicio y una de fin) tienen un nodo cada uno. Un campo con una "
+"regla condicional *no* debería llevar además un `local:requires-field` "
+"incondicional en el mismo formulario, o simplemente será siempre "
+"obligatorio."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:437
+#: 899b0414f70846fa983cedc3592b0b92
+msgid ""
+"The rule is enforced on the server when a record is saved (the error "
+"names the condition) and shown as a small note beside the field. If the "
+"deciding field has some other answer, or none, the field is optional. A "
+"rule that points at a class that doesn't exist, or is missing a part, is "
+"reported by `check_ontology.rb`; without that check it would just never "
+"apply."
+msgstr ""
+"La regla se aplica en el servidor al guardar un registro (el error nombra"
+" la condición) y se muestra como una pequeña nota junto al campo. Si el "
+"campo que decide tiene otra respuesta, o ninguna, el campo es opcional. "
+"Una regla que apunta a una clase que no existe, o a la que le falta una "
+"parte, la señala `check_ontology.rb`; sin esa comprobación, simplemente "
+"no se aplicaría nunca."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:443
+#: ceceb41146f245dbabd76db3c43564db
 msgid ""
 "Querying the *content* of a record never needs to know any of this — a "
 "field's value is stored and read the same reified way regardless of "
 "whether that form happened to require it, default it, or calculate it. "
-"These three mechanisms only affect what happens *before* a value is "
-"written (validation, pre-population, computation) — see [Data "
+"These mechanisms only affect what happens *before* a value is written "
+"(validation, pre-population, computation) — see [Data "
 "Entry](admin/data_entry.md) for what each looks like from the form-"
 "filling side."
 msgstr ""
-"Consultar el *contenido* de un registro nunca necesita saber nada de esto"
-" — el valor de un campo se almacena y se lee de la misma forma reificada "
-"independientemente de si ese formulario lo marcó como obligatorio, le dio"
-" un valor por defecto, o lo calculó. Estos tres mecanismos solo afectan a"
-" lo que ocurre *antes* de escribir un valor (validación, prellenado, "
-"cálculo) — véase [Entrada de datos](admin/data_entry.md) para ver cómo es"
-" cada uno desde el lado de rellenar el formulario."
+"Consultar el *contenido* de un registro nunca necesita saber nada de "
+"esto: el valor de un campo se almacena y se lee de la misma forma "
+"reificada tanto si ese formulario lo exigía, lo rellenaba por defecto o "
+"lo calculaba. Estos mecanismos solo afectan a lo que ocurre *antes* de "
+"escribir un valor (validación, rellenado previo, cálculo); véase [Entrada"
+" de datos](admin/data_entry.md) para ver cómo se presenta cada uno desde "
+"el lado de quien rellena el formulario."
 
-#: ../../source/data_model.md:283 e4e2fa018fc6417e84cb03d58abcea81
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:451
+#: a9ef56c631ba4e8cab2019d214962856
 msgid "Worked example: one record that points at two others"
 msgstr "Ejemplo práctico: un registro que apunta a otros dos"
 
-#: ../../source/data_model.md:285 14b65dad2c42403faeeb55c74ee5acb1
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:453
+#: 558fd514485c4a739ab74f37c191059a
 msgid ""
 "A person funded 50/30/20 by three projects is the case where a flat field"
 " can't do the job: \"project X, 50%\" is a *pair*, and a list of projects"
@@ -362,7 +750,8 @@ msgstr ""
 "cruzadas](admin/cross_references.md) más los números que pertenecen a esa"
 " pareja:"
 
-#: ../../source/data_model.md:311 408d6eb562cf44beabdb0432825c43e0
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:479
+#: 8be49285d5f24bdf8af986aec998da15
 msgid ""
 "`cbgp:project` there is not a form: since the project forms were split "
 "(European, National/Regional, Private, Personnel) no ontology class is "
@@ -381,7 +770,8 @@ msgstr ""
 "formularios que lo usan**, y eso es lo que permite que un compromiso "
 "apunte a un proyecto sea cual sea el formulario que lo creó."
 
-#: ../../source/data_model.md:318 00e989b355954e97806f2fb0091004fe
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:486
+#: d347394f9e8f4b928367db34f89c9a39
 msgid ""
 "The list shown under a member's or project's edit form is declared the "
 "same way as the other per-form mechanisms — an intermediate node that "
@@ -392,7 +782,8 @@ msgstr ""
 "mediante un nodo intermedio que contiene los detalles, sin nada en el "
 "código que conozca los compromisos:"
 
-#: ../../source/data_model.md:340 475d998b7f844fd598ded04ffce6e6cc
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:508
+#: 81b2796899fc465ead6f91a52b38a259
 msgid ""
 "The project-side panel is the same shape with `related-via "
 "cbgp:commitment_project` and no sum. The warning is computed every time "
@@ -402,7 +793,8 @@ msgstr ""
 "cbgp:commitment_project` y sin suma. El aviso se calcula cada vez que se "
 "muestra la página y nunca se almacena."
 
-#: ../../source/data_model.md:344 29f855e631c546dd8d40d48a69af9a89
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:512
+#: f9a0cdf81b7e44f980165df0ed3c884f
 msgid ""
 "To find the commitments themselves in the data, use the same two-layer "
 "shape as the query above — for instance, every commitment for one person "
@@ -412,4 +804,22 @@ msgstr ""
 "estructura de dos capas que en la consulta anterior — por ejemplo, todos "
 "los compromisos de una persona (el valor de miembro almacenado es su "
 "DNI/NIE/PAS):"
+
+#~ msgid ""
+#~ "Research Project and Personnel Project "
+#~ "each give a *different* starting value"
+#~ " to the same shared demo field, "
+#~ "`project_test_default_field` (a disposable sandbox"
+#~ " field kept in the ontology "
+#~ "specifically so this has something real"
+#~ " to point at):"
+#~ msgstr ""
+#~ "Proyecto de Investigación y Proyecto "
+#~ "Personal dan cada uno un valor "
+#~ "inicial *distinto* al mismo campo de "
+#~ "demostración compartido, `project_test_default_field` "
+#~ "(un campo de prueba desechable que "
+#~ "se mantiene en la ontología "
+#~ "específicamente para tener algo real que"
+#~ " señalar):"
 

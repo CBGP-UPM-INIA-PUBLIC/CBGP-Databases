@@ -47,7 +47,7 @@ dropdown, a currency field, a searchable lookup into another table...),
 what order fields appear in, which fields are required, which dropdown
 options exist and what they're labeled in each language, and which fields
 are actually references to a record in a *different* table (e.g. a
-project's "Responsible PI" field is really a lookup into the Personnel
+project's "PI" field is really a lookup into the Member
 table).
 
 When an administrator opens a form, the application asks the ontology "what
@@ -85,6 +85,13 @@ the top of every page; switching it re-reads the *same* ontology, just
 asking for the Spanish label instead of the English one. Adding a third
 language later is a matter of adding a third label to each class in the
 ontology, not building a new feature.
+
+The same goes for the smaller pieces of text around the fields — the hints
+inside boxes, the captions of buttons, the notes beside a field, the names of
+the entries in the Query Data list: each is a class in the ontology with a
+label per language (see [Data Model](data_model.md#interface-text-lives-in-the-ontology)).
+A few older parts of the interface are still written directly into the
+application in English; they are being moved across as they are touched.
 
 ## Is this novel? Where it sits relative to other approaches
 
@@ -213,7 +220,7 @@ driving the running application.
 ## A reusable pattern, not a one-off
 
 None of the application code described above knows anything about
-projects, personnel, or publications specifically — it only knows how to
+projects, members, or publications specifically — it only knows how to
 read *some* ontology and render *whatever* it finds. That means the same
 codebase can become an entirely different administrative tool just by
 pointing it at a different ontology and a different (empty) triple store:

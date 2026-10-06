@@ -19,6 +19,8 @@ start working — no other changes needed.
 | `admin-validation-error.png` | admin/data_entry.md | A form redisplayed after a validation error, showing the error banner |
 | `admin-search-form.png` | admin/search_and_queries.md | A search screen showing a mix of field types, and a results list below it |
 | `admin-xref-typeahead.png` | admin/cross_references.md | A cross-reference field mid-search, showing the dropdown of matching suggestions as text is typed |
+| `admin-all-types-search.png` | admin/search_and_queries.md | The dashboard's Query Data dropdown open, showing "Projects (all types)" among the single-form entries |
+| `admin-curate-panel.png` | admin/data_entry.md | The "curate it as" panel above a submitted project that is still on the smaller user-facing form, with the four kind links |
 | `admin-export-link.png` | admin/exports.md | A search results table with the "Download to Excel" link visible above it |
 | `user-dashboard.png` | user_guide.md | The User dashboard after logging in, showing the record types available for submission |
 | `user-submission-form.png` | user_guide.md | A User submission form, showing its (smaller) set of fields |

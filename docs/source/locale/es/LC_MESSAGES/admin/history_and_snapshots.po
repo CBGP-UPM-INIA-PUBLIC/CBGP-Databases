@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CBGP-Databases 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-09 16:54+0200\n"
+"POT-Creation-Date: 2026-10-06 18:01+0200\n"
 "PO-Revision-Date: 2026-07-09 16:54+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es\n"
@@ -19,18 +19,18 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: ../../source/admin/history_and_snapshots.md:1
-#: 74d503c1788846cebc57d59262353d9e
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/history_and_snapshots.md:1
+#: b4398f43891e465f96d486d1ce1ca174
 msgid "History & Snapshots"
 msgstr "Historial e instantáneas"
 
-#: ../../source/admin/history_and_snapshots.md:3
-#: c33b3ff4cfba4d84a89cab63e7cb0a8d
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/history_and_snapshots.md:3
+#: 44471ac83ca74dca9d5161af30928f5f
 msgid "Edits and deletions look destructive, but aren't"
 msgstr "Las ediciones y eliminaciones parecen destructivas, pero no lo son"
 
-#: ../../source/admin/history_and_snapshots.md:5
-#: 077005efb0a743269a15f049ef1bdac2
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/history_and_snapshots.md:5
+#: df7602ac11c44bd0856422044160ee4d
 msgid ""
 "When an administrator edits a record and saves, or deletes one outright, "
 "the record's *current* version really does disappear from the normal "
@@ -40,15 +40,15 @@ msgid ""
 "currently appears."
 msgstr ""
 "Cuando un administrador edita un registro y guarda los cambios, o "
-"directamente elimina uno, la versión *actual* de ese registro "
-"realmente desaparece de los resultados de búsqueda normales descritos "
-"en [Búsqueda y consultas](search_and_queries.md) — no hay botón "
-"\"deshacer\", ni una papelera donde buscarlo. En ese sentido, ambas "
-"acciones son verdaderamente destructivas para el registro tal como "
-"aparece actualmente."
+"directamente elimina uno, la versión *actual* de ese registro realmente "
+"desaparece de los resultados de búsqueda normales descritos en [Búsqueda "
+"y consultas](search_and_queries.md) — no hay botón \"deshacer\", ni una "
+"papelera donde buscarlo. En ese sentido, ambas acciones son "
+"verdaderamente destructivas para el registro tal como aparece "
+"actualmente."
 
-#: ../../source/admin/history_and_snapshots.md:12
-#: 6f7ff42af4c6423ab6264296dca37080
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/history_and_snapshots.md:12
+#: a70e1c47e9224bc19193a333fa014f52
 msgid ""
 "What isn't obvious from the screen is that, immediately before either of "
 "those things happens, the application copies the record's *entire* "
@@ -61,15 +61,15 @@ msgid ""
 msgstr ""
 "Lo que no resulta evidente en la pantalla es que, justo antes de que "
 "ocurra cualquiera de esas dos acciones, la aplicación copia la versión "
-"*completa* actual del registro — cada campo, exactamente como estaba — "
-"en una segunda base de datos, separada, dedicada únicamente a este "
-"propósito, y marca esa copia con el momento en el que fue reemplazada y el "
-"motivo. Ni la edición ni la eliminación se saltan nunca este paso; no es"
-" una opción que se pueda desactivar. Así que, aunque la versión *actual*"
-" desaparezca de verdad, nada del registro se pierde realmente."
+"*completa* actual del registro — cada campo, exactamente como estaba — en"
+" una segunda base de datos, separada, dedicada únicamente a este "
+"propósito, y marca esa copia con el momento en el que fue reemplazada y "
+"el motivo. Ni la edición ni la eliminación se saltan nunca este paso; no "
+"es una opción que se pueda desactivar. Así que, aunque la versión "
+"*actual* desaparezca de verdad, nada del registro se pierde realmente."
 
-#: ../../source/admin/history_and_snapshots.md:22
-#: ec5dee4578b943d48929aa78e7d3e5d6
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/history_and_snapshots.md:22
+#: e2b5f6775169419c9201be0a29975149
 msgid ""
 "This project follows a well-established database design pattern for "
 "exactly this situation, sometimes called \"Slowly Changing Dimension\" "
@@ -77,21 +77,20 @@ msgid ""
 "decades to answer \"what did this look like at some point in the past?\" "
 "without cluttering the live data with old versions."
 msgstr ""
-"Este proyecto sigue un patrón de diseño de bases de datos muy "
-"consolidado exactamente para esta situación, a veces llamado "
-"seguimiento de historial de «Dimensión de Cambio Lento» (SCD, por sus "
-"siglas en inglés) — la misma idea que los almacenes de datos llevan "
-"décadas usando para responder a \"¿qué aspecto tenía esto en algún "
-"momento del pasado?\" sin llenar los datos activos de versiones "
-"antiguas."
+"Este proyecto sigue un patrón de diseño de bases de datos muy consolidado"
+" exactamente para esta situación, a veces llamado seguimiento de "
+"historial de «Dimensión de Cambio Lento» (SCD, por sus siglas en inglés) "
+"— la misma idea que los almacenes de datos llevan décadas usando para "
+"responder a \"¿qué aspecto tenía esto en algún momento del pasado?\" sin "
+"llenar los datos activos de versiones antiguas."
 
-#: ../../source/admin/history_and_snapshots.md:29
-#: c7a1553397914a17b55fce2c78559424
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/history_and_snapshots.md:29
+#: a99717242c6743eea24aa4c687244e6e
 msgid "Why keep the two separate"
 msgstr "Porqué mantenerlas separadas"
 
-#: ../../source/admin/history_and_snapshots.md:31
-#: e7bf403a66b4461283da8242168b6950
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/history_and_snapshots.md:31
+#: 4e8664e5d3ea4f5496d75fd97812f928
 msgid ""
 "The two databases have different jobs, and keeping them physically "
 "separate (rather than, say, marking old rows as \"inactive\" inside one "
@@ -102,8 +101,8 @@ msgstr ""
 "antiguas como \"inactivas\" dentro de una única base de datos) es una "
 "decisión deliberada:"
 
-#: ../../source/admin/history_and_snapshots.md:35
-#: a43b77f0ff1442dda0101f66cb25e69a
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/history_and_snapshots.md:35
+#: 6546cc759f4e4ae7bfefbab7a048b1cd
 msgid ""
 "The **current** database (see [Installation](../installation.md)) only "
 "ever holds today's truth. Every search, form, and export described "
@@ -112,14 +111,14 @@ msgid ""
 "aren't in this database at all."
 msgstr ""
 "La base de datos **actual** (véase [Instalación](../installation.md)) "
-"contiene en todo momento únicamente la verdad de hoy. Todas las búsquedas, "
-"formularios y exportaciones descritos en el resto de esta guía leen "
-"únicamente de aquí — las versiones antiguas nunca pueden aparecer "
-"mezcladas por accidente con los datos actuales, porque sencillamente "
-"no están en esta base de datos."
+"contiene en todo momento únicamente la verdad de hoy. Todas las "
+"búsquedas, formularios y exportaciones descritos en el resto de esta guía"
+" leen únicamente de aquí — las versiones antiguas nunca pueden aparecer "
+"mezcladas por accidente con los datos actuales, porque sencillamente no "
+"están en esta base de datos."
 
-#: ../../source/admin/history_and_snapshots.md:40
-#: 3f34a49adb6848978cd86621880f403c
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/history_and_snapshots.md:40
+#: 3ea8fe6639f44a7d8f5ee05588787d81
 msgid ""
 "The **history** database accumulates a permanent, append-only record of "
 "every version a record has ever had, along with a short, automatically "
@@ -128,20 +127,20 @@ msgid ""
 "used everywhere else in the application, including currency and "
 "controlled-vocabulary labels."
 msgstr ""
-"La base de datos de **historial** acumula un registro permanente, de "
-"solo adición, de todas las versiones que ha tenido un registro, junto "
-"con un breve resumen generado automáticamente de qué cambió en cada "
-"paso (por ejemplo, *\"Financiación total: 15.000,00 → 20.000,00\"*) — con"
-" el mismo formato de valores que se usa en el resto de la aplicación, "
-"incluyendo moneda y etiquetas de vocabulario controlado."
+"La base de datos de **historial** acumula un registro permanente, de solo"
+" adición, de todas las versiones que ha tenido un registro, junto con un "
+"breve resumen generado automáticamente de qué cambió en cada paso (por "
+"ejemplo, *\"Financiación total: 15.000,00 → 20.000,00\"*) — con el mismo "
+"formato de valores que se usa en el resto de la aplicación, incluyendo "
+"moneda y etiquetas de vocabulario controlado."
 
-#: ../../source/admin/history_and_snapshots.md:47
-#: 23c325cc37dd42a38206a5d51c729c26
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/history_and_snapshots.md:47
+#: 354568c592bd40a89b056b6611a1c3a4
 msgid "What this means day to day"
 msgstr "Qué significa esto en el día a día"
 
-#: ../../source/admin/history_and_snapshots.md:49
-#: 3725c4a92a8b4d96ac31464999db1c3f
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/history_and_snapshots.md:49
+#: 5362a5c722d94feca7d33ede9bdc1b90
 msgid ""
 "**It's safe to correct mistakes.** Editing a record to fix a typo, or "
 "deleting a record that was created in error, doesn't erase anything — the"
@@ -149,12 +148,12 @@ msgid ""
 "remember."
 msgstr ""
 "**Es seguro corregir errores.** Editar un registro para arreglar una "
-"errata, o eliminar un registro creado por equivocación, no borra nada —"
-" la versión anterior se conserva automáticamente, sin ningún paso "
+"errata, o eliminar un registro creado por equivocación, no borra nada — "
+"la versión anterior se conserva automáticamente, sin ningún paso "
 "adicional que recordar."
 
-#: ../../source/admin/history_and_snapshots.md:53
-#: 3ea07821280a47248c12984a0b0e3ec4
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/history_and_snapshots.md:53
+#: d4c5d94bb09c43cd93a2f394aad9e982
 msgid ""
 "**There's no in-app screen (yet) for browsing a record's past versions.**"
 " The history is fully captured and safe from the moment it's created, but"
@@ -164,15 +163,33 @@ msgid ""
 " for casual browsing."
 msgstr ""
 "**Todavía no existe una pantalla dentro de la aplicación para consultar "
-"las versiones pasadas de un registro.** El historial queda "
-"completamente capturado y a salvo desde el momento en que se crea, pero"
-" consultarlo hoy implica usar el pequeño conjunto de llamadas de la API"
-" de solo lectura descritas en [Viaje en el tiempo](../time_travel.md) —"
-" útiles para responder a una pregunta concreta (*\"¿quién trabajó en "
-"este proyecto en 2019?\"*) más que para consultarlo de forma casual."
+"las versiones pasadas de un registro.** El historial queda completamente "
+"capturado y a salvo desde el momento en que se crea, pero consultarlo hoy"
+" implica usar el pequeño conjunto de llamadas de la API de solo lectura "
+"descritas en [Viaje en el tiempo](../time_travel.md) — útiles para "
+"responder a una pregunta concreta (*\"¿quién trabajó en este proyecto en "
+"2019?\"*) más que para consultarlo de forma casual."
 
-#: ../../source/admin/history_and_snapshots.md:59
-#: e8e130ca3f3b4e71b2bd9e30c6f97431
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/history_and_snapshots.md:59
+#: f6754f0370634aada7b5490e9d9e40ac
+msgid ""
+"**Curating a member's submission is an edit like any other.** When an "
+"administrator classifies a submitted project and saves it under a full "
+"form (see [Data Entry](data_entry.md#curating-a-project-submitted-"
+"by-a-member)), the version the member submitted is preserved as a "
+"snapshot, exactly as for any edit, so what was originally entered can "
+"still be recovered."
+msgstr ""
+"**Clasificar el envío de un miembro es una edición como cualquier otra.** "
+"Cuando un administrador clasifica un proyecto enviado y lo guarda con un "
+"formulario completo (véase [Entrada de "
+"datos](data_entry.md#curating-a-project-submitted-by-a-member)), la "
+"versión que envió el miembro se conserva como una instantánea, "
+"exactamente igual que en cualquier edición, de modo que lo que se "
+"introdujo originalmente aún puede recuperarse."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/history_and_snapshots.md:64
+#: 494a8a47ab694ce69e8e3ad818d68ac3
 msgid ""
 "**Nothing here is a substitute for normal judgment when deleting a "
 "record.** The data isn't destroyed, but a deleted record also won't "
@@ -182,8 +199,9 @@ msgid ""
 "from the history side."
 msgstr ""
 "**Nada de esto sustituye al buen criterio habitual al eliminar un "
-"registro.** Los datos no se destruyen, pero un registro eliminado "
-"tampoco reaparecerá por sí solo en las búsquedas o exportaciones — si "
-"resulta que algo eliminado todavía hace falta, hay que volver a "
-"introducirlo o pedir a quien administre la base de datos que recupere "
-"directamente la versión correspondiente desde el lado del historial."
+"registro.** Los datos no se destruyen, pero un registro eliminado tampoco"
+" reaparecerá por sí solo en las búsquedas o exportaciones — si resulta "
+"que algo eliminado todavía hace falta, hay que volver a introducirlo o "
+"pedir a quien administre la base de datos que recupere directamente la "
+"versión correspondiente desde el lado del historial."
+

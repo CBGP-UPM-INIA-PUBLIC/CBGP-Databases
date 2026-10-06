@@ -105,6 +105,15 @@ checked into this repository already points at a specific known-good
 version; there's no need to change it unless a newer release is wanted.
 
 ```{note}
+This documentation describes the application as it is in the repository's
+`main` branch. Anything listed under **Unreleased** at the top of
+`CHANGELOG.md` is already in this documentation but not yet in a released
+version, so an installation pinned to an older release (such as the image tag
+in `docker-compose.yml`) will not have it until a new version is released and
+the tag is moved up.
+```
+
+```{note}
 This application is under active development, and its version numbering
 follows a "we bump it and describe it every time something meaningful
 ships" convention rather than a strict semantic-versioning contract — the

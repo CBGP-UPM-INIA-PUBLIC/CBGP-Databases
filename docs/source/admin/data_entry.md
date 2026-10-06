@@ -1,7 +1,7 @@
 # Data Entry
 
 This page covers adding and editing records as an administrator — Projects,
-Personnel, and Publications all work the same way, since (per
+Members, and Publications all work the same way, since (per
 [Philosophy & Design](../philosophy.md)) the same generic form-rendering
 code drives every one of them, reading whatever the ontology currently
 says a given record type looks like.
@@ -29,7 +29,7 @@ Screenshot needed: `docs/source/_static/screenshots/admin-dashboard.png`
 Every field on an add/edit form, in the order it appears, its label, and
 what kind of input it accepts, comes straight from the ontology at the
 moment the page loads — nothing on this page is specific to Projects,
-Personnel, or Publications; it applies equally to any record type this
+Members, or Publications; it applies equally to any record type this
 instance is configured to manage, including ones that don't exist yet at
 the time this is being read. A few field types show up repeatedly:
 
@@ -83,13 +83,37 @@ entirely, on another that happens to reuse it. Required fields are shown
 with a red asterisk next to their label so this is visible before you
 submit, not only after.
 
+(required-when)=
+### Required only once something else is true
+
+A few fields are not always required, but become required when *another*
+field has a particular answer. The start and end dates of a project are the
+example: a project that is only a proposal has no dates yet, so they are
+required only once its **Funding status** is *Awarded*. They have no red
+asterisk, since they are not always required; instead a small grey note
+beside the field says when — "Required when Funding status is Awarded".
+
+Saving an Awarded project with a date missing is refused in the usual way
+(see above), naming the condition: "End date is required when Funding
+status is Awarded". The same project with its status left at *Proposed*,
+*Rejected* or *Withdrawn* saves without dates. As with any required field,
+this is checked on the server when you save, not only on the page.
+
+**For the ontology editor:** like the other per-form rules, this is
+declared on the **form**, with a small rule node that names the field, the
+field whose answer decides, and the answer(s) that make it required — see
+[Data Model](../data_model.md#conditional-requirements).
+The ontology checker (`check_ontology.rb`) reports a rule that is missing
+a part or that names a class that doesn't exist, which would otherwise
+quietly never apply.
+
 ## Calculated fields
 
 A few fields aren't typed in at all — they're computed automatically from
 other fields on the same form, at the moment you save. These are shown
 greyed out, marked "(calculated automatically)", with the formula that
 produced them displayed underneath in plain text (e.g.
-`project_total_funding * 0.25`) so it's never a mystery where the number
+`european_private_research_project_total_funding * 0.25`) so it's never a mystery where the number
 came from. A live preview updates as you fill in the fields it depends on,
 but that preview is only a convenience — the number that actually gets
 saved is always recalculated on the server at the moment you submit,
@@ -152,6 +176,46 @@ tab. The application only checks that what was entered *is* a web address,
 not that it goes to the right place: if a link turns out to be wrong,
 follow it, then edit the record and enter the correct one.
 
+(project-forms)=
+## The project forms
+
+Projects come in four kinds, each with its own form, and a fifth, smaller
+form that members fill in themselves (see [User Guide](../user_guide.md)).
+The kind is chosen by *which form you use*, and is what the **Record type**
+column in a search shows ([Search & Queries](search_and_queries.md#reading-the-results)).
+
+- **European Commission Research Projects**, **National and Regional
+  Research Projects** and **Private Research Projects** record a research
+  project and its funding. They differ in the fields that depend on the
+  funder, such as which institution funds it.
+- **Personnel Project** is a different thing: a grant that pays for **one
+  person's contract** (a fellowship, for instance) rather than a research
+  project. Its **Beneficiary** is the member whose contract it funds, and —
+  as the field help says — its start and end dates are that member's
+  contract dates. It also records the funding entity and the beneficiary's
+  affiliation (UPM or CSIC).
+
+What every project form has in common:
+
+- **Title**, **Internal code**, **Application URL** and **Funding status**
+  (*Proposed*, *Awarded*, *Rejected* or *Withdrawn*; a new record starts as
+  *Proposed*).
+- **PI** — the principal investigator, chosen with the same lookup as any
+  other [cross-reference](cross_references.md) (search by surname, the
+  member's DNI/NIE/PAS is stored). Several can be given. It is the same
+  field on every kind of project, including Personnel Projects, where it is
+  the PI responsible for the beneficiary.
+- **Start date** and **End date**, required only once the project is
+  Awarded (see [above](#required-when)).
+- **Comments**, free text for anything that doesn't fit elsewhere. A member's
+  note with their submission is kept here and stays on the record when it is
+  curated.
+
+People are linked to a project only through these member lookups — the PI
+(and, on the research kinds, a co-PI), the beneficiary of a Personnel
+Project — and through [funding commitments](#funding-commitments-splitting-a-persons-salary-across-projects).
+A project has no person field of its own beyond those.
+
 ## Funding commitments: splitting a person's salary across projects
 
 A researcher can be paid by several projects at once — say 50% from one,
@@ -203,3 +267,62 @@ current values. Deleting a record is available from the same place.
 routinely**: neither one actually destroys data — see
 [History & Snapshots](history_and_snapshots.md) for what really happens
 and why that matters.
+
+**A record always opens under the form that wrote it.** Opening a record
+from a list that mixes several kinds — an all-types search, say — takes you
+to the edit page of *its own* kind, with that kind's fields, whatever form
+the link named. Otherwise you would be shown the fields of every kind
+together, and saving could mark the record as the wrong kind. (The one
+exception is curating a member's submission, described next.)
+
+(curating-a-submission)=
+## Curating a project submitted by a member
+
+A member who has applied for a project tells the administrators through the
+smaller, user-facing project form ([User Guide](../user_guide.md)). The
+administrators are emailed with what was submitted and a link; following it
+opens the record as an ordinary edit page, but under the smaller form,
+showing exactly what the member entered. Two things are missing at that
+point: the member doesn't say what **kind** of project it is, and, until it
+is awarded, there are no dates. This is how you fill both in.
+
+Above the submitted data, administrators see a panel: *"This record was
+submitted through a simplified form and has not been classified yet. Review
+what was entered below, then curate it as:"*, followed by one link per kind
+of project. **Read what was entered first** — it is what tells you which kind
+it is — then choose.
+
+```{note}
+Screenshot needed: `docs/source/_static/screenshots/admin-curate-panel.png`
+— the panel above a submitted project, with the four kind links.
+```
+
+![The curate-as panel](../_static/screenshots/admin-curate-panel.png)
+*The panel shown above a record that is still on the smaller form.*
+
+Choosing a kind opens **the same record** under that kind's form. A banner
+says *"Curating this submitted record as …. Nothing changes until you
+save."*, with a link back to the submitted view; the fields that form shares
+with the submission are already filled in. If the member entered anything
+that the chosen form has **no field for**, it is listed in a warning — those
+values will not be kept when you save (the earlier version stays in the
+history). Fill in what the new form still needs and save.
+
+Saving makes the record an ordinary record of that kind: it has the same
+identifier as before, a new **Record type**, and from now on is found by
+searches for that kind and opens under that form. Because it is saved as
+Proposed, it needs no dates yet ([above](#required-when)). The version the
+member submitted is not lost — it is kept as a snapshot like any other
+earlier version ([History & Snapshots](history_and_snapshots.md)).
+
+A few limits worth knowing:
+
+- Only **administrators** see the panel, and only on records still on a
+  user-facing form. Once a record is on a full form its kind is fixed and the
+  panel no longer appears.
+- There is no built-in way yet to move an already-classified record to a
+  different kind. If one was classified wrongly, add it again under the right
+  form and delete the wrong one; the deletion is kept in the history.
+- Nothing about this is specific to projects: it works for any record type
+  that has both a user-facing form and full forms stored together.
+

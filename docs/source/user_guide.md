@@ -44,6 +44,40 @@ submission form, showing its (smaller) set of fields.
 ![User submission form](_static/screenshots/user-submission-form.png)
 *A User-facing submission form.*
 
+(announcing-a-project)=
+## Announcing a project application
+
+The main thing the User side is used for is telling the administrators that
+you have **applied for a project**. The project form asks for the basics:
+
+- **Title** of the project.
+- **PI** — the principal investigator. This is a lookup, not free text:
+  start typing a surname and choose the person from the list that appears.
+  It is **required**, and it is how the administrators know who is
+  responsible for what you are announcing. More than one can be given, and a
+  **co-PI** can be added the same way.
+- **Call for proposal title**, and the **Application URL** — the full
+  web address of the call or application page, starting `http://` or
+  `https://` (required; an identifier on its own is not accepted).
+- **Funding status** (usually *Proposed* at this stage) and the funding
+  amounts, if you know them.
+- **Comments** — a free-text box for anything the administrators should
+  know that the other fields don't cover, for example that the project is
+  funding your own contract, or a deadline. It is included in the email they
+  receive.
+
+You are *not* asked what **kind** of project it is, and there are no dates to
+fill in: both are decided later by the administrators, who go through each
+submission, classify it and complete it (see [Data
+Entry](admin/data_entry.md#curating-a-project-submitted-by-a-member)). Dates only become
+required once the project has been awarded.
+
+A note on the login: the User account is a shared one set up by the
+administrator, not a personal login (see [Configuration](configuration.md)),
+so the system does **not** know who is filling the form in. The PI field is
+how a submission says who is responsible; if you are the person it concerns
+but not the PI, say so in the Comments.
+
 ## What happens after submitting
 
 Once a submission passes validation, two things happen right away:

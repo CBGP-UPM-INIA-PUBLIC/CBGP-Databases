@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CBGP-Databases 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-25 12:32+0200\n"
+"POT-Creation-Date: 2026-10-06 18:22+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es\n"
@@ -19,12 +19,13 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: ../../source/installation.md:1 65c62083f42d4883b0276e1ce6668fec
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/installation.md:1
+#: c5ad70070d4d456580f9b7a87a22d1bc
 msgid "Installation"
 msgstr "Instalación"
 
-#: ../../source/installation.md:3 f2d46d742c0d48d6aca064664c4a85f3
-#, fuzzy
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/installation.md:3
+#: 83923e10025142169e39927b02c216ef
 msgid ""
 "This page covers getting a working copy of the application running, end "
 "to end: the two-store database it needs, the Docker images, and how to "
@@ -35,42 +36,41 @@ msgid ""
 "database needs to exist before the application can start."
 msgstr ""
 "Esta página explica cómo poner en marcha una copia funcional de la "
-"aplicación, de principio a fin: la base de datos de dos repositorios "
-"necesarias, las imágenes Docker, y cómo elegir una versión. Se asume que "
-"Docker ya está instalado en la máquina donde se va a ejecutar. Configurar"
-" *qué hace la aplicación una vez que está en marcha* (el archivo `.env`) "
-"es la página siguiente, [Configuración](configuration.md) — siga esta "
-"página primero, ya que la base de datos tiene que existir antes de que la"
-" aplicación pueda arrancar."
+"aplicación, de principio a fin: la base de datos de dos almacenes que "
+"necesita, las imágenes de Docker y cómo elegir una versión. Supone que "
+"Docker ya está instalado en la máquina que la ejecutará. Configurar *qué "
+"hace la aplicación una vez en marcha* (el archivo `.env`) es la página "
+"siguiente, [Configuración](configuration.md) — haga primero esta página, "
+"ya que la base de datos debe existir antes de que la aplicación pueda "
+"arrancar."
 
-#: ../../source/installation.md:11 4a1af292814c4e78b7adb6bc9178005c
-#, fuzzy
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/installation.md:11
+#: d25db0922c114ffa807c5c69351a54c6
 msgid "The two-store database"
-msgstr "La base de datos de dos repositorios"
+msgstr "La base de datos de dos almacenes"
 
-#: ../../source/installation.md:13 21883252ba8e4e8f9c0f84482a80e6f0
-#, fuzzy
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/installation.md:13
+#: 641cb5927e034dc58da3ff37bccc76b2
 msgid ""
 "This application stores data in [Virtuoso](https://vos.openlink.co.uk/), "
 "a graph database, and it needs **two separate Virtuoso instances**, not "
 "one:"
 msgstr ""
 "Esta aplicación almacena los datos en "
-"[GraphDB](https://www.ontotext.com/products/graphdb/), una base de datos "
-"de grafos, y necesita **dos repositorios separados dentro de la misma "
-"instancia de GraphDB**, no uno solo:"
+"[Virtuoso](https://vos.openlink.co.uk/), una base de datos de grafos, y "
+"necesita **dos instancias de Virtuoso independientes**, no una:"
 
-#: ../../source/installation.md:16 c30810800b6a4aedb848e8dfcbe7df65
-#, fuzzy
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/installation.md:16
+#: a7988bbcf7c14074beaaf250fe0c6a44
 msgid ""
 "A **current-state store** — every record as it exists right now. This is "
 "the one the application reads and writes for ordinary use."
 msgstr ""
-"Un **repositorio de estado actual** — cada registro tal como existe ahora"
-" mismo. Es el que la aplicación lee y escribe en el uso ordinario."
+"Un **almacén de estado actual** — cada registro tal como existe ahora "
+"mismo. Es el que la aplicación lee y escribe en el uso ordinario."
 
-#: ../../source/installation.md:18 aeb62cd949e140ee8e6d98517e6c045b
-#, fuzzy
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/installation.md:18
+#: 43040ca68c7e41789d4d8d4c456c825a
 msgid ""
 "A **history store** — a permanent, append-only record of every prior "
 "version of every record, written automatically whenever something is "
@@ -79,16 +79,16 @@ msgid ""
 "practice; for installation purposes, it's enough to know it's a second, "
 "separate store that must exist before the application can start."
 msgstr ""
-"Un **repositorio de historial** — un registro permanente, de solo "
-"adición, de cada versión anterior de cada registro, escrito "
-"automáticamente cada vez que algo se edita o se elimina. Consulte "
-"[Historial y Capturas](admin/history_and_snapshots.md) para saber qué "
-"significa esto en la práctica; a efectos de instalación, basta con saber "
-"que es un segundo repositorio, separado, que debe existir antes de que la"
-" aplicación pueda arrancar."
+"Un **almacén de historial** — un registro permanente, de solo adición, de "
+"cada versión anterior de cada registro, escrito automáticamente cada vez "
+"que algo se edita o elimina. Véase [Historial e "
+"instantáneas](admin/history_and_snapshots.md) para saber qué significa "
+"esto en la práctica; a efectos de la instalación, basta con saber que es "
+"un segundo almacén independiente que debe existir antes de que la "
+"aplicación pueda arrancar."
 
-#: ../../source/installation.md:26 6017bbb59686442a9847c0ea02e095a4
-#, fuzzy
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/installation.md:26
+#: 96ed05ae2c444e948672afb359d8eb13
 msgid ""
 "They're kept physically separate — two Virtuoso processes, not one "
 "process with the history mixed in — specifically so that an ordinary "
@@ -98,30 +98,41 @@ msgid ""
 " a single Virtuoso process is one graph store, with no separate-"
 "repository concept to lean on instead."
 msgstr ""
-"Se mantienen físicamente separados — dos repositorios, no uno solo con el"
-" historial mezclado — precisamente para que una búsqueda ordinaria nunca "
-"pueda encontrar por accidente datos antiguos y ya sustituidos. Nada en la"
-" instalación o ejecución de la aplicación difiere entre uno y otro; "
-"GraphDB simplemente necesita que ambos existan, con los nombres que se le"
-" indiquen a la aplicación (véase [Configuración](configuration.md))."
+"Se mantienen físicamente separados — dos procesos de Virtuoso, no uno "
+"solo con el historial mezclado — precisamente para que una búsqueda "
+"ordinaria nunca pueda mostrar por accidente datos antiguos ya "
+"sustituidos. Esta es también la razón de que sean dos instancias "
+"completas de Virtuoso y no dos repositorios dentro de una, como "
+"funcionaba la base de datos anterior de la aplicación (GraphDB): un único "
+"proceso de Virtuoso es un único almacén de grafos, sin un concepto de "
+"repositorio independiente en el que apoyarse."
 
-#: ../../source/installation.md:35 c86e0c1d90ec478c93a9e176a6c8b079
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/installation.md:35
+#: 9b40a0f05692425cba5858ee5afd9ba9
 msgid ""
 "Before 2026-08-25 this application used GraphDB instead. The switch was "
 "made because GraphDB's free/open tier returned to requiring periodic "
-"license re-registration, which Virtuoso Open Source doesn't. If a "
-"pre-2026-08-25 instance needs to keep running on GraphDB rather than "
-"migrate, `docker-compose-graphdb.yml` in the repository still reflects "
-"that setup, kept as a reference/rollback point rather than removed "
-"outright — nothing in the running code depends on it, and it isn't "
-"maintained going forward."
+"license re-registration, which Virtuoso Open Source doesn't. A "
+"pre-2026-08-25 instance staying on GraphDB would need `docker-"
+"compose.yml` and `configuration.rb` rolled back to that point in git "
+"history — the GraphDB-only compose file that used to live alongside this "
+"one has since been removed from the repository."
 msgstr ""
+"Antes del 2026-08-25 esta aplicación usaba GraphDB. El cambio se hizo "
+"porque el nivel gratuito/abierto de GraphDB volvió a exigir un nuevo "
+"registro periódico de la licencia, algo que Virtuoso Open Source no "
+"exige. Una instancia anterior al 2026-08-25 que siguiera en GraphDB "
+"necesitaría volver `docker-compose.yml` y `configuration.rb` a ese punto "
+"del historial de git — el archivo compose solo para GraphDB que antes "
+"convivía con este se ha eliminado desde entonces del repositorio."
 
-#: ../../source/installation.md:45 ba4b0a6ccd4e4a3cad70258899203c63
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/installation.md:44
+#: 5d7e6b40da8d4217bdacc4367d10865a
 msgid "No repository-creation step needed"
-msgstr ""
+msgstr "No hace falta ningún paso de creación de repositorios"
 
-#: ../../source/installation.md:47 1a5eaecc60d14901b62acd0ef20ba802
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/installation.md:46
+#: 0bf3a40cf4364f4db8578dd6c257bc92
 msgid ""
 "Unlike GraphDB, Virtuoso doesn't ask for a one-time \"create a "
 "repository\" step through a web console before it can be used — each "
@@ -129,19 +140,31 @@ msgid ""
 "Standing up the two containers (next section) is the entire setup step; "
 "there's nothing further to click through."
 msgstr ""
+"A diferencia de GraphDB, Virtuoso no pide un paso único de «crear un "
+"repositorio» a través de una consola web antes de poder usarse — cada "
+"contenedor de Virtuoso *es* un almacén, listo para usar en cuanto "
+"arranca. Levantar los dos contenedores (siguiente sección) es todo el "
+"paso de configuración; no hay nada más que recorrer con el ratón."
 
-#: ../../source/installation.md:53 886f11c8befc4044bcf1a92d3c2a99b0
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/installation.md:52
+#: 6556b896a0cf4ce8b514cad1f115a96c
 msgid "Running via Docker"
 msgstr "Ejecución con Docker"
 
-#: ../../source/installation.md:55 094bbbf7f41e4aefa7c6764e108f132e
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/installation.md:54
+#: 8e70623404634844beff93cb7e0835c0
 msgid ""
 "The application ships as a Docker image; `docker-compose.yml` in this "
 "repository runs all three containers together — the current-state "
 "Virtuoso, the history Virtuoso, and the application itself:"
 msgstr ""
+"La aplicación se distribuye como una imagen de Docker; el "
+"`docker-compose.yml` de este repositorio ejecuta los tres contenedores "
+"juntos — el Virtuoso de estado actual, el Virtuoso de historial y la "
+"propia aplicación:"
 
-#: ../../source/installation.md:63 e38c3169a69e41b6b50eabfba71e7da3
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/installation.md:62
+#: 625db5e9921a480f81212f1a53e65297
 msgid ""
 "Both Virtuoso containers are configured with **bind-mounted** host "
 "directories (`./virtuoso-data/current` and `./virtuoso-data/history`, "
@@ -155,8 +178,22 @@ msgid ""
 "the host needs `sudo` (or another container mounting the same path) "
 "rather than working as your normal user."
 msgstr ""
+"Los dos contenedores de Virtuoso están configurados con directorios del "
+"equipo anfitrión **montados directamente** (`./virtuoso-data/current` y "
+"`./virtuoso-data/history`, que se crean automáticamente en el primer "
+"arranque si no existen) en lugar de un volumen de Docker con nombre — de "
+"modo que los archivos de datos de cada almacén (`virtuoso.db`, "
+"`virtuoso.log`, ...) *y* su configuración (`virtuoso.ini`) están juntos "
+"en un mismo lugar directamente en el sistema de archivos del anfitrión, "
+"fáciles de encontrar sin pasar por `docker volume inspect`. Una cosa que "
+"conviene saber: esos archivos los escribe el usuario interno del propio "
+"contenedor, no el usuario que ejecutó `docker compose up`, por lo que "
+"editarlos o borrarlos a mano desde el anfitrión requiere `sudo` (u otro "
+"contenedor que monte la misma ruta) en lugar de funcionar con el usuario "
+"normal."
 
-#: ../../source/installation.md:75 6833a331095548b3b3b4b375fac94f7a
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/installation.md:74
+#: 9e62c4dd3a424340ba5df7b31f2800e8
 msgid ""
 "Each Virtuoso container's `dba` superuser password comes from `.env` "
 "(`VIRTUOSO_PASS`/`HISTORY_PASS` — see [Configuration](configuration.md)),"
@@ -164,20 +201,27 @@ msgid ""
 "up`, not after — the password is set the first time each container starts"
 " and isn't automatically changed by editing `.env` later."
 msgstr ""
+"La contraseña del superusuario `dba` de cada contenedor de Virtuoso "
+"procede de `.env` (`VIRTUOSO_PASS`/`HISTORY_PASS` — véase "
+"[Configuración](configuration.md)), así que cree `.env` con valores "
+"reales *antes* del primer `docker compose up`, no después — la contraseña "
+"se establece la primera vez que arranca cada contenedor y no se cambia "
+"automáticamente al editar `.env` más tarde."
 
-#: ../../source/installation.md:82 f0473cd01e334a5ab1123077e638e496
-#, fuzzy
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/installation.md:81
+#: 2ea4931a2c9e4495b33cf1ac7a7a1ee4
 msgid ""
 "Screenshot needed: `docs/source/_static/screenshots/docker-compose-"
 "up.png` — a terminal showing `docker compose up -d` completing "
 "successfully with all three containers reported as started/healthy."
 msgstr ""
-"Falta una captura de pantalla: `docs/source/_static/screenshots/docker-"
-"compose-up.png` — una terminal mostrando `docker compose up -d` "
-"completándose correctamente, con ambos contenedores indicados como "
-"iniciados/saludables."
+"Falta una captura de pantalla: "
+"`docs/source/_static/screenshots/docker-compose-up.png` — una terminal "
+"mostrando `docker compose up -d` completándose con éxito, con los tres "
+"contenedores indicados como iniciados/en buen estado."
 
-#: ../../source/installation.md:87 aa5a0d404ca4495c95ceadb773e5434d
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/installation.md:86
+#: 6203e9b5e9fe43968998e1896ef58bae
 msgid ""
 "![docker compose up succeeding](_static/screenshots/docker-compose-"
 "up.png) *A successful `docker compose up -d`.*"
@@ -185,15 +229,18 @@ msgstr ""
 "![docker compose up correcto](_static/screenshots/docker-compose-up.png) "
 "*Un `docker compose up -d` correcto.*"
 
-#: ../../source/installation.md:87 9d548070817a407ab0e00e3c1a74cd29
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/installation.md:86
+#: e86905147a54442ebf62c2b37c98b281
 msgid "docker compose up succeeding"
 msgstr "docker compose up correcto"
 
-#: ../../source/installation.md:90 f0497b41dfaf439d87fb458bb856f75b
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/installation.md:89
+#: 86d5e9ee5b724f73a5b2107464ec2001
 msgid "Choosing a version"
 msgstr "Elegir una versión"
 
-#: ../../source/installation.md:92 cf6130a0e0c8446d9de819132407a2ca
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/installation.md:91
+#: 12981294a5884864bb2951568873277c
 msgid ""
 "The application's version number appears in three places that are always "
 "kept in sync with each other in this repository: the `VERSION` file, the "
@@ -214,7 +261,8 @@ msgstr ""
 "compose.yml`, volver a ejecutar `docker compose up -d`), no algo que "
 "ocurra automáticamente en segundo plano."
 
-#: ../../source/installation.md:101 5cb4468be87b4ee0a6d5c69cfa1c3f95
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/installation.md:100
+#: a56f33b9ab1447e7a57dcc45bd709e9a
 msgid ""
 "To decide which version to run: read `CHANGELOG.md` in the repository "
 "from the top down — each entry lists what was added, changed, or fixed in"
@@ -232,7 +280,25 @@ msgstr ""
 "versión concreta y conocida como correcta; no hace falta cambiarlo a "
 "menos que se quiera una versión más nueva."
 
-#: ../../source/installation.md:109 4a603a5212ee435f81a057a74be52649
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/installation.md:108
+#: 636b0e98efd74a0d93df4321ef760f3c
+msgid ""
+"This documentation describes the application as it is in the repository's"
+" `main` branch. Anything listed under **Unreleased** at the top of "
+"`CHANGELOG.md` is already in this documentation but not yet in a released"
+" version, so an installation pinned to an older release (such as the "
+"image tag in `docker-compose.yml`) will not have it until a new version "
+"is released and the tag is moved up."
+msgstr ""
+"Esta documentación describe la aplicación tal como está en la rama `main` "
+"del repositorio. Todo lo que figura en **Unreleased** al principio de "
+"`CHANGELOG.md` ya está en esta documentación pero aún no en una versión "
+"publicada, así que una instalación fijada en una versión anterior (como "
+"la etiqueta de imagen de `docker-compose.yml`) no lo tendrá hasta que se "
+"publique una versión nueva y se suba la etiqueta."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/installation.md:117
+#: 1e973885b2c84b3ab02d05a672508347
 msgid ""
 "This application is under active development, and its version numbering "
 "follows a \"we bump it and describe it every time something meaningful "
@@ -453,4 +519,21 @@ msgstr ""
 #~ "creación de repositorios explicado antes, "
 #~ "antes de que la aplicación pueda "
 #~ "hacer nada útil."
+
+#~ msgid ""
+#~ "Before 2026-08-25 this application used "
+#~ "GraphDB instead. The switch was made "
+#~ "because GraphDB's free/open tier returned "
+#~ "to requiring periodic license re-"
+#~ "registration, which Virtuoso Open Source "
+#~ "doesn't. If a pre-2026-08-25 instance "
+#~ "needs to keep running on GraphDB "
+#~ "rather than migrate, `docker-compose-"
+#~ "graphdb.yml` in the repository still "
+#~ "reflects that setup, kept as a "
+#~ "reference/rollback point rather than removed"
+#~ " outright — nothing in the running"
+#~ " code depends on it, and it "
+#~ "isn't maintained going forward."
+#~ msgstr ""
 

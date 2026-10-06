@@ -56,6 +56,11 @@ database) is deliberate:
   API calls covered in [Time Travel](../time_travel.md) — useful for
   answering a specific question (*"who worked on this project in 2019?"*)
   rather than for casual browsing.
+- **Curating a member's submission is an edit like any other.** When
+  an administrator classifies a submitted project and saves it under a full
+  form (see [Data Entry](data_entry.md#curating-a-project-submitted-by-a-member)), the version
+  the member submitted is preserved as a snapshot, exactly as for any edit,
+  so what was originally entered can still be recovered.
 - **Nothing here is a substitute for normal judgment when deleting a
   record.** The data isn't destroyed, but a deleted record also won't
   reappear in searches or exports on its own — deleting something that

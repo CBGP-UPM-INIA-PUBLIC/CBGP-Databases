@@ -148,6 +148,63 @@ may catch the database file half-written and be unusable.
 A cold copy also contains the stores' own settings (`virtuoso.ini`), which an
 online backup does not.
 
+### A portable N-Quads export
+
+Virtuoso's own backup files can only be restored by Virtuoso. As insurance
+against that format ever becoming a problem, the repository includes
+`utilities/virtuoso_nquads.sh`, which writes a whole store out as
+**N-Quads** — a plain-text W3C standard that any triple store can read — and
+loads such files back in. It keeps every record's own named graph, which this
+application's history mechanism depends on (see [History &
+Snapshots](admin/history_and_snapshots.md)).
+
+```bash
+cd /path/to/CBGP-Databases
+set -a; source .env; set +a                        # for VIRTUOSO_PASS / HISTORY_PASS
+
+utilities/virtuoso_nquads.sh export cbgp-databases-virtuoso-current-1 "$VIRTUOSO_PASS" /var/backups/cbgp-databases/nquads/current
+utilities/virtuoso_nquads.sh export cbgp-databases-virtuoso-history-1 "${HISTORY_PASS:-$VIRTUOSO_PASS}" /var/backups/cbgp-databases/nquads/history
+```
+
+Each command prints the new dated folder it wrote, holding gzipped
+`output000001.nq.gz` files (one per roughly 100 MB of data). For the
+institute's real data at the time of writing, each store came to well under a
+megabyte compressed and took a few seconds, while the store kept running.
+
+Virtuoso does not ship a dump command ready-made. The script installs the
+procedure OpenLink Software publishes for this purpose
+([source](https://vos.openlinksw.com/owiki/wiki/VOS/VirtRDFDumpNQuad), kept in
+`utilities/virtuoso_dump_nquads.sql`) into the store the first time it runs;
+that stored procedure is the only change it makes to the store, and running it
+again simply replaces it.
+
+To load an export — into a **new, empty store**, since importing *adds* to
+whatever is already there:
+
+```bash
+utilities/virtuoso_nquads.sh import cbgp-databases-virtuoso-current-1 "$VIRTUOSO_PASS" /var/backups/cbgp-databases/nquads/current/2026-10-06-03-00-00
+```
+
+It copies the files into the container, loads them with Virtuoso's bulk
+loader, checks that every file loaded without error, and cleans up after
+itself. Loading the same files twice does not duplicate anything.
+
+How far to trust it: the real current and history stores were each exported
+and imported into a brand-new store, and a checksum over every statement of all
+of the application's graphs matched exactly (about 62,000 and 49,000
+statements). Things to know:
+
+- A new Virtuoso store already contains a handful of standard vocabulary
+  graphs (OWL and similar) that an export includes too. Importing re-adds
+  them, and because some of their statements use blank nodes, a few
+  statements in those built-in graphs end up duplicated. They are not the
+  institute's data and nothing depends on them.
+- It restores **data only**: not `virtuoso.ini`, and not the `dba` password,
+  which is whatever the new store was created with — `.env` must match it.
+- It is slower and cruder than a native backup, so think of it as a second,
+  independent copy to keep alongside the nightly backups, not a replacement
+  for them. Run it, say, weekly (see the next section).
+
 ### Checking that a backup really works
 
 A backup you have never restored is a hope, not a backup. Once, and again
@@ -167,16 +224,7 @@ current and history stores, and on your scratch container's own port.) The
 counts match only if nothing was written between taking the backup and
 asking, so check on a quiet moment.
 
-```{note}
-**What this page does not cover: a portable export.** The old GraphDB
-procedure also produced a vendor-neutral N-Quads file as insurance against
-the backup format itself becoming a problem. The Virtuoso image used here has
-no equivalent one-line export (its `dump_nquads` procedure is not built in,
-and the SPARQL endpoint will not return quads), so that safety net does not
-exist yet. Virtuoso's backup files can only be restored by Virtuoso itself.
-```
-
-Move the resulting backups — the `.bp` files or the cold copy — somewhere
+Move the resulting backups — the `.bp` files, the cold copy or the N-Quads files — somewhere
 **other than this server**: external storage, another machine, cloud
 storage, whatever the institute already uses for backups generally. A backup
 that only exists on the same machine it's protecting against isn't a real
@@ -291,6 +339,25 @@ the `docker` group). Each night leaves one dated folder per store under
 `$BACKUP_DIR` (`current/2026-10-06-02-00-00/current_1.bp`, and the same for
 `history/`), and folders older than `KEEP_DAYS` are removed.
 
+The N-Quads export can be scheduled the same way, less often — it is a second
+copy, not the main one. A small script and a weekly cron line (Sunday, 3 AM):
+
+```bash
+#!/bin/bash
+# /opt/cbgp-databases/nquads.sh
+set -uo pipefail
+set -a; source /opt/cbgp-databases/.env; set +a
+TOOL=/opt/cbgp-databases/utilities/virtuoso_nquads.sh
+OUT=/var/backups/cbgp-databases/nquads
+$TOOL export cbgp-databases-virtuoso-current-1 "$VIRTUOSO_PASS" "$OUT/current" || exit 1
+$TOOL export cbgp-databases-virtuoso-history-1 "${HISTORY_PASS:-$VIRTUOSO_PASS}" "$OUT/history" || exit 1
+find "$OUT" -mindepth 2 -maxdepth 2 -type d -name '20??-*' -mtime +60 -exec rm -r {} +
+```
+
+```
+0 3 * * 0 /opt/cbgp-databases/nquads.sh >> /var/log/cbgp-nquads.log 2>&1
+```
+
 ```{note}
 Why nightly, and not more often? Records in this application are
 transcribed from paper originals that continue to exist independently
@@ -384,6 +451,12 @@ To restore from a **cold copy** instead, stop the stores, move the damaged
 `virtuoso-data` aside, copy the cold copy back to `virtuoso-data` (with `sudo
 cp -a`, to keep the ownership), and start them again — there is no restore
 command, because the copy already *is* the stores.
+
+To restore from an **N-Quads export**, start a new, empty store (an empty data
+directory; Virtuoso creates it on first start) and import into it with
+`utilities/virtuoso_nquads.sh import` as shown under [A portable N-Quads
+export](#a-portable-n-quads-export). This is the slowest route, and the one to
+use only if a native backup or cold copy is not available.
 
 (a-default-virtuoso-ini)=
 ### Getting a default `virtuoso.ini`

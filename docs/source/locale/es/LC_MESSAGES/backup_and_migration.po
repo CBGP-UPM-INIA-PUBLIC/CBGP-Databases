@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CBGP-Databases 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-06 18:22+0200\n"
+"POT-Creation-Date: 2026-10-06 18:36+0200\n"
 "PO-Revision-Date: 2026-07-09 20:30+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es\n"
@@ -20,12 +20,12 @@ msgstr ""
 "Generated-By: Babel 2.17.0\n"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:1
-#: 0c5bdb3aaf5341be9f999f34e813357a
+#: 5cb250b70d134bc59046a0c963788186
 msgid "Backup & Migration"
 msgstr "Copias de seguridad y migración"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:3
-#: 3cb4236f1833411eab0e934341a8e71d
+#: 3bf4e14f3ab94a65813e27e7081a2af0
 msgid ""
 "This page is for whoever manages the server this application runs on — "
 "not the day-to-day database Admin role described in the [Admin "
@@ -41,7 +41,7 @@ msgstr ""
 "sitio, se asume cierta soltura con la línea de comandos."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:10
-#: 5035beb763ce4ff3bccd607563b6f984
+#: c264d450b69b45c0a7f9dba1db81a165
 msgid ""
 "Read this page **before** you need it. The single most common way to lose"
 " a research institute's data permanently is discovering, during an "
@@ -55,7 +55,7 @@ msgstr ""
 "precisamente para que eso no ocurra aquí."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:17
-#: 0dc3e50de4ef45cbb293820a55eb16d0
+#: 040a96cba27142ef8061f944fe9c6bd6
 msgid ""
 "Before 2026-08-25 this application used GraphDB, and this page described "
 "its backup procedure. It was rewritten for Virtuoso on 2026-10-06, and "
@@ -69,23 +69,23 @@ msgid ""
 msgstr ""
 "Antes del 2026-08-25 esta aplicación usaba GraphDB, y esta página "
 "describía su procedimiento de copia de seguridad. Se reescribió para "
-"Virtuoso el 2026-10-06, y **todos los comandos de más abajo se ejecutaron "
-"de verdad** sobre los dos almacenes de Virtuoso de una instalación en "
+"Virtuoso el 2026-10-06, y **todos los comandos de más abajo se ejecutaron"
+" de verdad** sobre los dos almacenes de Virtuoso de una instalación en "
 "funcionamiento: cada copia se restauró en un directorio nuevo y vacío y "
 "el almacén restaurado se comparó con el original (una coincidencia "
 "exacta, no solo un tamaño parecido). La versión de Virtuoso en ese "
 "momento era la 7.2.18; si usa una imagen mucho más reciente, repita la "
 "prueba de restauración descrita en [Comprobar que una copia de seguridad "
-"realmente funciona](#checking-that-a-backup-really-works) antes de fiarse "
-"de ella."
+"realmente funciona](#checking-that-a-backup-really-works) antes de fiarse"
+" de ella."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:27
-#: d1a479af978e4092aba75cef11883d39
+#: 791304db36c94a30ba8427320b13b90f
 msgid "What actually needs backing up"
 msgstr "Qué es lo que realmente hay que respaldar"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:29
-#: 8af4753e411c4a209ffbe60e9db510f4
+#: 56fa8cf1d364457a8b2ae6430a14f51d
 msgid ""
 "Almost everything about this application is disposable and can be "
 "recreated from scratch: the Docker images are pulled fresh from a "
@@ -102,12 +102,12 @@ msgstr ""
 "es exclusivo de este servidor, y nada de eso necesita copia de seguridad."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:36
-#: 74807501768e4ef6928a8cec8aaadeb4
+#: cdbb90efc4354e60896783fef84daef0
 msgid "**Exactly two things are not disposable:**"
 msgstr "**Solo hay dos cosas que no son prescindibles:**"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:38
-#: fbcc4db106da418998da4b209b1ab873
+#: 75917f004c36406d9b9c5a4e1524e8c3
 msgid ""
 "**The two Virtuoso stores** — the current-state store and the history "
 "store described in [Installation](installation.md#the-two-store-"
@@ -122,21 +122,20 @@ msgid ""
 " up: the history store is the only copy of every earlier version."
 msgstr ""
 "**Los dos almacenes de Virtuoso** — el almacén de estado actual y el "
-"almacén de historial descritos en "
-"[Instalación](installation.md#the-two-store-database). Estos son los "
-"datos reales del instituto: cada registro y (según [Historial e "
-"instantáneas](admin/history_and_snapshots.md)) cada versión anterior de "
-"cada registro. Viven en los dos directorios `virtuoso-data/current` y "
-"`virtuoso-data/history`, junto a `docker-compose.yml`, totalmente "
-"separados del contenedor o del código de la aplicación — borrar o volver "
-"a crear los contenedores no los toca, pero perder esos directorios sin "
-"copia de seguridad significa perder los datos para siempre, sin forma de "
-"reconstruirlos a partir de nada más de esta lista. **Ambos** necesitan "
-"copia de seguridad: el almacén de historial es la única copia de cada "
-"versión anterior."
+"almacén de historial descritos en [Instalación](installation.md#the-two-"
+"store-database). Estos son los datos reales del instituto: cada registro "
+"y (según [Historial e instantáneas](admin/history_and_snapshots.md)) cada"
+" versión anterior de cada registro. Viven en los dos directorios "
+"`virtuoso-data/current` y `virtuoso-data/history`, junto a `docker-"
+"compose.yml`, totalmente separados del contenedor o del código de la "
+"aplicación — borrar o volver a crear los contenedores no los toca, pero "
+"perder esos directorios sin copia de seguridad significa perder los datos"
+" para siempre, sin forma de reconstruirlos a partir de nada más de esta "
+"lista. **Ambos** necesitan copia de seguridad: el almacén de historial es"
+" la única copia de cada versión anterior."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:50
-#: 858dee5b80ed4e48bdf60f27ca1b243f
+#: dbf8fde7480e4346a29971f560076a2c
 msgid ""
 "**The `.env` file** — not data, but the credentials and settings needed "
 "to bring the application back up (see [Configuration](configuration.md))."
@@ -148,15 +147,15 @@ msgid ""
 msgstr ""
 "**El archivo `.env`** — no son datos, sino las credenciales y ajustes "
 "necesarios para volver a poner en marcha la aplicación (véase "
-"[Configuración](configuration.md)). Está excluido deliberadamente de Git, "
-"así que existe en un solo lugar salvo que alguien lo haya copiado a un "
+"[Configuración](configuration.md)). Está excluido deliberadamente de Git,"
+" así que existe en un solo lugar salvo que alguien lo haya copiado a un "
 "sitio seguro. También contiene la contraseña con la que se creó cada "
 "almacén, y un almacén restaurado conserva *esa* contraseña (véase "
-"[Restaurar desde una copia de "
-"seguridad](#restoring-from-a-backup-disaster-recovery))."
+"[Restaurar desde una copia de seguridad](#restoring-from-a-backup-"
+"disaster-recovery))."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:59
-#: a6b15a11fdf044808ea98d63758c2728
+#: 40d36d519bac4edaba2ef3f3ec7e7c6f
 msgid ""
 "Running `docker compose up -d` on a brand-new machine, using nothing but "
 "a fresh checkout of this Git repository, will start **completely empty** "
@@ -167,17 +166,17 @@ msgstr ""
 "Ejecutar `docker compose up -d` en una máquina completamente nueva, "
 "usando solo una copia recién descargada de este repositorio Git, "
 "arrancará almacenes **completamente vacíos** — la imagen de Docker "
-"contiene la aplicación, no los datos del instituto. Si los directorios de "
-"datos no vienen también (restaurando una copia de seguridad, según esta "
+"contiene la aplicación, no los datos del instituto. Si los directorios de"
+" datos no vienen también (restaurando una copia de seguridad, según esta "
 "página), todos los registros simplemente han desaparecido."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:66
-#: a85d93a1c3034033a2665c3839cc4787
+#: e212fa0ec56b497e980c199f15b2802a
 msgid "Making a backup"
 msgstr "Hacer una copia de seguridad"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:68
-#: 9811739e3add4593838120c764d33113
+#: aa57e7f7c73f442dae64248fecf1abb2
 msgid ""
 "There are two ways, and they complement each other: an **online backup** "
 "(the stores keep running; this is what the nightly job below uses) and a "
@@ -186,16 +185,16 @@ msgid ""
 msgstr ""
 "Hay dos formas, y se complementan: una **copia en línea** (los almacenes "
 "siguen funcionando; es lo que usa la tarea nocturna de más abajo) y una "
-"**copia en frío** (una breve parada, pero lo más sencillo de razonar — la "
-"mejor justo antes de una actualización o de una mudanza)."
+"**copia en frío** (una breve parada, pero lo más sencillo de razonar — la"
+" mejor justo antes de una actualización o de una mudanza)."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:73
-#: d1bd204c5f194fc0acd076ccc9304fe6
+#: 56889a684eed480cb18add40b29928c4
 msgid "An online backup"
 msgstr "Una copia de seguridad en línea"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:75
-#: c5406732b65c46cba0b284cb607fa54d
+#: ff2a3be57c624a1abb6b4c65654f9d27
 msgid ""
 "Virtuoso has a built-in online backup that writes a consistent copy while"
 " the store keeps serving requests, so nobody using the application "
@@ -211,16 +210,16 @@ msgstr ""
 "copia coherente mientras el almacén sigue atendiendo peticiones, de modo "
 "que nadie que use la aplicación lo nota. Ejecute esto en el propio "
 "servidor (o por SSH en él) — los puertos de los almacenes solo se "
-"publican en la dirección de bucle local del servidor (véase "
-"`docker-compose.yml`). `docker ps` muestra los nombres de los "
-"contenedores; con los valores por defecto de Docker Compose son "
-"`cbgp-databases-virtuoso-current-1` y "
-"`cbgp-databases-virtuoso-history-1`. La contraseña es la contraseña `dba` "
-"del almacén que figura en `.env` (`VIRTUOSO_PASS`, y `HISTORY_PASS` si la "
-"definió — véase [Configuración](configuration.md#virtuoso-connection))."
+"publican en la dirección de bucle local del servidor (véase `docker-"
+"compose.yml`). `docker ps` muestra los nombres de los contenedores; con "
+"los valores por defecto de Docker Compose son `cbgp-databases-virtuoso-"
+"current-1` y `cbgp-databases-virtuoso-history-1`. La contraseña es la "
+"contraseña `dba` del almacén que figura en `.env` (`VIRTUOSO_PASS`, y "
+"`HISTORY_PASS` si la definió — véase [Configuración](configuration.md"
+"#virtuoso-connection))."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:99
-#: b82d0c75898b43b495beef2413861f06
+#: a491631867644b40a34932f3176c7919
 msgid ""
 "Success looks like two lines ending `Done.` and no `Error`; the result is"
 " a single file, `current_1.bp` (several megabytes for the institute's "
@@ -230,18 +229,18 @@ msgid ""
 msgstr ""
 "El éxito se ve como dos líneas que terminan en `Done.` y ningún `Error`; "
 "el resultado es un único archivo, `current_1.bp` (varios megabytes con "
-"los datos reales del instituto en el momento de escribir esto — una copia "
-"completa de ambos almacenes tardó unos nueve segundos). Repita con el "
+"los datos reales del instituto en el momento de escribir esto — una copia"
+" completa de ambos almacenes tardó unos nueve segundos). Repita con el "
 "contenedor del historial, `HISTORY_PASS` y el prefijo `history_` para el "
 "segundo almacén."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:105
-#: a81319894b5c4cef9f5c20bf91144320
+#: a34b042a64634ea799eeeba88f3cd75b
 msgid "Three details are easy to get wrong:"
 msgstr "Hay tres detalles en los que es fácil equivocarse:"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:107
-#: e7d7ec45ad6a4b7fb1e6b18f98791340
+#: fbddd05773c643a0880a09b28858f44c
 msgid ""
 "**The directory is relative, not absolute.** `vector('backup-today')` "
 "works; `vector('/database/backup-today')` is refused with *\"Access … is "
@@ -250,13 +249,13 @@ msgid ""
 "relative to its own data directory."
 msgstr ""
 "**El directorio es relativo, no absoluto.** `vector('backup-today')` "
-"funciona; `vector('/database/backup-today')` se rechaza con *«Access … is "
-"denied due to access control in ini file»*, porque Virtuoso solo escribe "
-"donde se lo permite su configuración (`DirsAllowed`), y lee las rutas "
+"funciona; `vector('/database/backup-today')` se rechaza con *«Access … is"
+" denied due to access control in ini file»*, porque Virtuoso solo escribe"
+" donde se lo permite su configuración (`DirsAllowed`), y lee las rutas "
 "relativas a su propio directorio de datos."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:112
-#: 54db7f31729a4aecb9fd80b61f3ae3a2
+#: b7d9ae7937094a49b1f33200caf7d629
 msgid ""
 "**`backup_context_clear()` matters.** Without it, every backup after the "
 "first contains only what *changed* since the previous one, and restoring "
@@ -271,7 +270,7 @@ msgstr ""
 "haya que usar dentro de años."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:117
-#: 147979320646422194ef9dcb7e9d3963
+#: d3e099c10b4b4605b37b13a6bb716a6f
 msgid ""
 "**Use `docker cp` to copy it out, not an ordinary `cp`.** The files "
 "belong to the container's internal user and are readable by it alone, so "
@@ -279,11 +278,11 @@ msgid ""
 msgstr ""
 "**Use `docker cp` para sacarla del contenedor, no un `cp` normal.** Los "
 "archivos pertenecen al usuario interno del contenedor y solo él puede "
-"leerlos, así que como usuario normal no se pueden leer directamente desde "
-"`virtuoso-data/`."
+"leerlos, así que como usuario normal no se pueden leer directamente desde"
+" `virtuoso-data/`."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:122
-#: 89ff5c4bc7bd49d1bb1eb36c92604016
+#: 399e73bbb72649a9ad6c4e76be4930dc
 msgid ""
 "`isql` takes the password on its command line, so for the moment it runs "
 "the password is visible to anyone who can list processes on the server. "
@@ -297,26 +296,26 @@ msgstr ""
 "programado de más abajo hace lo mismo."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:128
-#: 06df0df943f7431aa71f5760e8aef2a4
+#: 8825e405a82c4fe2ad69848c1029ad5d
 msgid "A cold copy"
 msgstr "Una copia en frío"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:130
-#: 2fc6a3c90467477783ffb7a9e362b572
+#: 7e4a9fbc13104cd0be43a846ca120e74
 msgid ""
 "The other way is to stop the stores, copy their data directories, and "
 "start them again. It needs a short outage (the application is unavailable"
 " while the stores are stopped), but a copy of a stopped store is exactly "
 "the store, with nothing to go wrong in the middle:"
 msgstr ""
-"La otra forma es detener los almacenes, copiar sus directorios de datos y "
-"volver a arrancarlos. Requiere una breve interrupción (la aplicación no "
+"La otra forma es detener los almacenes, copiar sus directorios de datos y"
+" volver a arrancarlos. Requiere una breve interrupción (la aplicación no "
 "está disponible mientras los almacenes están parados), pero la copia de "
 "un almacén detenido es exactamente el almacén, sin nada que pueda fallar "
 "por el camino:"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:142
-#: 7faf3af27836437d82039d0d7ab043bb
+#: 9e0604189c4647bf938618d78b39b368
 msgid ""
 "`-t 60` gives each store up to a minute to shut down cleanly and write "
 "its final checkpoint — the default ten seconds is not always enough for a"
@@ -329,12 +328,12 @@ msgstr ""
 "escribir su último punto de control — los diez segundos por defecto no "
 "siempre bastan para un almacén grande. `sudo` es necesario porque los "
 "archivos pertenecen al usuario interno del contenedor. **No copie nunca "
-"los directorios mientras los almacenes están en marcha:** la copia podría "
-"pillar el archivo de la base de datos a medio escribir y quedar "
+"los directorios mientras los almacenes están en marcha:** la copia podría"
+" pillar el archivo de la base de datos a medio escribir y quedar "
 "inservible."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:148
-#: bef8fe82c94d4cf0b945e299321be401
+#: 2058964035d141a4b29f376deb3bd527
 msgid ""
 "A cold copy also contains the stores' own settings (`virtuoso.ini`), "
 "which an online backup does not."
@@ -343,12 +342,145 @@ msgstr ""
 "almacenes (`virtuoso.ini`), cosa que una copia en línea no incluye."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:151
-#: 2791455a0475428f8cc17bb1f6dec904
+#: 1f9819ae328544df928dc5eb76145050
+msgid "A portable N-Quads export"
+msgstr "Una exportación portátil en N-Quads"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:153
+#: 4c90eb519c614d028f735cef0fd3ea01
+msgid ""
+"Virtuoso's own backup files can only be restored by Virtuoso. As "
+"insurance against that format ever becoming a problem, the repository "
+"includes `utilities/virtuoso_nquads.sh`, which writes a whole store out "
+"as **N-Quads** — a plain-text W3C standard that any triple store can read"
+" — and loads such files back in. It keeps every record's own named graph,"
+" which this application's history mechanism depends on (see [History & "
+"Snapshots](admin/history_and_snapshots.md))."
+msgstr ""
+"Los archivos de copia de seguridad propios de Virtuoso solo puede "
+"restaurarlos Virtuoso. Como seguro frente a que ese formato llegue a ser "
+"un problema, el repositorio incluye `utilities/virtuoso_nquads.sh`, que "
+"escribe un almacén entero como **N-Quads** —un estándar de texto plano "
+"del W3C que cualquier almacén de tripletas puede leer— y vuelve a cargar "
+"esos archivos. Conserva el grafo con nombre de cada registro, del que "
+"depende el mecanismo de historial de esta aplicación (véase [Historial e "
+"instantáneas](admin/history_and_snapshots.md))."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:169
+#: 8afa6d4377344cfeaad5c0328dffd28d
+msgid ""
+"Each command prints the new dated folder it wrote, holding gzipped "
+"`output000001.nq.gz` files (one per roughly 100 MB of data). For the "
+"institute's real data at the time of writing, each store came to well "
+"under a megabyte compressed and took a few seconds, while the store kept "
+"running."
+msgstr ""
+"Cada comando imprime la nueva carpeta con fecha que ha escrito, con "
+"archivos `output000001.nq.gz` comprimidos con gzip (uno por cada 100 MB "
+"de datos aproximadamente). Con los datos reales del instituto en el "
+"momento de escribir esto, cada almacén ocupó bastante menos de un "
+"megabyte comprimido y tardó unos segundos, mientras el almacén seguía "
+"funcionando."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:174
+#: fb09d4371ed84397b87769962d990615
+msgid ""
+"Virtuoso does not ship a dump command ready-made. The script installs the"
+" procedure OpenLink Software publishes for this purpose "
+"([source](https://vos.openlinksw.com/owiki/wiki/VOS/VirtRDFDumpNQuad), "
+"kept in `utilities/virtuoso_dump_nquads.sql`) into the store the first "
+"time it runs; that stored procedure is the only change it makes to the "
+"store, and running it again simply replaces it."
+msgstr ""
+"Virtuoso no incluye un comando de volcado ya hecho. El script instala en "
+"el almacén, la primera vez que se ejecuta, el procedimiento que OpenLink "
+"Software publica para este fin "
+"([origen](https://vos.openlinksw.com/owiki/wiki/VOS/VirtRDFDumpNQuad), "
+"guardado en `utilities/virtuoso_dump_nquads.sql`); ese procedimiento "
+"almacenado es el único cambio que hace en el almacén, y ejecutarlo de "
+"nuevo simplemente lo sustituye."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:181
+#: 978e9101aebd462f80ef0f14c21c6822
+msgid ""
+"To load an export — into a **new, empty store**, since importing *adds* "
+"to whatever is already there:"
+msgstr ""
+"Para cargar una exportación — en un **almacén nuevo y vacío**, ya que "
+"importar *añade* a lo que ya haya:"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:188
+#: 3550b1d6aa4a4d4fbb290d8e013bc83d
+msgid ""
+"It copies the files into the container, loads them with Virtuoso's bulk "
+"loader, checks that every file loaded without error, and cleans up after "
+"itself. Loading the same files twice does not duplicate anything."
+msgstr ""
+"Copia los archivos al contenedor, los carga con el cargador masivo de "
+"Virtuoso, comprueba que cada archivo se haya cargado sin error y limpia "
+"después lo que ha usado. Cargar dos veces los mismos archivos no duplica "
+"nada."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:192
+#: 9bcaccc98ee649c2aed202dd8def894b
+msgid ""
+"How far to trust it: the real current and history stores were each "
+"exported and imported into a brand-new store, and a checksum over every "
+"statement of all of the application's graphs matched exactly (about "
+"62,000 and 49,000 statements). Things to know:"
+msgstr ""
+"Hasta dónde fiarse: los almacenes reales de estado actual y de historial "
+"se exportaron e importaron cada uno en un almacén nuevo, y una suma de "
+"comprobación sobre todas las sentencias de todos los grafos de la "
+"aplicación coincidió exactamente (unas 62 000 y 49 000 sentencias). Cosas "
+"que conviene saber:"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:197
+#: ed99ba132a3e4273b80b13cda4a626a7
+msgid ""
+"A new Virtuoso store already contains a handful of standard vocabulary "
+"graphs (OWL and similar) that an export includes too. Importing re-adds "
+"them, and because some of their statements use blank nodes, a few "
+"statements in those built-in graphs end up duplicated. They are not the "
+"institute's data and nothing depends on them."
+msgstr ""
+"Un almacén nuevo de Virtuoso ya contiene unos cuantos grafos de "
+"vocabularios estándar (OWL y similares) que una exportación también "
+"incluye. Al importar se vuelven a añadir y, como algunas de sus "
+"sentencias usan nodos en blanco, unas pocas sentencias de esos grafos "
+"integrados acaban duplicadas. No son datos del instituto y nada depende "
+"de ellas."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:202
+#: 071bdec7f3804e8c96dfaf6a93ca0b01
+msgid ""
+"It restores **data only**: not `virtuoso.ini`, and not the `dba` "
+"password, which is whatever the new store was created with — `.env` must "
+"match it."
+msgstr ""
+"Restaura **solo los datos**: no `virtuoso.ini`, ni la contraseña `dba`, "
+"que es la que tenga el almacén nuevo al crearse — `.env` debe coincidir "
+"con ella."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:204
+#: b77cddd5fbdd42dfaab3d55d60f5e7fc
+msgid ""
+"It is slower and cruder than a native backup, so think of it as a second,"
+" independent copy to keep alongside the nightly backups, not a "
+"replacement for them. Run it, say, weekly (see the next section)."
+msgstr ""
+"Es más lenta y más tosca que una copia de seguridad nativa, así que debe "
+"verse como una segunda copia independiente que se guarda junto a las "
+"copias nocturnas, no como un sustituto. Ejecútela, por ejemplo, una vez a "
+"la semana (véase la sección siguiente)."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:208
+#: 4e8cd3e884b6470db2f30fafe6c08d15
 msgid "Checking that a backup really works"
 msgstr "Comprobar que una copia de seguridad realmente funciona"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:153
-#: 79fed1e41224416c8b640f86dd92c730
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:210
+#: c4957590b8ff4eff9f3ecc148dfce797
 msgid ""
 "A backup you have never restored is a hope, not a backup. Once, and again"
 " after upgrading Virtuoso, restore one into a scratch directory and "
@@ -361,68 +493,49 @@ msgstr ""
 "Una copia de seguridad que nunca se ha restaurado es una esperanza, no "
 "una copia de seguridad. Una vez, y de nuevo tras actualizar Virtuoso, "
 "restaure una en un directorio de prueba y compárela con el almacén real, "
-"siguiendo [Restaurar desde una copia de "
-"seguridad](#restoring-from-a-backup-disaster-recovery) pero en un "
-"directorio propio y en un contenedor propio con otro puerto, nunca sobre "
-"el real. La comparación más sencilla es el número total de tripletas — la "
-"misma consulta en ambos almacenes debería coincidir:"
+"siguiendo [Restaurar desde una copia de seguridad](#restoring-from-a"
+"-backup-disaster-recovery) pero en un directorio propio y en un "
+"contenedor propio con otro puerto, nunca sobre el real. La comparación "
+"más sencilla es el número total de tripletas — la misma consulta en ambos"
+" almacenes debería coincidir:"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:165
-#: b6f1c7a3d88e414b85fa3eb0b27c00f7
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:222
+#: d15ac2b8a68549fba2f6a75bdc04e452
 msgid ""
 "(Run it at `http://localhost:18890/sparql` and `…:18891/sparql` for the "
 "current and history stores, and on your scratch container's own port.) "
 "The counts match only if nothing was written between taking the backup "
 "and asking, so check on a quiet moment."
 msgstr ""
-"(Ejecútela en `http://localhost:18890/sparql` y `…:18891/sparql` para los "
-"almacenes de estado actual y de historial, y en el puerto propio de su "
+"(Ejecútela en `http://localhost:18890/sparql` y `…:18891/sparql` para los"
+" almacenes de estado actual y de historial, y en el puerto propio de su "
 "contenedor de prueba.) Los recuentos solo coinciden si no se escribió "
 "nada entre hacer la copia y preguntar, así que compruébelo en un momento "
 "tranquilo."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:171
-#: 9359c4bfe7d04de6a6ab32d92550a2c0
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:227
+#: f9e507d5887449e9bb8302f614cab199
 msgid ""
-"**What this page does not cover: a portable export.** The old GraphDB "
-"procedure also produced a vendor-neutral N-Quads file as insurance "
-"against the backup format itself becoming a problem. The Virtuoso image "
-"used here has no equivalent one-line export (its `dump_nquads` procedure "
-"is not built in, and the SPARQL endpoint will not return quads), so that "
-"safety net does not exist yet. Virtuoso's backup files can only be "
-"restored by Virtuoso itself."
+"Move the resulting backups — the `.bp` files, the cold copy or the "
+"N-Quads files — somewhere **other than this server**: external storage, "
+"another machine, cloud storage, whatever the institute already uses for "
+"backups generally. A backup that only exists on the same machine it's "
+"protecting against isn't a real backup."
 msgstr ""
-"**Lo que esta página no cubre: una exportación portátil.** El antiguo "
-"procedimiento de GraphDB producía además un archivo N-Quads independiente "
-"del fabricante como seguro frente a que el propio formato de copia se "
-"convirtiera en un problema. La imagen de Virtuoso usada aquí no tiene una "
-"exportación equivalente de una sola línea (su procedimiento `dump_nquads` "
-"no está incluido, y el punto de acceso SPARQL no devuelve cuádruplas), "
-"así que ese seguro todavía no existe. Los archivos de copia de Virtuoso "
-"solo puede restaurarlos el propio Virtuoso."
+"Traslade las copias resultantes — los archivos `.bp`, la copia en frío o "
+"los archivos N-Quads — a algún sitio **distinto de este servidor**: "
+"almacenamiento externo, otra máquina, almacenamiento en la nube, lo que "
+"el instituto ya use para sus copias en general. Una copia que solo existe "
+"en la misma máquina de la que protege no es una copia de seguridad de "
+"verdad."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:179
-#: 9c1972485f67464db9c797bcd6768398
-msgid ""
-"Move the resulting backups — the `.bp` files or the cold copy — somewhere"
-" **other than this server**: external storage, another machine, cloud "
-"storage, whatever the institute already uses for backups generally. A "
-"backup that only exists on the same machine it's protecting against isn't"
-" a real backup."
-msgstr ""
-"Traslade las copias resultantes — los archivos `.bp` o la copia en frío — "
-"a algún sitio **distinto de este servidor**: almacenamiento externo, otra "
-"máquina, almacenamiento en la nube, lo que el instituto ya use para sus "
-"copias en general. Una copia que solo existe en la misma máquina de la "
-"que protege no es una copia de seguridad de verdad."
-
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:185
-#: c40ffcd0c12d4c1397f296211ec4b751
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:233
+#: 82496b2627a74d91ab3bbedd466737dd
 msgid "Scheduling automatic backups"
 msgstr "Programar copias de seguridad automáticas"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:187
-#: 80784c8630734bc689582e766232df84
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:235
+#: bd10e09b4ca5425d84bd5fba46645187
 msgid ""
 "Rather than remembering to run the commands above by hand, have `cron` do"
 " it on a schedule. This wrapper script takes an online backup of both "
@@ -434,15 +547,15 @@ msgid ""
 msgstr ""
 "En lugar de tener que acordarse de ejecutar a mano los comandos "
 "anteriores, deje que `cron` lo haga según una programación. Este script "
-"hace una copia en línea de ambos almacenes cada noche, comprueba que cada "
-"una realmente tuvo éxito (no solo que el comando no se haya caído), envía "
-"un aviso por correo si algo fue mal y solo limpia las copias antiguas "
-"cuando sabe que las de esta noche son buenas — de modo que un fallo es "
-"algo que se descubre a la mañana siguiente, no el día de un desastre de "
-"verdad:"
+"hace una copia en línea de ambos almacenes cada noche, comprueba que cada"
+" una realmente tuvo éxito (no solo que el comando no se haya caído), "
+"envía un aviso por correo si algo fue mal y solo limpia las copias "
+"antiguas cuando sabe que las de esta noche son buenas — de modo que un "
+"fallo es algo que se descubre a la mañana siguiente, no el día de un "
+"desastre de verdad:"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:282
-#: 2b629770d0e8443ebc94a093d5982ddb
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:330
+#: fad2a454bd134bf7a2237defa4b1f63b
 msgid ""
 "Make it executable (`chmod +x /opt/cbgp-databases/backup.sh`), then add "
 "it to the server's crontab (`crontab -e`) to run every night at 2 AM:"
@@ -451,22 +564,33 @@ msgstr ""
 "después al crontab del servidor (`crontab -e`) para que se ejecute cada "
 "noche a las 2:00 h."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:289
-#: 74c45ce7d84a42e18c48b26c6b46b1e7
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:337
+#: 38bc7f6d537e4ffa92d9dce69f01ce87
+msgid ""
+"The N-Quads export can be scheduled the same way, less often — it is a "
+"second copy, not the main one. A small script and a weekly cron line "
+"(Sunday, 3 AM):"
+msgstr ""
+"La exportación en N-Quads puede programarse de la misma manera, con menos "
+"frecuencia — es una segunda copia, no la principal. Un pequeño script y "
+"una línea de cron semanal (domingo, 3 de la madrugada):"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:356
+#: 7dc61a1869de4753b95f0c435276fb77
 msgid ""
 "The user the job runs as must be allowed to use Docker (root, or a member"
 " of the `docker` group). Each night leaves one dated folder per store "
 "under `$BACKUP_DIR` (`current/2026-10-06-02-00-00/current_1.bp`, and the "
 "same for `history/`), and folders older than `KEEP_DAYS` are removed."
 msgstr ""
-"El usuario con el que se ejecuta la tarea debe poder usar Docker (root, o "
-"miembro del grupo `docker`). Cada noche deja una carpeta con fecha por "
+"El usuario con el que se ejecuta la tarea debe poder usar Docker (root, o"
+" miembro del grupo `docker`). Cada noche deja una carpeta con fecha por "
 "almacén dentro de `$BACKUP_DIR` "
-"(`current/2026-10-06-02-00-00/current_1.bp`, y lo mismo para `history/`), "
-"y las carpetas más antiguas que `KEEP_DAYS` se eliminan."
+"(`current/2026-10-06-02-00-00/current_1.bp`, y lo mismo para `history/`),"
+" y las carpetas más antiguas que `KEEP_DAYS` se eliminan."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:295
-#: 34ef665fa2dc451a919dba231642d82d
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:362
+#: 7f87bbd4f678432db206e8262c9fe4b8
 msgid ""
 "Why nightly, and not more often? Records in this application are "
 "transcribed from paper originals that continue to exist independently "
@@ -492,8 +616,8 @@ msgstr ""
 "respaldo en papel (u otro tipo), ese cálculo cambia y merecería la pena "
 "revisar una programación más ajustada."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:308
-#: a3b95448d80a40f39a47028db6713cdd
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:375
+#: e2afb54fb9fa449fbe2e2cba1c14ef96
 msgid ""
 "This only protects against database corruption or accidental deletion — "
 "backups written to `/var/backups` on the **same server** are lost right "
@@ -512,13 +636,13 @@ msgstr ""
 "ya use para copias de seguridad externas) — una tarea cron que únicamente"
 " escribe en disco local da una falsa sensación de seguridad."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:317
-#: 255c5d3c482c4f7fbd50682a20547d57
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:384
+#: 6f86910a354d442e94ee9b14ae56b1ba
 msgid "Restoring from a backup (disaster recovery)"
 msgstr "Restaurar desde una copia de seguridad (recuperación ante desastres)"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:319
-#: 26b37e2a7e934f4ab603e76790a32bb5
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:386
+#: cfb1f642f4ee47b2bd2468a5a57b81c2
 msgid ""
 "This is for when something has gone wrong on the **same** server — an "
 "accidental bulk deletion, a corrupted store, a failed upgrade — and the "
@@ -533,12 +657,12 @@ msgstr ""
 "fallida — y el objetivo es volver a poner en su sitio una copia de "
 "seguridad buena conocida, no pasar a otro hardware (eso es la sección "
 "siguiente). Los pasos de más abajo restauran un almacén; para una "
-"recuperación completa, restaure el almacén de estado actual y luego el de "
-"historial, a partir de las copias de la **misma noche**, para que los dos "
-"sigan en sintonía."
+"recuperación completa, restaure el almacén de estado actual y luego el de"
+" historial, a partir de las copias de la **misma noche**, para que los "
+"dos sigan en sintonía."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:326
-#: 6342db1f5d5348bdb1ee76b3384a440c
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:393
+#: 247455f4990e49bba121e6ac970ed717
 msgid ""
 "**Stop the application and the store being restored**, so nobody can "
 "write new data while the restore is in progress:"
@@ -546,18 +670,18 @@ msgstr ""
 "**Detenga la aplicación y el almacén que se va a restaurar**, para que "
 "nadie pueda escribir datos nuevos mientras la restauración está en curso:"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:332
-#: dcbb6b3607a949679598a930626ca628
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:399
+#: 304fba9b004146a1bfc1007b76077960
 msgid ""
 "**Set the damaged data aside** (don't delete it yet) and make an empty "
 "directory in its place, containing the store's settings and the backup:"
 msgstr ""
-"**Aparte los datos dañados** (todavía no los borre) y cree en su lugar un "
-"directorio vacío que contenga la configuración del almacén y la copia de "
-"seguridad:"
+"**Aparte los datos dañados** (todavía no los borre) y cree en su lugar un"
+" directorio vacío que contenga la configuración del almacén y la copia de"
+" seguridad:"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:340
-#: 4ff4aa5729424d6b94e6db53f2efa875
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:407
+#: ae70a29a8ae3437492dd825e568506ca
 msgid ""
 "(substitute the real dated folder; for an offsite copy, use whatever you "
 "copied it to.) If there is no `virtuoso.ini` to copy, see \"[Getting a "
@@ -568,8 +692,8 @@ msgstr ""
 "«[Obtener un `virtuoso.ini` por defecto](#a-default-virtuoso-ini)» más "
 "abajo."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:343
-#: 434aa3f371cc48209a0609ffbab77797
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:410
+#: 210fb7ebc7db4c00a6fe569d2b33756b
 msgid ""
 "**Restore it.** This runs Virtuoso once, in a separate temporary "
 "container on the same image, to rebuild the database file from the "
@@ -580,8 +704,8 @@ msgstr ""
 "a partir de la copia. El directorio en el que trabaja no debe contener "
 "*ningún* archivo de base de datos todavía:"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:351
-#: bf8dd966e62b4092b014723172e377a5
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:418
+#: 36bdd1c852a4446eba75501fcaced911
 msgid ""
 "The prefix after `+restore-backup` is the one the backup was made with "
 "(`current_`, or `history_` for the other store), *not* a path — the "
@@ -593,8 +717,8 @@ msgstr ""
 "carpeta se indica aparte con `+backup-dirs`. Termina con *«End of "
 "restoring from backup»* y un número de páginas, y sale."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:355
-#: 19f753bef05e4a2c9adae2521d87d476
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:422
+#: ac525abe51f443c2bdd404ec5388f71f
 msgid ""
 "**Start the store and the application again**, and confirm the data looks"
 " right — check a few familiar records via [Search & "
@@ -603,11 +727,11 @@ msgid ""
 msgstr ""
 "**Vuelva a arrancar el almacén y la aplicación**, y confirme que los "
 "datos tienen buen aspecto — compruebe algunos registros conocidos "
-"mediante [Búsqueda y consultas](admin/search_and_queries.md) antes de dar "
-"el incidente por resuelto:"
+"mediante [Búsqueda y consultas](admin/search_and_queries.md) antes de dar"
+" el incidente por resuelto:"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:362
-#: f7bbe8453ba24dbcb6220ef83c59a2b9
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:429
+#: 5453f7eea6b249f2b35fd891f731e349
 msgid ""
 "Starting hands the restored files back to the store's own user "
 "automatically."
@@ -615,8 +739,8 @@ msgstr ""
 "Al arrancar, los archivos restaurados se devuelven automáticamente al "
 "usuario propio del almacén."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:366
-#: f0cad9cab37f481e906420ce6489cfd6
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:433
+#: edbfecc0827145f9a8bd7b44c705d650
 msgid ""
 "**The password comes back with the data.** A Virtuoso database stores its"
 " `dba` password inside itself, so after a restore the store has the "
@@ -634,8 +758,8 @@ msgstr ""
 "primera vez). Si cambió la contraseña desde la copia, la aplicación será "
 "rechazada hasta que `.env` se vuelva a poner igual."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:375
-#: 5d3570785858421d8472f94c63609a97
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:442
+#: 2c4b5d3ec813418fa1a160c1515922b4
 msgid ""
 "Restoring a backup rolls that **entire** store back to exactly how it was"
 " at backup time. Anything written after that backup was taken (any record"
@@ -654,27 +778,43 @@ msgstr ""
 "Conserve `current.damaged` hasta que esté satisfecho con el resultado; "
 "cuando lo esté, puede borrarse."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:383
-#: 2ea3ee779bb24ba1973b0ff7c3c35d1c
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:450
+#: 62ca2df5113049b0951517bebd5ffa44
 msgid ""
 "To restore from a **cold copy** instead, stop the stores, move the "
 "damaged `virtuoso-data` aside, copy the cold copy back to `virtuoso-data`"
 " (with `sudo cp -a`, to keep the ownership), and start them again — there"
 " is no restore command, because the copy already *is* the stores."
 msgstr ""
-"Para restaurar desde una **copia en frío**, detenga los almacenes, aparte "
-"el `virtuoso-data` dañado, copie de nuevo la copia en frío como "
+"Para restaurar desde una **copia en frío**, detenga los almacenes, aparte"
+" el `virtuoso-data` dañado, copie de nuevo la copia en frío como "
 "`virtuoso-data` (con `sudo cp -a`, para conservar los propietarios) y "
 "vuelva a arrancarlos — no hay ningún comando de restauración, porque la "
 "copia ya *es* los almacenes."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:389
-#: 440065a0d2ba416b8664fa41fdce2b6c
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:455
+#: 5a46d55381ae4dbf84ff478f542a9870
+msgid ""
+"To restore from an **N-Quads export**, start a new, empty store (an empty"
+" data directory; Virtuoso creates it on first start) and import into it "
+"with `utilities/virtuoso_nquads.sh import` as shown under [A portable "
+"N-Quads export](#a-portable-n-quads-export). This is the slowest route, "
+"and the one to use only if a native backup or cold copy is not available."
+msgstr ""
+"Para restaurar desde una **exportación en N-Quads**, arranque un almacén "
+"nuevo y vacío (un directorio de datos vacío; Virtuoso lo crea en el "
+"primer arranque) e impórtela en él con `utilities/virtuoso_nquads.sh "
+"import` como se muestra en [Una exportación portátil en "
+"N-Quads](#a-portable-n-quads-export). Es la vía más lenta, y la que debe "
+"usarse solo si no se dispone de una copia nativa ni de una copia en frío."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:462
+#: 04f1c1eec5374fa5bcb6327cce95923d
 msgid "Getting a default `virtuoso.ini`"
 msgstr "Obtener un `virtuoso.ini` por defecto"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:391
-#: d3b4ba5083b7442caf558234e3d74746
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:464
+#: 0ccb7e6505f64172a58afaf1de9017cb
 msgid ""
 "A restore needs the store's configuration file but, unlike an online "
 "backup, does not bring one with it. If you do not have the old one, let "
@@ -683,16 +823,16 @@ msgid ""
 " into, because starting a store also creates a database file there, and a"
 " restore needs none), stop it, and copy just `virtuoso.ini` across:"
 msgstr ""
-"Una restauración necesita el archivo de configuración del almacén pero, a "
-"diferencia de una copia en línea, no lo trae consigo. Si no tiene el "
+"Una restauración necesita el archivo de configuración del almacén pero, a"
+" diferencia de una copia en línea, no lo trae consigo. Si no tiene el "
 "antiguo, deje que Virtuoso escriba uno por defecto: arranque un "
 "contenedor desechable en un **directorio de prueba aparte** (nunca en el "
 "directorio de datos en el que va a restaurar, porque arrancar un almacén "
 "también crea allí un archivo de base de datos, y una restauración "
 "necesita que no haya ninguno), deténgalo y copie solo `virtuoso.ini`:"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:406
-#: dc0b6b0be22e47c890b2136947268365
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:479
+#: e6ddc9096233430295374dacde6a5827
 msgid ""
 "The default is the one the stores here were created with, so the restored"
 " store behaves exactly as before."
@@ -700,13 +840,13 @@ msgstr ""
 "El valor por defecto es con el que se crearon los almacenes de aquí, así "
 "que el almacén restaurado se comporta exactamente como antes."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:409
-#: f878c8977b134e5fba6b26f981490450
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:482
+#: ec1d907ec62744fc8e9bb0129669427d
 msgid "Migrating to a new server"
 msgstr "Migrar a un nuevo servidor"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:411
-#: 108ef2ba9c2d48a49c81173e881379b9
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:484
+#: b69231c8078e42c1a6fbb7bb6e995780
 msgid ""
 "This is the procedure for moving the whole application — and, critically,"
 " **all of its data** — from one machine to another (for example, because "
@@ -716,8 +856,8 @@ msgstr ""
 "fundamentalmente, **todos sus datos** — de una máquina a otra (por "
 "ejemplo, porque el servidor actual se va a dar de baja)."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:415
-#: 5fdd61eacb9241fbb0a53c879e4e1cf0
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:488
+#: 71d1a221252b45ac83d2270e24949b99
 msgid ""
 "**On the old server**, make fresh backups right before migrating (see "
 "\"Making a backup\" above) so they reflect the most current data, not "
@@ -725,22 +865,22 @@ msgid ""
 msgstr ""
 "**En el servidor antiguo**, haga copias de seguridad nuevas justo antes "
 "de migrar (véase «Hacer una copia de seguridad» más arriba) para que "
-"reflejen los datos más recientes y no la ejecución de cron de anoche. Una "
-"**copia en frío** es la opción más sencilla para una mudanza."
+"reflejen los datos más recientes y no la ejecución de cron de anoche. Una"
+" **copia en frío** es la opción más sencilla para una mudanza."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:418
-#: f970676bee514f7686fd5d6b2ecf5240
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:491
+#: 4f53b4ffb4ee431e8568ede4423ecabe
 msgid ""
 "**Copy to the new server**: the backups (or the cold copy), and the "
 "`.env` file. Transfer `.env` carefully — it contains real passwords; "
 "`scp` over SSH is fine, email or chat is not."
 msgstr ""
 "**Copie al nuevo servidor** las copias de seguridad (o la copia en frío) "
-"y el archivo `.env`. Transfiera `.env` con cuidado — contiene contraseñas "
-"reales; `scp` por SSH está bien, el correo o el chat no."
+"y el archivo `.env`. Transfiera `.env` con cuidado — contiene contraseñas"
+" reales; `scp` por SSH está bien, el correo o el chat no."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:421
-#: 83ffe7382892423288e13b64f8bff5fe
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:494
+#: c1a85e61f5c34d81bb710cc764eb470b
 msgid ""
 "**On the new server**, install Docker and check out this repository. Put "
 "`.env` in place, **before** the first `docker compose up` (the stores' "
@@ -752,13 +892,13 @@ msgstr ""
 "contraseñas de los almacenes se establecen la primera vez que arranca "
 "cada uno — véase [Instalación](installation.md#running-via-docker))."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:425
-#: b563877ddf1e4ca092ba1b85727c04b3
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:498
+#: b0a3a8efb2394d24b0abf42ae8903c8d
 msgid "**Put the data in place before starting anything:**"
 msgstr "**Coloque los datos en su sitio antes de arrancar nada:**"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:426
-#: b5532e210ca640bdb28d35f651db7d40
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:499
+#: eede76d6c53e4fd2942679bcb1ca8933
 msgid ""
 "from a **cold copy**: copy it to be the repository's `virtuoso-data` "
 "directory (`sudo cp -a`); or"
@@ -766,8 +906,8 @@ msgstr ""
 "desde una **copia en frío**: cópiela para que sea el directorio "
 "`virtuoso-data` del repositorio (`sudo cp -a`); o"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:428
-#: f8300c08670543c0851e84727717c4b1
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:501
+#: 8b5d1726e21a46b2ac39cdcc40edbfe7
 msgid ""
 "from **online backups**: do steps 2 and 3 of [Restoring from a backup"
 "](#restoring-from-a-backup-disaster-recovery) for each store, into fresh "
@@ -776,18 +916,19 @@ msgid ""
 "`virtuoso.ini`](#a-default-virtuoso-ini)\" below)."
 msgstr ""
 "desde **copias en línea**: haga los pasos 2 y 3 de [Restaurar desde una "
-"copia de seguridad](#restoring-from-a-backup-disaster-recovery) para cada "
-"almacén, en directorios `virtuoso-data/current` y `virtuoso-data/history` "
-"nuevos (aquí no tiene un `virtuoso.ini` que copiar; véase «[Obtener un "
-"`virtuoso.ini` por defecto](#a-default-virtuoso-ini)» más abajo)."
+"copia de seguridad](#restoring-from-a-backup-disaster-recovery) para cada"
+" almacén, en directorios `virtuoso-data/current` y `virtuoso-"
+"data/history` nuevos (aquí no tiene un `virtuoso.ini` que copiar; véase "
+"«[Obtener un `virtuoso.ini` por defecto](#a-default-virtuoso-ini)» más "
+"abajo)."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:433
-#: cb82131b86a64ccda82b9c6bb995947f
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:506
+#: bb7f3fa4dfaf4a8f8f1e7eea9bfb0918
 msgid "**Start everything:**"
 msgstr "**Arranque todo:**"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:437
-#: 08788fed317f47f98295642ceeb5d331
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:510
+#: 1f17bf1192a14a49b46e602d5505b6cb
 msgid ""
 "Log in and check that familiar records appear in a search (see [Search & "
 "Queries](admin/search_and_queries.md)) before treating the old server as "
@@ -797,8 +938,8 @@ msgstr ""
 "búsqueda (véase [Búsqueda y consultas](admin/search_and_queries.md)) "
 "antes de considerar seguro dar de baja el servidor antiguo."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:442
-#: 766a8e868354409e877c5a8153c5855f
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:515
+#: 308a803340b241af8c1002078a3ba970
 msgid ""
 "Use the **same Virtuoso image** on both servers. `docker-compose.yml` "
 "asks for `openlink/virtuoso-opensource-7:latest`, which can mean "
@@ -807,26 +948,26 @@ msgid ""
 "necessarily with an older one. Compare `docker images` on both machines "
 "before the move, and pin the exact tag if they differ."
 msgstr ""
-"Use la **misma imagen de Virtuoso** en ambos servidores. "
-"`docker-compose.yml` pide `openlink/virtuoso-opensource-7:latest`, que "
-"puede significar versiones distintas en días distintos; un directorio de "
-"datos o una copia hechos con una versión se pueden abrir con seguridad "
-"con la misma o una más nueva, pero no necesariamente con una más antigua. "
+"Use la **misma imagen de Virtuoso** en ambos servidores. `docker-"
+"compose.yml` pide `openlink/virtuoso-opensource-7:latest`, que puede "
+"significar versiones distintas en días distintos; un directorio de datos "
+"o una copia hechos con una versión se pueden abrir con seguridad con la "
+"misma o una más nueva, pero no necesariamente con una más antigua. "
 "Compare `docker images` en ambas máquinas antes de la mudanza, y fije la "
 "etiqueta exacta si difieren."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:450
-#: 094f339d0dce44d99bac9c208c59baa4
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:523
+#: 810b67002436471187f8e27695e312d8
 msgid "One-off data fixes"
 msgstr "Correcciones puntuales de datos"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:452
-#: 2a14de28f64848d5b5641261790e34ae
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:525
+#: cdda5d256f86487db45a915a65894d4d
 msgid "Retyping dates stored as text"
 msgstr "Convertir las fechas guardadas como texto"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:454
-#: b87531504edb4744a91cbf646a106a07
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:527
+#: ffa6d32b9f6e49e584f7bc4fa69821b7
 msgid ""
 "Since 2026-10-06 the application stores dates as real dates (`xsd:date`) "
 "and refuses anything that isn't one (see [Data Model](data_model.md#how-"
@@ -845,8 +986,8 @@ msgstr ""
 "intervalo de fechas sobre fechas en texto da respuestas erróneas sin "
 "ningún error. Se convierten una sola vez con un script:"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:468
-#: badfccc2a24c468fadc3fa4059b6cf79
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/backup_and_migration.md:541
+#: cc8dd86f36894e35ad4f89160ae36272
 msgid ""
 "It reads the same `.env` as the application and works on **both** the "
 "current repository and the history repository. Which fields are dates is "
@@ -1290,4 +1431,36 @@ msgstr ""
 #~ "documenta, prueba y admite — prefiéralo"
 #~ " salvo que haya una razón concreta"
 #~ " para no hacerlo."
+
+#~ msgid ""
+#~ "**What this page does not cover: a"
+#~ " portable export.** The old GraphDB "
+#~ "procedure also produced a vendor-neutral"
+#~ " N-Quads file as insurance against "
+#~ "the backup format itself becoming a "
+#~ "problem. The Virtuoso image used here"
+#~ " has no equivalent one-line export"
+#~ " (its `dump_nquads` procedure is not "
+#~ "built in, and the SPARQL endpoint "
+#~ "will not return quads), so that "
+#~ "safety net does not exist yet. "
+#~ "Virtuoso's backup files can only be "
+#~ "restored by Virtuoso itself."
+#~ msgstr ""
+#~ "**Lo que esta página no cubre: una"
+#~ " exportación portátil.** El antiguo "
+#~ "procedimiento de GraphDB producía además "
+#~ "un archivo N-Quads independiente del "
+#~ "fabricante como seguro frente a que "
+#~ "el propio formato de copia se "
+#~ "convirtiera en un problema. La imagen"
+#~ " de Virtuoso usada aquí no tiene "
+#~ "una exportación equivalente de una sola"
+#~ " línea (su procedimiento `dump_nquads` no"
+#~ " está incluido, y el punto de "
+#~ "acceso SPARQL no devuelve cuádruplas), "
+#~ "así que ese seguro todavía no "
+#~ "existe. Los archivos de copia de "
+#~ "Virtuoso solo puede restaurarlos el "
+#~ "propio Virtuoso."
 

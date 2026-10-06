@@ -17,6 +17,15 @@ Ontology changes ship in CBGP-Ontology `ba54d03`; this release needs that
 ontology (several fields are renamed).
 
 ### Added
+- **Portable N-Quads export and import for Virtuoso**
+  (`utilities/virtuoso_nquads.sh`, with OpenLink's own dump procedure in
+  `utilities/virtuoso_dump_nquads.sql`): writes a whole store as gzipped
+  N-Quads, keeping every record's named graph, and loads such files into a new
+  store. Verified on the real current and history stores: exported and imported
+  into brand-new stores, a checksum over every statement of the application's
+  graphs matched exactly. It is the vendor-neutral second copy the old GraphDB
+  setup had; documented in Backup & Migration (EN and ES), including a weekly
+  cron recipe.
 - **Documentation brought up to date** (English and Spanish, the whole
   site). New: the search features (the all-types entry, Show all records,
   `today`, "or no value", the "what is running now?" recipe, Record type and

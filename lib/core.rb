@@ -51,6 +51,45 @@ def shared_dbname_entries(databases, language: current_language)
            .map { |dbname| [dbname_label(dbname, language: language), dbname] }
 end
 
+# --- Curating a record submitted through a user-facing form ------------------
+#
+# A user-facing form is a cut-down version of the real forms (e.g. a member
+# announcing an application): the people who curate it know what kind of
+# record it is, the submitter may not. So a record still on a user-facing form
+# can be opened under any Core form stored under the same dbname - the edit
+# page then shows the same data under that form's fields, and saving re-stamps
+# the record with that form. Nothing here knows any particular form.
+
+# [[label, form], ...]: the Core forms +record_form+'s record may be curated
+# as - those sharing its dbname - or [] when the record is not on a
+# user-facing form (a curated record's form stays fixed).
+def curation_targets(record_form)
+  return [] if record_form.to_s.strip.empty?
+
+  category = form_category_for(record_form)
+  return [] if category.nil? || category == 'Core'
+
+  siblings = forms_sharing_dbname(dbname: storage_dbname_for(record_form))
+  get_databases(type: 'Core', language: current_language).select { |_label, form| siblings.include?(form) }
+rescue ArgumentError
+  []
+end
+
+# [[label, shown value], ...]: what +primary_id+'s record holds under
+# +from_form+ that +to_form+ has no field for - it would be lost on saving the
+# record under +to_form+ (the earlier version stays in the history).
+def values_not_carried(from_form:, to_form:, primary_id:)
+  target = CBGP::Dataset.fields_for(to_form).map { |f| f[:questionclass] }
+  source = CBGP::Dataset.load_from_primary_id(database: from_form, primary_id: primary_id)
+  source.fields.reject { |f| target.include?(f[:questionclass]) || f[:method].nil? }.filter_map do |field|
+    value = source.public_send(field[:method])
+    next if blank_field_value?(value)
+
+    shown = Array(value).map { |v| resolve_display_value(field, v) }.join(', ')
+    [field[:label], shown]
+  end
+end
+
 # The fields a search on +database+ offers and its results table shows: for a
 # shared dbname only those every one of its forms has; otherwise the form's own.
 def search_fields_for(database)

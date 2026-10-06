@@ -102,7 +102,6 @@ RSpec.describe 'per-form calculated fields' do
         'european_private_research_project_funding_institution' => 'funding_institutions_european_commision',
         'project_application_url' => 'https://example.org/call/TEST-CODE',
         'project_call_for_proposal_title' => 'Test Call',
-        'project_dni_nie_pas' => '12345678A',
         'project_internal_code' => 'TEST-INTERNAL',
         'project_pi_nie' => '12345678Z',
         'project_start_date' => '2026-01-01',

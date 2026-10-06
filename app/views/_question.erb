@@ -38,6 +38,9 @@
     <% if required %>
       <span class="required-marker" style="color: red; font-weight: bold;" title="This field is required">*</span>
     <% end %>
+    <% if @mode != 'search' && @question.respond_to?(:required_when) && @question.required_when %>
+      <span class="required-when-hint" style="font-size: .75em; font-weight: normal; color: #555;"><%= CGI.escapeHTML(@question.required_when) %></span>
+    <% end %>
     <% unless comment.empty? %>
       <span class="field-help" tabindex="0" title="<%= CGI.escapeHTML(comment) %>">&#9432;</span>
     <% end %>

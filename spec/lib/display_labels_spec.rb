@@ -2,25 +2,20 @@
 
 # Covers the search-results display bug fixed 2026-07-06: controlled-
 # vocabulary fields (select/radio/tree-selector) store an ontology class ID
-# (e.g. "Articulo-60"), and the results table/TSV export used to print that
+# (e.g. "Awarded"), and the results table/TSV export used to print that
 # raw ID instead of resolving it to the current-language rdfs:label (e.g.
-# "Article 60" / "Artículo-60").
+# "Awarded" / "Concedido").
 RSpec.describe 'controlled-vocabulary display resolution' do
-  # project_type is a real controlled-vocabulary field in the fixture
-  # ontology (answers block "project-type", not FREE/NUM/DATE/HIDDEN).
-  # Sara's 2026-08 project-fields restructuring split the old shared
-  # "project" form into per-funding-type forms (european_research_project,
-  # national_regional_research_project, private_research_project,
-  # personnel_project) plus a separate "userproject" (user-facing) form -
-  # project_type itself is unused/deprecated on the Core forms now (see its
-  # ontology comment) but survives as a userproject field, so that's used as
-  # the example here instead.
-  let(:controlled_field) { CBGP::Dataset.fields_for('userproject').find { |f| f[:questionclass] == 'project_type' } }
+  # project_status is a real controlled-vocabulary field in the fixture
+  # ontology (answers block "project-status", not FREE/NUM/DATE/HIDDEN) whose
+  # English and Spanish labels differ. (project_type, used here before, was
+  # removed from the project forms 2026-10-06.)
+  let(:controlled_field) { CBGP::Dataset.fields_for('userproject').find { |f| f[:questionclass] == 'project_status' } }
   let(:free_text_field) { CBGP::Dataset.fields_for('userproject').find { |f| f[:questionclass] == 'project_title' } }
   let(:currency_field) { CBGP::Dataset.fields_for('userproject').find { |f| f[:questionclass] == 'personnel_project_total_funding' } }
 
   before do
-    raise "fixture ontology no longer has 'project_type' - update this spec" unless controlled_field
+    raise "fixture ontology no longer has 'project_status' - update this spec" unless controlled_field
   end
 
   describe '#controlled_vocabulary_field?' do
@@ -36,12 +31,12 @@ RSpec.describe 'controlled-vocabulary display resolution' do
   describe '#resolve_display_value' do
     it 'resolves a controlled-vocabulary class ID to its English label' do
       Thread.current[:language] = 'en'
-      expect(resolve_display_value(controlled_field, 'Articulo-60')).to eq('Article 60')
+      expect(resolve_display_value(controlled_field, 'Awarded')).to eq('Awarded')
     end
 
     it 'resolves the same class ID to its Spanish label' do
       Thread.current[:language] = 'es'
-      expect(resolve_display_value(controlled_field, 'Articulo-60')).to eq('Artículo-60')
+      expect(resolve_display_value(controlled_field, 'Awarded')).to eq('Concedido')
     end
 
     it 'falls back to the raw ID if no label is found, so data never disappears' do
@@ -59,15 +54,15 @@ RSpec.describe 'controlled-vocabulary display resolution' do
 
   describe '#cached_label_for_id' do
     it 'returns the same result as get_label_for_id directly' do
-      expect(cached_label_for_id(id: 'Articulo-60', language: 'en'))
-        .to eq(get_label_for_id(id: 'Articulo-60', language: 'en'))
+      expect(cached_label_for_id(id: 'Awarded', language: 'en'))
+        .to eq(get_label_for_id(id: 'Awarded', language: 'en'))
     end
 
     it 'caches per (id, language) so the two languages do not clobber each other' do
-      en_label = cached_label_for_id(id: 'Articulo-60', language: 'en')
-      es_label = cached_label_for_id(id: 'Articulo-60', language: 'es')
-      expect(en_label).to eq('Article 60')
-      expect(es_label).to eq('Artículo-60')
+      en_label = cached_label_for_id(id: 'Awarded', language: 'en')
+      es_label = cached_label_for_id(id: 'Awarded', language: 'es')
+      expect(en_label).to eq('Awarded')
+      expect(es_label).to eq('Concedido')
     end
   end
 end

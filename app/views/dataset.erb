@@ -3,6 +3,32 @@
 
     <!-- incoming @entry object and @questionnaire object -->
 
+    <% if session[:role] == 'admin' && @curation_targets && !@curation_targets.empty? %>
+      <div class="flash-notice curation-panel" role="status">
+        <strong><%= CGI.escapeHTML(ui_text('curate.panel_title')) %></strong>
+        <%= CGI.escapeHTML(ui_text('curate.panel_body')) %>
+        <% @curation_targets.each do |label, form| %>
+          <a class="show-all-link" style="margin-left: 12px;" href="/cbgp/dataset/<%= ERB::Util.url_encode(form) %>/<%= ERB::Util.url_encode(@entry.primary_id.to_s) %>"><%= CGI.escapeHTML(label) %></a>
+        <% end %>
+      </div>
+    <% end %>
+    <% if @curating_from %>
+      <div class="flash-notice curation-panel" role="status">
+        <%= CGI.escapeHTML(ui_text('curate.notice', form: @curating_label.to_s)) %>
+        <a class="show-all-link" style="margin-left: 12px;" href="/cbgp/dataset/<%= ERB::Util.url_encode(@curating_from) %>/<%= ERB::Util.url_encode(@entry.primary_id.to_s) %>"><%= CGI.escapeHTML(ui_text('curate.back')) %></a>
+      </div>
+      <% if @not_carried && !@not_carried.empty? %>
+        <div class="flash-warning" role="alert">
+          <%= CGI.escapeHTML(ui_text('curate.not_kept')) %>
+          <ul>
+            <% @not_carried.each do |label, shown| %>
+              <li><strong><%= CGI.escapeHTML(label.to_s) %>:</strong> <%= CGI.escapeHTML(shown.to_s) %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+    <% end %>
+
       <% if @validation_errors && @validation_errors.any? %>
         <div class="error-messages">
           <ul>

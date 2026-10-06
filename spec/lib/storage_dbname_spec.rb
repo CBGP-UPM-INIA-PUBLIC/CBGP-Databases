@@ -55,10 +55,10 @@ RSpec.describe 'storage dbname of written records' do
     let(:params) do
       {
         'database' => 'project', 'primary_id' => '', 'project_title' => 'T',
-        'beneficiary_nie' => '12345678Z', 'personnel_project_responsible_pi_nie' => '12345678Z',
+        'beneficiary_nie' => '12345678Z', 'project_pi_nie' => '12345678Z',
         'personnel_project_total_funding' => '1000.00', 'project_funding_entity' => 'F',
         'project_affiliation' => 'affiliation_upm', 'project_application_url' => 'https://example.org/call/C',
-        'project_dni_nie_pas' => '12345678A', 'project_internal_code' => %w[A-1 B-2],
+        'project_internal_code' => %w[A-1 B-2],
         'project_start_date' => '2026-01-01', 'project_end_date' => '2026-12-31'
       }
     end

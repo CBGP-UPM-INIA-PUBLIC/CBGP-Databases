@@ -125,7 +125,8 @@ RSpec.describe 'searching a dbname several forms share' do
     it 'offers only what every project form has' do
       common = CBGP::Dataset.common_fields_for('project').map { |f| f[:questionclass] }
       expect(common).to include('project_title', 'project_start_date', 'project_end_date', 'project_status')
-      expect(common).not_to include('project_pi_nie', 'personnel_project_total_funding')
+      expect(common).to include('project_pi_nie') # the PI is on every project form
+      expect(common).not_to include('project_main_copi_nie', 'personnel_project_total_funding')
     end
 
     it 'counts only the Core forms, not the cut-down user-facing one that shares the dbname' do
@@ -176,7 +177,8 @@ RSpec.describe 'searching a dbname several forms share' do
 
       expect(last_response.body).to include('name="project_title"')
       expect(last_response.body).to include('name="project_end_date[start]"')
-      expect(last_response.body).not_to include('project_pi_nie') # a field only some project forms have
+      expect(last_response.body).to include('project_pi_nie') # the PI is on every project form
+      expect(last_response.body).not_to include('project_main_copi_nie') # a field only some project forms have
       expect(last_response.body).to include('href="/cbgp/query-dataset/project?__all=1"')
       expect(last_response.body).to include('Show all records')
     end
@@ -184,7 +186,7 @@ RSpec.describe 'searching a dbname several forms share' do
     it 'still shows a single form its own, wider, field list' do
       get '/cbgp/search-dataset/european_research_project'
 
-      expect(last_response.body).to include('project_pi_nie')
+      expect(last_response.body).to include('project_main_copi_nie')
     end
 
     it 'offers an "or no value" tick box beside every searchable field' do

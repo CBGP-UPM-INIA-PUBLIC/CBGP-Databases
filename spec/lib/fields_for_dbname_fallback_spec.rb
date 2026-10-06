@@ -29,7 +29,7 @@ RSpec.describe 'dbname -> fields fallback' do
     end
 
     it 'includes fields that exist on only one of the forms sharing the dbname' do
-      expect(questionclasses('project')).to include('personnel_project_total_funding', 'project_pi_nie')
+      expect(questionclasses('project')).to include('personnel_project_total_funding', 'project_main_copi_nie')
     end
 
     it 'lists each question class once, not once per form that contains it' do
@@ -53,7 +53,7 @@ RSpec.describe 'dbname -> fields fallback' do
     it 'still resolves to just that form\'s own fields' do
       personnel = questionclasses('personnel_project')
       expect(personnel).to include('beneficiary_nie')
-      expect(personnel).not_to include('project_pi_nie') # Research-only
+      expect(personnel).not_to include('project_main_copi_nie') # Research-only
     end
 
     it 'does not duplicate fields for a form whose dbname equals its own name' do

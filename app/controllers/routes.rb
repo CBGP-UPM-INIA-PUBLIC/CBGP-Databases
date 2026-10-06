@@ -832,10 +832,23 @@ def set_routes
       # otherwise open a page with the fields of EVERY form sharing it, and
       # saving that page would stamp the record with the dbname instead of its
       # real form (so it would drop out of that form's searches).
+      #
+      # The one exception is a record still on a user-facing form, which an
+      # administrator may open under a Core form sharing its dbname to curate it
+      # (see curation_targets): the URL then names that Core form on purpose,
+      # and saving re-stamps the record with it.
       record_form = get_record_form(primary_id: clean_identifier)
       if record_form && record_form != database && !CBGP::Dataset.fields_for(record_form).empty?
-        redirect "/cbgp/dataset/#{ERB::Util.url_encode(record_form)}/#{ERB::Util.url_encode(clean_identifier)}"
+        target = session[:role] == 'admin' ? curation_targets(record_form).find { |_label, form| form == database } : nil
+        unless target
+          redirect "/cbgp/dataset/#{ERB::Util.url_encode(record_form)}/#{ERB::Util.url_encode(clean_identifier)}"
+        end
+
+        @curating_from = record_form
+        @curating_label = target.first
+        @not_carried = values_not_carried(from_form: record_form, to_form: database, primary_id: clean_identifier)
       end
+      @curation_targets = session[:role] == 'admin' && record_form == database ? curation_targets(record_form) : []
 
       @entry = CBGP::Dataset.load_from_primary_id(database: database, primary_id: clean_identifier)
       @related_panels = CBGP::RelatedRecords.panels_for(entry: @entry, type: @database) # ontology-declared; usually empty

@@ -150,7 +150,7 @@ RSpec.describe 'related-records panel on the edit page', type: :request do
 
       expect(last_response.status).to eq(200)
       # xref widget markup: searches by label, posts the stored key
-      %w[beneficiary_nie personnel_project_responsible_pi_nie project_dni_nie_pas].each do |qid|
+      %w[beneficiary_nie project_pi_nie].each do |qid|
         expect(last_response.body).to include("id=\"#{qid}_container\"")
       end
       expect(last_response.body).to include('xref-row')

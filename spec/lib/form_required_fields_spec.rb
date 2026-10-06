@@ -12,8 +12,9 @@
 # before, each now requires a whole list of fields, not just one, so this
 # spec picks one example field unique to each side (present, and required, on
 # only that form) to prove the mechanism is genuinely per-form:
-#   - cbgp:national_regional_research_project (Research) requires project_pi_nie
-#     (a member DNI/NIE/PAS cross-reference; personnel_project doesn't have this field at all)
+#   - cbgp:national_regional_research_project (Research) requires project_call_for_proposal_title
+#     (personnel_project doesn't have this field at all). The PI (project_pi_nie) is NOT
+#     such an example any more: every project form shares and requires it (2026-10-06).
 #   - cbgp:personnel_project (Personnel) requires personnel_project_total_funding
 #     (national_regional_research_project doesn't have this field at all)
 RSpec.describe 'per-form required fields' do
@@ -24,7 +25,7 @@ RSpec.describe 'per-form required fields' do
 
   before do
     {
-      'national_regional_research_project' => 'project_pi_nie',
+      'national_regional_research_project' => 'project_call_for_proposal_title',
       'personnel_project' => 'personnel_project_total_funding'
     }.each do |form, qc|
       field = CBGP::Dataset.fields_for(form).find { |f| f[:questionclass] == qc }
@@ -38,19 +39,19 @@ RSpec.describe 'per-form required fields' do
         'national_regional_research_funding_institution',
         'project_application_url',
         'project_call_for_proposal_title',
-        'project_dni_nie_pas',
-        'project_end_date',
         'project_internal_code',
         'project_pi_nie',
-        'project_start_date',
         'project_title'
       ])
+      # start/end date are no longer here: they are required only once the
+      # project is Awarded (a conditional requirement - see
+      # spec/lib/conditional_requirements_spec.rb)
     end
 
     it 'resolves the Personnel form to its full required set, not overlapping on the Research-only field' do
       required = CBGP::Dataset.form_required_fields(form: 'personnel_project')
       expect(required).to include('personnel_project_total_funding')
-      expect(required).not_to include('project_pi_nie')
+      expect(required).not_to include('project_call_for_proposal_title') # Research-only
     end
 
     it 'returns an empty set for a form with no local:requires-field at all' do
@@ -76,7 +77,6 @@ RSpec.describe 'per-form required fields' do
         'national_regional_research_funding_institution' => 'placeholder',
         'project_application_url' => 'https://example.org/call/TEST-CODE',
         'project_call_for_proposal_title' => 'Test Call',
-        'project_dni_nie_pas' => '12345678A',
         'project_internal_code' => 'TEST-INTERNAL',
         'project_start_date' => '2026-01-01',
         'project_end_date' => '2026-12-31'
@@ -89,12 +89,11 @@ RSpec.describe 'per-form required fields' do
         'primary_id' => '',
         'project_title' => 'A Personnel Project',
         'beneficiary_nie' => '12345678Z',
-        'personnel_project_responsible_pi_nie' => '12345678Z',
+        'project_pi_nie' => '12345678Z',
         'personnel_project_total_funding' => '1000.00',
         'project_funding_entity' => 'Test Funding Entity',
         'project_affiliation' => 'affiliation_upm',
         'project_application_url' => 'https://example.org/call/TEST-CODE',
-        'project_dni_nie_pas' => '12345678A',
         'project_internal_code' => 'TEST-INTERNAL',
         'project_start_date' => '2026-01-01',
         'project_end_date' => '2026-12-31'
@@ -134,7 +133,7 @@ RSpec.describe 'per-form required fields' do
           end
       end
 
-      it 'does not require project_pi_nie, which is Research-only' do
+      it 'does not require project_call_for_proposal_title, which is Research-only' do
         allow(CBGP::Dataset).to receive(:write_dataset_to_db)
         expect do
           CBGP::Dataset.load_from_params_and_write(params: personnel_params, form: 'personnel_project')
@@ -182,9 +181,9 @@ RSpec.describe 'per-form required fields' do
       expect(find_question(questionnaire, 'personnel_project_total_funding').required).to be true
     end
 
-    it 'has no project_pi_nie question at all on the Personnel questionnaire' do
+    it 'has no project_call_for_proposal_title question at all on the Personnel questionnaire' do
       questionnaire = Questionnaire.new(questionnaire_type: 'personnel_project')
-      expect(find_question(questionnaire, 'project_pi_nie')).to be_nil
+      expect(find_question(questionnaire, 'project_call_for_proposal_title')).to be_nil
     end
 
     it 'leaves every question unrequired for a form with no local:requires-field at all' do

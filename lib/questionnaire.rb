@@ -1,5 +1,6 @@
 require_relative 'queries'
 require_relative 'core'
+require_relative 'ui_text'
 
 class Questionnaire
   attr_accessor :questionnaire_type, :sections, :questionnaireid
@@ -48,9 +49,28 @@ class Questionnaire
     # isn't also a form class) - a calculated field's widget just never
     # appears there, same graceful degradation as required_fields.
     @formulas = CBGP::Dataset.form_formulas(form: @questionnaire_type)
+    @required_when = build_required_when_hints # {questionclass => "Required when X is Y"}, display-only
     @sections = get_sections
     restrict_to_fields!(only_fields) if only_fields
     @questionnaireid = Time.now.to_i
+  end
+
+  # A {questionclass => hint} of the short notes shown beside a field that is
+  # required only under a condition (local:has-conditional-requirements), e.g.
+  # "Required when Funding status is Awarded". Display only: the rule itself is
+  # enforced on save (CBGP::Dataset.conditional_requirement_errors).
+  def build_required_when_hints
+    rules = CBGP::Dataset.form_conditional_requirements(form: @questionnaire_type)
+    return {} if rules.empty?
+
+    fields = CBGP::Dataset.fields_for(@questionnaire_type)
+    rules.each_with_object({}) do |rule, hints|
+      when_field = fields.find { |f| f[:questionclass] == rule[:when_field] }
+      next unless when_field
+
+      answers = rule[:answers].map { |a| cached_label_for_id(id: a) || a }.join(' / ')
+      hints[rule[:field]] = ui_text('required.when', when_field: when_field[:label], answer: answers)
+    end
   end
 
   # Keeps only the questions in +only_fields+, each once - forms sharing a
@@ -78,7 +98,8 @@ class Questionnaire
       warn "getting section #{section}" # new-publication-questions
       seclabel = res[:label].to_s
       sects << QuestionnaireSection.new(sectionid: sectionid, sectionlabel: seclabel,
-                                        required_fields: @required_fields, formulas: @formulas)
+                                        required_fields: @required_fields, formulas: @formulas,
+                                        required_when: @required_when)
       # warn "QUESTIONNAIRE SECTIONS #{sects.inspect}"
     end
     sects
@@ -95,15 +116,16 @@ class QuestionnaireSection
   # displayed in). formulas: same idea, a {questionclass => expression}
   # Hash for calculated fields.
   # sectionid comes in as identifier only e.g. new-publication-questions
-  def initialize(sectionid:, sectionlabel:, required_fields: Set.new, formulas: {})
+  def initialize(sectionid:, sectionlabel:, required_fields: Set.new, formulas: {}, required_when: {})
     @sectionid = sectionid
     @sectionlabel = sectionlabel
-    @questions = get_questions(sectionid: @sectionid, required_fields: required_fields, formulas: formulas)
+    @questions = get_questions(sectionid: @sectionid, required_fields: required_fields, formulas: formulas,
+                               required_when: required_when)
     @wdo_comment = nil
     @center_response = nil
   end
 
-  def get_questions(sectionid:, required_fields: Set.new, formulas: {})
+  def get_questions(sectionid:, required_fields: Set.new, formulas: {}, required_when: {})
     qs = []
     results = get_section_questions_query(sectionid: sectionid)
     # ?q (str(?qlab) as ?label) ?widget ?class ?method ?cardinality ?answers ?sequence
@@ -145,6 +167,7 @@ class QuestionnaireSection
         # what form_required_fields returns, so a plain Set#include? is all
         # that's needed to answer "does this form require this question?"
         required: required_fields.include?(qid),
+        required_when: required_when[qid],
         # nil for an ordinary field; a Dentaku expression string (e.g.
         # "project_overheads * 0.05") for a calculated one. Presence of
         # this, not the widget type, is what _question.erb gates the
@@ -161,11 +184,12 @@ end
 class QuestionnaireQuestion
   attr_accessor :questionid, :sequence, :objectclass, :objectmethod, :ablockid, :answertree, :question, :selected_answer,
                 :widget, :cardinality, :answerblock,
-                :references_target, :references_via_class, :references_label_method, :comment, :required, :formula
+                :references_target, :references_via_class, :references_label_method, :comment, :required, :required_when,
+                :formula
 
   def initialize(questionid:, sequence:, objectclass:, objectmethod:, ablockid:, question:,
                  widget:, cardinality:, references_target: nil, references_via_class: nil, references_label_method: nil,
-                 comment: nil, required: false, formula: nil)
+                 comment: nil, required: false, required_when: nil, formula: nil)
     @question = question
     @comment = comment
     # required: true if THIS form (see Questionnaire#initialize) marks this
@@ -174,6 +198,9 @@ class QuestionnaireQuestion
     # actual enforcement (rejecting a save if it's blank) lives server-side
     # in CBGP::Dataset.load_from_params_and_write, this flag is display-only.
     @required = required
+    # required_when: nil, or the note "Required when <field> is <answer>" for a field a
+    # conditional requirement applies to. Display-only, like +required+.
+    @required_when = required_when
     # formula: nil for an ordinary field; a Dentaku expression string for a
     # calculated one (see local:has-formulas). Read by _question.erb to
     # decide whether to render the read-only _calculated.erb widget instead

@@ -144,7 +144,8 @@ RSpec.describe 'URL widget' do
 
       expect { CBGP::Dataset.load_from_params_and_write(params: params, form: 'userproject') }
         .to raise_error(CBGP::Dataset::ValidationError) { |e| expect(e.errors.map { |x| x[:message] }).to include('Application URL is required') }
-      expect { CBGP::Dataset.load_from_params_and_write(params: params.merge('project_application_url' => 'https://example.org/call'), form: 'userproject') }
+      # (the user form also requires the PI, so a submission always says who is responsible)
+      expect { CBGP::Dataset.load_from_params_and_write(params: params.merge('project_application_url' => 'https://example.org/call', 'project_pi_nie' => ['12345678Z']), form: 'userproject') }
         .not_to raise_error
     end
 

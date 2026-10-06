@@ -76,6 +76,20 @@ GET_DBNAME
   results.first[:dbname].to_s
 end
 
+# The category a form is listed under (local:form-category: "Core" for the
+# forms the Add and Query lists are built from, "UserFacing" for the
+# cut-down forms users fill in themselves), or nil if it has none / is no form.
+def form_category_for(form)
+  form = validate_local_name!(form, field: 'form')
+  row = SPARQL.parse(<<~SPARQL).execute($ontology).first
+    #{PREFIXES}
+    SELECT ?category WHERE { cbgp:#{form} rdfs:subClassOf cbgp:forms ; local:form-category ?category }
+  SPARQL
+  row && row.bound?(:category) ? row[:category].to_s : nil
+rescue ArgumentError
+  nil
+end
+
 # The forms of +category+ (default "Core", the ones the Query and Add lists
 # are built from - see get_questionnaire_types_query) stored under +dbname+;
 # several forms can share one. Empty for a name that is no such form's dbname.
@@ -329,6 +343,36 @@ def get_form_formulas_query(form_class:)
          local:formula-expression ?formula .
     }
   GET_FORM_FORMULAS
+  qs = SPARQL.parse(qs)
+  qs.execute($ontology)
+end
+
+# Fetches a form's CONDITIONAL requirements: local:has-conditional-requirements,
+# a sibling of requires-field above for a field that is required only when
+# ANOTHER field has a particular answer (e.g. dates only once a project is
+# Awarded). Reified like a default or formula, since a rule is several pieces
+# of data:
+#
+#   cbgp:some_form local:has-conditional-requirements cbgp:some_rule .
+#   cbgp:some_rule local:conditional-requirement-field       cbgp:project_end_date ;
+#                  local:conditional-requirement-when-field  cbgp:project_status ;
+#                  local:conditional-requirement-when-answer cbgp:Awarded .
+#
+# (when-answer may repeat: "required when the answer is any of these".)
+#
+# @param form_class [String] the specific form class
+# @return [RDF::Query::Solutions] rows with ?field, ?when_field, ?answer
+def get_form_conditional_requirements_query(form_class:)
+  form_class = validate_local_name!(form_class, field: 'form_class')
+  qs = <<~GET_FORM_CONDITIONAL_REQUIREMENTS
+    #{PREFIXES}
+    SELECT ?field ?when_field ?answer WHERE {
+      cbgp:#{form_class} local:has-conditional-requirements ?r .
+      ?r local:conditional-requirement-field       ?field ;
+         local:conditional-requirement-when-field  ?when_field ;
+         local:conditional-requirement-when-answer ?answer .
+    }
+  GET_FORM_CONDITIONAL_REQUIREMENTS
   qs = SPARQL.parse(qs)
   qs.execute($ontology)
 end

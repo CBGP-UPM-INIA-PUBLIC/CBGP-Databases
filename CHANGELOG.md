@@ -17,6 +17,32 @@ Ontology changes ship in CBGP-Ontology `ba54d03`; this release needs that
 ontology (several fields are renamed).
 
 ### Added
+- **Project forms: one shared PI, a Comments box, and two fields removed.**
+  Every project form (and the user-facing one) now has the same PI field
+  (`project_pi_nie`, a member lookup, required) - Personnel projects had their
+  own "Responsible PI"; the user form now says who is responsible for what it
+  submits. A free-text **Comments** box (`project_comments`) on the user form
+  lets a member pass extra information to the administrators; it is in the
+  notification email and carries over to the curated record. Removed:
+  `project_type` (the kind of project is decided when a submission is curated)
+  and the project-level `project_dni_nie_pas` (people link to a project via
+  the beneficiary, PI/co-PI and funding commitments).
+- **Curating a record submitted through a user-facing form.** A record still on
+  a user-facing (simplified) form shows administrators a panel above what was
+  submitted: "review it, then curate it as" a link per Core form stored under
+  the same dbname. Choosing one opens the same record under that form (nothing
+  changes until saving; "back to the submitted view" is offered) and lists any
+  value the submitter entered that the chosen form has no field for. Saving
+  re-stamps the record with that form, keeping its primary ID and recording
+  the earlier version in the history. Only records on a user-facing form, and
+  only for administrators; a curated record's form stays fixed. Generic: any
+  dbname with user-facing and Core forms.
+- **Conditionally required fields** (`local:has-conditional-requirements`): a
+  field can be required only when another field has a given answer, declared
+  in the ontology and checked by `check_ontology.rb`. A small note beside the
+  field says when it is required. The start and end dates of the project
+  forms are now required only once the project is Awarded, so a pending
+  application (no dates yet) can be saved.
 - **Search across every kind of record that shares a storage name** ("what
   projects are running now", whichever project form wrote them). The Query
   list gets one extra entry per dbname several forms store under ("Projects

@@ -1,5 +1,6 @@
 require_relative 'queries'
 require_relative 'core'
+require_relative 'ui_text'
 require 'uuidtools'
 require 'dentaku'
 require 'bigdecimal'
@@ -318,6 +319,43 @@ module CBGP
     def self.form_required_fields(form:)
       get_form_required_fields_query(form_class: form).each_with_object(Set.new) do |row, set|
         set << row[:field].to_s.split('#').last
+      end
+    end
+
+    # Resolves a form's local:has-conditional-requirements into plain rules, a
+    # sibling of +form_required_fields+ for fields that are required only
+    # when another field has a given answer. Several answers for one rule are
+    # grouped; answers are the stored answer ids (e.g. "Awarded").
+    #
+    # @param form [String] the specific form class (never the shared dbname -
+    #   same caveat as +form_required_fields+)
+    # @return [Array<Hash>] +{field:, when_field:, answers: [...]}+ per rule
+    def self.form_conditional_requirements(form:)
+      grouped = get_form_conditional_requirements_query(form_class: form).each_with_object({}) do |row, rules|
+        key = [row[:field].to_s.split('#').last, row[:when_field].to_s.split('#').last]
+        (rules[key] ||= []) << row[:answer].to_s.split('#').last
+      end
+      grouped.map { |(field, when_field), answers| { field: field, when_field: when_field, answers: answers.uniq.sort } }
+    end
+
+    # The validation errors for the conditional requirements of +form+ that
+    # +dataset+ breaks: a rule applies when the dataset's value for the rule's
+    # when-field is one of its answers, and then the field must not be blank.
+    # A rule pointing at a field the dataset does not have is ignored, like an
+    # unknown requires-field marker.
+    def self.conditional_requirement_errors(dataset:, form:)
+      form_conditional_requirements(form: form).filter_map do |rule|
+        field = dataset.fields.find { |f| f[:questionclass] == rule[:field] }
+        when_field = dataset.fields.find { |f| f[:questionclass] == rule[:when_field] }
+        next unless field && when_field
+
+        chosen = Array(dataset.public_send(when_field[:method])).map(&:to_s).find { |v| rule[:answers].include?(v) }
+        next unless chosen
+        next unless blank_field_value?(dataset.public_send(field[:method]))
+
+        { label: field[:label],
+          message: ui_text('required.when_error', field: field[:label], when_field: when_field[:label],
+                                                  answer: cached_label_for_id(id: chosen) || chosen) }
       end
     end
 
@@ -946,6 +984,7 @@ module CBGP
 
         errors << { label: field[:label], message: "#{field[:label]} is required" }
       end
+      errors.concat(conditional_requirement_errors(dataset: dataset, form: effective_form))
 
       raise ValidationError.new(errors: errors) if errors.any?
 

@@ -51,7 +51,7 @@ RSpec.describe CBGP::Dataset do
 
   describe '.load_from_params_and_write' do
     # personnel_project's required fields include real DNI/NIE/PAS cross-references
-    # to member (beneficiary_nie, personnel_project_responsible_pi_nie) -
+    # to member (beneficiary_nie, project_pi_nie) -
     # unlike the old "project" form's required fields, which were plain
     # strings. Required-field handling can look up the record's primary id via
     # get_primary_id -> execute_search -> a live SPARQL
@@ -71,11 +71,10 @@ RSpec.describe CBGP::Dataset do
         'primary_id' => '',
         'project_title' => 'Test Project',
         'beneficiary_nie' => '12345678Z',
-        'personnel_project_responsible_pi_nie' => '12345678Z',
+        'project_pi_nie' => '12345678Z',
         'project_funding_entity' => 'Test Funding Entity',
         'project_affiliation' => 'affiliation_upm',
         'project_application_url' => 'https://example.org/call/TEST-CODE',
-        'project_dni_nie_pas' => '12345678A',
         'project_start_date' => '2026-01-01',
         'project_end_date' => '2026-12-31',
         'project_internal_code' => 'TEST-INTERNAL'

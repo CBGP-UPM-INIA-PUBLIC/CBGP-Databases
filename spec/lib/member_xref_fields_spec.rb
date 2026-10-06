@@ -11,10 +11,10 @@
 # member an ORCID before that authorship link can be made.
 RSpec.describe 'person fields are member cross-references keyed on DNI/NIE/PAS' do
   PERSON_FIELDS = {
-    'national_regional_research_project' => %w[project_pi_nie project_main_copi_nie project_dni_nie_pas],
-    'european_research_project' => %w[project_pi_nie project_main_copi_nie project_dni_nie_pas],
-    'private_research_project' => %w[project_pi_nie project_main_copi_nie project_dni_nie_pas],
-    'personnel_project' => %w[beneficiary_nie personnel_project_responsible_pi_nie project_dni_nie_pas],
+    'national_regional_research_project' => %w[project_pi_nie project_main_copi_nie],
+    'european_research_project' => %w[project_pi_nie project_main_copi_nie],
+    'private_research_project' => %w[project_pi_nie project_main_copi_nie],
+    'personnel_project' => %w[beneficiary_nie project_pi_nie],
     'funding_commitment' => %w[commitment_member]
   }.freeze
 
@@ -37,7 +37,7 @@ RSpec.describe 'person fields are member cross-references keyed on DNI/NIE/PAS' 
 
   it 'surfaces the xref to the questionnaire (so the search form gets the typeahead too)' do
     q = Questionnaire.new(questionnaire_type: 'personnel_project')
-    question = q.sections.flat_map(&:questions).find { |x| x.questionid == 'project_dni_nie_pas' }
+    question = q.sections.flat_map(&:questions).find { |x| x.questionid == 'beneficiary_nie' }
     expect(question.references_target).to eq('member')
     expect(question.references_via_class).to eq('member_dni_nie_pas')
   end

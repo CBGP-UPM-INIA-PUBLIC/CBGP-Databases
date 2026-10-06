@@ -138,6 +138,9 @@ def set_routes
 
   get '/cbgp/dashboard' do
     @databases = get_databases(type: 'Core')
+    # What can be queried is what can be added PLUS one all-forms entry per
+    # dbname several forms share; those are search scopes, never offered for adding.
+    @query_databases = @databases + shared_dbname_entries(@databases)
     erb :dashboard
   end
 
@@ -300,7 +303,8 @@ def set_routes
       search_params = last_search[:params] # Now it's plain Hash
       warn "Re-running search with params: #{search_params.inspect}" # debug
 
-      @fields = CBGP::Dataset.fields_for(@database) # or .get_questionnaire_fields if still using old name
+      @fields = search_fields_for(@database)
+      note_search_kind(search_params)
       graphuris = execute_search(search_params: search_params, dataset_type: @database)
 
       @datasets = []
@@ -398,7 +402,7 @@ def set_routes
   # Ensure the full route context is included
   get '/cbgp/search-dataset/:database' do
     @database = params[:database]
-    @questionnaire = generate_questionnaire(questionnaire_type: @database)
+    @questionnaire = generate_questionnaire(questionnaire_type: @database, only_fields: search_field_restriction(@database))
     @entry = CBGP::Dataset.new(type: @database)
     @mode = 'search'
     halt erb :search_dataset_inputform, layout: :database_layout
@@ -407,7 +411,7 @@ def set_routes
   get '/cbgp/search-dataset' do # creates the search page iwth database in the POST body
     @database = params[:database]
     halt 400, 'Database parameter is required' unless @database
-    @questionnaire = generate_questionnaire(questionnaire_type: @database)
+    @questionnaire = generate_questionnaire(questionnaire_type: @database, only_fields: search_field_restriction(@database))
     @entry = CBGP::Dataset.new(type: @database)
     @mode = 'search'
     halt erb :search_dataset_inputform, layout: :database_layout
@@ -431,9 +435,10 @@ def set_routes
     public_send(verb, '/cbgp/query-dataset/:database') do
       @database = params[:database]
       @questionnaire = generate_questionnaire(questionnaire_type: @database)
-      @fields = CBGP::Dataset.fields_for(@database) # Cached
+      @fields = search_fields_for(@database) # Cached
 
       search_params = params.except('database')
+      note_search_kind(search_params)
       graphuris = execute_search(search_params: search_params, dataset_type: @database)
 
       # BATCH 1: All primary_ids
@@ -837,6 +842,14 @@ def set_routes
       erb :dataset, layout: :database_layout
     end
 
+    # Sets what the results page needs to say about the search itself:
+    # @show_all (the "Show all records" request) and @no_terms (a form
+    # submitted with every box empty - nothing was searched for).
+    def note_search_kind(search_params) # rubocop:disable Lint/NestedMethodDefinition
+      @show_all = show_all_requested?(search_params)
+      @no_terms = !@show_all && search_terms_blank?(search_params)
+    end
+
     # Loads @database/@fields/@datasets for the search this session last ran on
     # +database+, ready for the search_dataset_resultform view. Returns false
     # (and sets nothing) when there is no such search to repeat.
@@ -845,7 +858,8 @@ def set_routes
       return false unless last_search && last_search[:database] == database
 
       @database = database
-      @fields = CBGP::Dataset.fields_for(@database)
+      @fields = search_fields_for(@database)
+      note_search_kind(last_search[:params])
       graphuris = execute_search(search_params: last_search[:params], dataset_type: @database)
       @datasets = graphuris.map { |graphuri| CBGP::Dataset.load_from_graph(graph: graphuri, database: @database) }
       @result_warnings = CBGP::RelatedRecords.result_warnings(datasets: @datasets, type: @database)

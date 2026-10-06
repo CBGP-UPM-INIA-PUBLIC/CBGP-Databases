@@ -71,9 +71,17 @@ end
 
   <% if @datasets.empty? %>
     <div class="error-messages">
-      <p>No results found for your search.</p>
+      <% if @no_terms %>
+        <p><%= CGI.escapeHTML(ui_text('search.no_terms')) %>
+          <a class="show-all-link" href="/cbgp/query-dataset/<%= Rack::Utils.escape_path(@database.to_s) %>?__all=1"><%= CGI.escapeHTML(ui_text('search.show_all')) %></a></p>
+      <% else %>
+        <p>No results found for your search.</p>
+      <% end %>
     </div>
   <% else %>
+    <% if @show_all %>
+      <div class="flash-notice" role="status"><%= CGI.escapeHTML(ui_text('search.all_shown', count: @datasets.size)) %></div>
+    <% end %>
     <!-- NEW: Form for multi-select delete -->
     <form action="/cbgp/query-dataset/<%= @database %>/delete-multiple" method="post" id="multi-delete-form">
       <div class="table-scroll">

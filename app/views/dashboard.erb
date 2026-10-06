@@ -61,7 +61,7 @@
           <tr><th>Query Data</th></tr>
           <tr><td>
             <select name="database" id="query_database">
-              <% @databases.each do |d| %>
+              <% (@query_databases || @databases).each do |d| %>
                 <option value="<%= d[1] %>"><%= d[0] %></option>
               <% end %>
             </select>

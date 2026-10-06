@@ -17,6 +17,23 @@ Ontology changes ship in CBGP-Ontology `ba54d03`; this release needs that
 ontology (several fields are renamed).
 
 ### Added
+- **Search across every kind of record that shares a storage name** ("what
+  projects are running now", whichever project form wrote them). The Query
+  list gets one extra entry per dbname several forms store under ("Projects
+  (all types)", named in the ontology, with a generic "<name> (all types)"
+  fallback); it is never offered for adding data. Its search form and result
+  columns are only the fields all the (Core) forms have in common; each
+  record's own form is still shown and its edit link opens it under that
+  form. Entirely generic: no record type is named in code.
+- **Show all records**: a link on every search page lists every record. A
+  search form submitted with every box empty now says nothing was entered
+  (and offers that link) instead of "No results found".
+- **"Running now" searches**: a date bound may be `today` (resolved when the
+  search runs, so a saved link stays current), and every search field has an
+  "or no value" tick box (`<field>__orempty=1`) matching records whose value
+  fits or is missing - e.g. `project_start_date[end]=today`,
+  `project_end_date[start]=today`, `project_end_date__orempty=1` is "started
+  and not ended, no end date counts as running". Status etc. combine as usual.
 - **Dates are stored as real dates.** Every date was being saved as a plain
   string, and Virtuoso silently mis-answers range searches against them
   ("started by today" returned nothing; "started before 2010" returned 12 of

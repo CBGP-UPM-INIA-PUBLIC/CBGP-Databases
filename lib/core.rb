@@ -16,6 +16,55 @@ def generate_questionnaire(questionnaire_type:) # questionnaire_type comes in as
   # warn questionnaire.inspect
 end
 
+# --- Searching a storage dbname that several forms share ----------------------
+#
+# Several forms can store under one dbname (an institute's four project forms
+# all store under "project"). The forms differ in their extra fields, but a
+# question like "what is running now" does not care which form wrote a record,
+# so such a dbname gets its own search entry covering every form on it. It is
+# only ever a SEARCH scope: it is not a form, so it is never offered for
+# adding data. Nothing here knows any particular dbname.
+
+# True if +name+ is a storage dbname used by more than one form (and is not
+# itself a form's name).
+def shared_dbname?(name)
+  forms = forms_sharing_dbname(dbname: name)
+  forms.size > 1 && !forms.include?(name.to_s)
+rescue ArgumentError
+  false
+end
+
+# What the Query list calls the all-forms entry for +dbname+: the ontology's
+# text "dbname.<dbname>" if it has one (so the people who maintain the
+# ontology word and translate it), otherwise the generic "%{name} (all types)".
+def dbname_label(dbname, language: current_language)
+  CBGP::UIText.label("dbname.#{dbname}", language) ||
+    CBGP::UIText.label("dbname.#{dbname}", 'en') ||
+    ui_text('dbname.all_types', language: language, name: dbname)
+end
+
+# [[label, dbname], ...] - one all-forms search entry per shared dbname among
+# +databases+ (the [[label, form], ...] list get_databases returns).
+def shared_dbname_entries(databases, language: current_language)
+  databases.map { |_label, form| storage_dbname_for(form) }.uniq
+           .select { |dbname| shared_dbname?(dbname) }
+           .map { |dbname| [dbname_label(dbname, language: language), dbname] }
+end
+
+# The fields a search on +database+ offers and its results table shows: for a
+# shared dbname only those every one of its forms has; otherwise the form's own.
+def search_fields_for(database)
+  shared_dbname?(database) ? CBGP::Dataset.common_fields_for(database) : CBGP::Dataset.fields_for(database)
+end
+
+# The questionclasses a search form on +database+ is limited to, or nil for no
+# limit (an ordinary form).
+def search_field_restriction(database)
+  return nil unless shared_dbname?(database)
+
+  CBGP::Dataset.common_fields_for(database).map { |f| f[:questionclass] }.to_set
+end
+
 def identifier_type(id: nil)
   doi_regex = %r{^(?:https://doi\.org/|doi:)?(10\.\d{4,}(?:\.\d+)*/[^/]+)$}
   return 'doi', match[1] if match = id.match(doi_regex)

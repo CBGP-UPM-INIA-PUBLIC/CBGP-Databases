@@ -19,7 +19,10 @@ class Questionnaire
     @@cache.clear
   end
 
-  def initialize(questionnaire_type:) # questionnaire_type  "add-publications", "add-project" "add-member"
+  # only_fields: nil, or a Set of questionclasses to limit the questionnaire
+  # to (a search across all the forms of a shared dbname offers only the
+  # fields they have in common).
+  def initialize(questionnaire_type:, only_fields: nil) # questionnaire_type  "add-publications", "add-project" "add-member"
     # GET THE LABELS HERE
     # @lang = lang.upcase
     @questionnaire_type = questionnaire_type # its GUID as only the #code
@@ -46,7 +49,18 @@ class Questionnaire
     # appears there, same graceful degradation as required_fields.
     @formulas = CBGP::Dataset.form_formulas(form: @questionnaire_type)
     @sections = get_sections
+    restrict_to_fields!(only_fields) if only_fields
     @questionnaireid = Time.now.to_i
+  end
+
+  # Keeps only the questions in +only_fields+, each once - forms sharing a
+  # field each list it in their own section - and drops sections left empty.
+  def restrict_to_fields!(only_fields)
+    seen = Set.new
+    @sections.each do |section|
+      section.questions = section.questions.select { |q| only_fields.include?(q.questionid) && seen.add?(q.questionid) }
+    end
+    @sections.reject! { |section| section.questions.empty? }
   end
 
   def get_sections

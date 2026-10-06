@@ -76,6 +76,26 @@ GET_DBNAME
   results.first[:dbname].to_s
 end
 
+# The forms of +category+ (default "Core", the ones the Query and Add lists
+# are built from - see get_questionnaire_types_query) stored under +dbname+;
+# several forms can share one. Empty for a name that is no such form's dbname.
+# Forms of another category (e.g. the cut-down user-facing ones) are left out
+# on purpose: they are not offered as search scopes, and counting their
+# smaller field lists would shrink what a search across the rest can offer.
+def forms_sharing_dbname(dbname:, category: 'Core')
+  dbname = validate_local_name!(dbname, field: 'dbname')
+  category = validate_local_name!(category, field: 'category')
+  SPARQL.parse(<<~SPARQL).execute($ontology).map { |row| row[:form].to_s.split('#').last }.uniq.sort
+    #{PREFIXES}
+    SELECT ?form WHERE {
+      ?form rdfs:subClassOf cbgp:forms ;
+            local:dbname ?dbname ;
+            local:form-category ?category .
+      FILTER (str(?dbname) = "#{dbname}" && str(?category) = "#{category}")
+    }
+  SPARQL
+end
+
 # Resolves a search scope given as either a form class or a storage dbname
 # into [dbname to look under, form to restrict to (nil = every form on it)].
 # Records are stored under the form's shared dbname (see storage_dbname_for);
@@ -711,6 +731,13 @@ def validate_local_name!(value, field:)
   str
 end
 
+# "today" (any case) stands for the current date, so a saved search or link
+# can mean "as of the day it is run". Anything else is returned unchanged for
+# validate_date! to judge. The server's local date is used.
+def resolve_date_keyword(value)
+  value.to_s.strip.casecmp?('today') ? Date.today.iso8601 : value
+end
+
 # Validates and normalizes a date string about to be interpolated into a
 # SPARQL FILTER as a bare xsd:date literal (e.g.
 # "#{start_date}"^^xsd:date) — same reasoning as validate_local_name!: this
@@ -1127,6 +1154,29 @@ def sparql_regex_escape(char)
   end
 end
 
+# The real search terms in +search_params+ as [questionclass, value] pairs:
+# the "__not" / "__exact" / "__orempty" sibling flags and "__all" are not
+# fields, and a repeatable field (cardinality Multiple) posts its values as an
+# Array - one term per non-blank value (each must match; blank rows, e.g. the
+# empty row a repeatable widget always shows, are not terms at all). Without
+# this an Array was interpolated into the regex as its Ruby inspect string
+# (["x"]), which Virtuoso rejected.
+def search_field_params(search_params)
+  search_params
+    .reject { |k, _v| k.to_s.end_with?('__not', '__exact', '__orempty') || k.to_s == '__all' }
+    .flat_map { |k, v| v.is_a?(Array) ? v.map { |x| x.to_s.strip }.reject(&:empty?).map { |x| [k, x] } : [[k, v]] }
+end
+
+# True when nothing in +search_params+ is an actual search term - e.g. a search
+# form submitted with every box empty (it posts every field, all blank).
+def search_terms_blank?(search_params)
+  search_field_params(search_params).none? do |_k, v|
+    !v.nil? &&
+      ((!v.is_a?(Hash) && !v.to_s.strip.empty?) ||
+       (v.is_a?(Hash) && v.values.any? { |val| !val.to_s.strip.empty? }))
+  end
+end
+
 def build_search_query(search_params:, dataset_type:)
   dataset_type = validate_local_name!(dataset_type, field: 'dataset_type')
   return nil unless search_params.is_a?(Hash)
@@ -1149,23 +1199,16 @@ def build_search_query(search_params:, dataset_type:)
 
     h[k.to_s.sub(/__exact\z/, '')] = true
   end
-  field_params = search_params.reject { |k, _v| k.to_s.end_with?('__not', '__exact') }
-  # A repeatable field (cardinality Multiple) posts its values as an Array -
-  # one search term per non-blank value (each must match; blank rows, e.g. the
-  # empty row a repeatable widget always shows, are not terms at all). Without
-  # this an Array was interpolated into the regex as its Ruby inspect string
-  # (["x"]), which Virtuoso rejected.
-  field_params = field_params.flat_map do |k, v|
-    v.is_a?(Array) ? v.map { |x| x.to_s.strip }.reject(&:empty?).map { |x| [k, x] } : [[k, v]]
-  end
+  # A "#{questionclass}__orempty" => "1" sibling param widens that field's
+  # condition to "matches, or has no value at all" (e.g. a project that has
+  # started and has not ended: end date on/after today, or no end date).
+  empty_ok_flags = search_params.keys.each_with_object({}) do |k, h|
+    next unless k.to_s.end_with?('__orempty')
 
-  return nil unless field_params.any? do |_k, v|
-                      !v.nil? &&
-                      (
-                        (!v.is_a?(Hash) && !v.to_s.strip.empty?) ||
-                        (v.is_a?(Hash) && v.values.any? { |val| !val.to_s.strip.empty? })
-                      )
-                    end
+    h[k.to_s.sub(/__orempty\z/, '')] = true
+  end
+  field_params = search_field_params(search_params)
+  return nil if search_terms_blank?(search_params)
 
   # OPTIMIZATION: Use the exact cached fields (with :questionclass, :label, etc.)
   fields = CBGP::Dataset.fields_for(dataset_type) # the form's own fields (or, for a dbname, every sharing form's)
@@ -1213,7 +1256,11 @@ def build_search_query(search_params:, dataset_type:)
     # satisfies NOT EXISTS.
     wrap = ->(block) { negate ? "FILTER NOT EXISTS {\n#{block}}\n" : block }
 
-    block =
+    # Every branch below yields the field's value variable and its match
+    # CONDITION (a SPARQL expression); the triple pattern that binds the value
+    # is the same for all of them. Keeping the two apart is what lets
+    # "<field>__orempty" wrap them as OPTIONAL + FILTER(!BOUND || cond).
+    val_var, condition, filter =
       if value.is_a?(Hash) # Date range
         start_date = value['start']&.strip
         end_date = value['end']&.strip
@@ -1224,8 +1271,10 @@ def build_search_query(search_params:, dataset_type:)
         # path takes an MCP tool argument. validate_date! both rejects
         # anything that isn't a real calendar date and normalizes it to
         # YYYY-MM-DD, so there's nothing left for an injected value to do.
-        start_date = start_date.to_s.empty? ? nil : validate_date!(start_date)
-        end_date = end_date.to_s.empty? ? nil : validate_date!(end_date)
+        # "today" is accepted in place of a date (resolve_date_keyword) so a
+        # saved link or bookmark keeps meaning "as of the day it is opened".
+        start_date = start_date.to_s.empty? ? nil : validate_date!(resolve_date_keyword(start_date))
+        end_date = end_date.to_s.empty? ? nil : validate_date!(resolve_date_keyword(end_date))
 
         # The bound is written xsd:date("...") (Virtuoso's documented idiom
         # for date ranges), NOT "..."^^xsd:date: against the real store the
@@ -1234,21 +1283,10 @@ def build_search_query(search_params:, dataset_type:)
         # function form was right every time. The stored values themselves
         # are real xsd:date (see sparql_literal) - only the constant is cast.
         date_var = "?datevalue_#{idx}"
-        filter = ''
-        if start_date && end_date
-          filter = "FILTER (#{date_var} >= xsd:date(\"#{start_date}\") && #{date_var} <= xsd:date(\"#{end_date}\"))"
-        elsif start_date
-          filter = "FILTER (#{date_var} >= xsd:date(\"#{start_date}\"))"
-        elsif end_date
-          filter = "FILTER (#{date_var} <= xsd:date(\"#{end_date}\"))"
-        end
-
-        <<-CONDITION
-        ?dataset sio:SIO_000008 #{attr_var} .
-        #{attr_var} sio:SIO_000300 #{date_var} .
-        #{attr_var} rdf:type cbgp:#{questionclass} .
-        #{filter}
-        CONDITION
+        bounds = []
+        bounds << "#{date_var} >= xsd:date(\"#{start_date}\")" if start_date
+        bounds << "#{date_var} <= xsd:date(\"#{end_date}\")" if end_date
+        [date_var, bounds.join(' && '), "FILTER (#{bounds.join(' && ')})"]
       else # Text / dropdown value
         value_str = value.to_s.strip
         next if value_str.empty?
@@ -1261,12 +1299,8 @@ def build_search_query(search_params:, dataset_type:)
           # be misread in a Spanish locale), nothing regex-shaped to escape.
           # The raw (unstripped) text is used so a value stored with
           # surrounding spaces still matches its own link.
-          <<-CONDITION
-          ?dataset sio:SIO_000008 #{attr_var} .
-          #{attr_var} sio:SIO_000300 #{val_var} .
-          #{attr_var} rdf:type cbgp:#{questionclass} .
-          FILTER(STR(#{val_var}) = "#{escape_for_literal(value)}")
-          CONDITION
+          cond = "STR(#{val_var}) = \"#{escape_for_literal(value)}\""
+          [val_var, cond, "FILTER(#{cond})"]
         elsif %w[currency number].include?(field[:class])
           # Search input is typed in the current UI language's number
           # convention (e.g. "15.000,50" in Spanish); normalize it to the
@@ -1276,18 +1310,14 @@ def build_search_query(search_params:, dataset_type:)
           parsed = parse_currency_input(value_str)
           next unless parsed
 
-          <<-CONDITION
-          ?dataset sio:SIO_000008 #{attr_var} .
-          #{attr_var} sio:SIO_000300 #{val_var} .
-          #{attr_var} rdf:type cbgp:#{questionclass} .
-          FILTER(CONTAINS(STR(#{val_var}), "#{parsed}"))
-          CONDITION
+          cond = "CONTAINS(STR(#{val_var}), \"#{parsed}\")"
+          [val_var, cond, "FILTER(#{cond})"]
         else
           # Accent-insensitive by default for every free-text/dropdown field.
           # Previously this was opt-in per field via an ACCENT_SENSITIVE_LABELS
           # allowlist keyed on the ontology's human-readable (and
           # language-specific, and rewording-prone) field label, which is how
-          # fields silently fell out of coverage — e.g. "member_name" was never
+          # fields silently fell out of coverage - e.g. "member_name" was never
           # added, and label rewordings ("affiliation" -> "Affiliations",
           # "partner institutions" -> "Partner institutions (acronym and
           # country)") broke the exact-string match for fields that WERE
@@ -1296,16 +1326,29 @@ def build_search_query(search_params:, dataset_type:)
           pattern = accent_insensitive_pattern(value_str)
           next if pattern.empty?
 
-          <<-CONDITION
-          ?dataset sio:SIO_000008 #{attr_var} .
-          #{attr_var} sio:SIO_000300 #{val_var} .
-          #{attr_var} rdf:type cbgp:#{questionclass} .
-          FILTER regex(STR(#{val_var}), "#{pattern}", "i")
-          CONDITION
+          cond = "regex(STR(#{val_var}), \"#{pattern}\", \"i\")"
+          [val_var, cond, "FILTER #{cond}"]
         end
       end
 
-    conditions << wrap.call(block)
+    match = <<-PATTERN
+        ?dataset sio:SIO_000008 #{attr_var} .
+        #{attr_var} sio:SIO_000300 #{val_var} .
+        #{attr_var} rdf:type cbgp:#{questionclass} .
+    PATTERN
+
+    conditions <<
+      if negate
+        # NOT wins over "or empty" (they would contradict each other).
+        wrap.call("#{match}#{filter}\n")
+      elsif empty_ok_flags[questionclass]
+        # "matches, or has no value at all": the value is optional and the
+        # filter lets an unbound one through. The FILTER must sit OUTSIDE the
+        # OPTIONAL group, or it would only restrict the optional part.
+        "OPTIONAL {\n#{match}}\nFILTER (!BOUND(#{val_var}) || (#{condition}))\n"
+      else
+        "#{match}#{filter}\n"
+      end
   end
 
   if conditions.empty?
@@ -1323,8 +1366,17 @@ def build_search_query(search_params:, dataset_type:)
   query
 end
 
+# "__all" => "1" in the params is the "Show all records" request: every
+# record of the form/dbname, whatever else was typed. It is deliberately a
+# param the search routes pass on and NOT a default for blank terms - the
+# lookups (primary-id match, DOI check, related records) search on a single
+# key, and an empty key there must keep meaning "no match".
+def show_all_requested?(search_params)
+  search_params.respond_to?(:[]) && search_params.respond_to?(:key?) && search_params['__all'].to_s == '1'
+end
+
 def execute_search(dataset_type:, search_params: {}, broad: false)
-  if broad || search_params.empty? # Treat empty params as broad request
+  if broad || show_all_requested?(search_params) || search_params.empty? # Treat empty params as broad request
     warn "[BROAD SEARCH] Fetching all graphs for #{dataset_type}" if ENV['CBGP_DEBUG_SPARQL']
     return search_for_all_graphs(dataset_type: dataset_type)
   end

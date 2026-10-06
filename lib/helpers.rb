@@ -23,7 +23,12 @@ module MyHelpers
   end
 
   # helper
-  def generate_questionnaire(questionnaire_type:)
+  # only_fields (a Set of questionclasses) limits the questionnaire to those
+  # fields - see search_field_restriction. A restricted one is built fresh: the
+  # cache is keyed by form and language only, so it must not hold a variant.
+  def generate_questionnaire(questionnaire_type:, only_fields: nil)
+    return Questionnaire.new(questionnaire_type: questionnaire_type, only_fields: only_fields) if only_fields
+
     Questionnaire.get_cached(questionnaire_type: questionnaire_type) # OPTIMIZATION: Use cache instead of new()
   end
 

@@ -530,6 +530,17 @@ button {
   text-decoration: none;
 }
 
+/* "Show all records" on the search page and the empty-search message */
+.show-all-link {
+  color: #114203;
+  text-decoration: underline;
+}
+
+.show-all-link:hover {
+  color: #0d5704;
+  text-decoration: none;
+}
+
 
 .delete-link {
   color: #c00; /* Red to indicate danger */

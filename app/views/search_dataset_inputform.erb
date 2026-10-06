@@ -1,5 +1,8 @@
 <div class="databases">
-  <h2>Search <%= @database  %></h2>
+  <h2>Search <%= CGI.escapeHTML(shared_dbname?(@database) ? dbname_label(@database) : @database.to_s) %></h2>
+  <p class="search-show-all">
+    <a class="show-all-link" href="/cbgp/query-dataset/<%= Rack::Utils.escape_path(@database.to_s) %>?__all=1"><%= CGI.escapeHTML(ui_text('search.show_all')) %></a>
+  </p>
 
   <form action="/cbgp/query-dataset/<%= @database %>" method="post">
     <table id="dataset_search" width="80%">

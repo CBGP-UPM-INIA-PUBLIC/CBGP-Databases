@@ -68,6 +68,23 @@ module CBGP
       @@primary_key_cache.clear
     end
 
+    # The fields every form stored under +dbname+ has in common (same
+    # questionclass), in question order. +fields_for(dbname)+ is the UNION of
+    # the forms' fields - what cross-references and record loading need - while
+    # a search across all of them can only meaningfully offer, and show, what
+    # every record has. For a name that is not a shared dbname this is just
+    # +fields_for+.
+    #
+    # @param dbname [String] a storage dbname, e.g. one several forms share
+    # @return [Array<Hash>] field descriptors (see +fields_for+)
+    def self.common_fields_for(dbname)
+      forms = forms_sharing_dbname(dbname: dbname)
+      return fields_for(dbname) if forms.size < 2
+
+      shared = forms.map { |form| fields_for(form).map { |f| f[:questionclass] } }.reduce(:&)
+      fields_for(dbname).select { |f| shared.include?(f[:questionclass]) }
+    end
+
     # Returns the array of field descriptor hashes for a given form type,
     # building and caching it on first call per (type, language) pair.
     #

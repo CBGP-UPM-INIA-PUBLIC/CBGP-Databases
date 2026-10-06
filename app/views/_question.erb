@@ -77,6 +77,11 @@
                name="<%= @question.questionid %>__not" value="1">
         <%= CGI.escapeHTML(ui_text('search.not_exclude')) %>
       </label>
+      <label for="<%= @question.questionid %>_ORNONE" class="search-negate-label" style="font-size:.75em; margin-left: 8px;">
+        <input type="checkbox" id="<%= @question.questionid %>_ORNONE"
+               name="<%= @question.questionid %>__orempty" value="1">
+        <%= CGI.escapeHTML(ui_text('search.or_empty')) %>
+      </label>
     <% end %>
   <% else %> <!-- Assume add/edit mode -->
     <% @value = @entry.public_send(@question.objectmethod) || (@question.cardinality == "Multiple" ? [""] : "") %>

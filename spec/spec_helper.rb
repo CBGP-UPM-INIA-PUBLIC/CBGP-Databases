@@ -38,7 +38,7 @@ rescue StandardError => e
   File.expand_path('fixtures/cbgp-application-ontology.owl', __dir__)
 end
 
-ENV['CBGP_USERS']     ||= '{"test-admin":{"password":"test","role":"admin"}}'
+ENV['CBGP_USERS']     ||= '{"test-admin":{"password":"test","role":"admin"},"test-user":{"password":"test","role":"user"}}'
 ENV['CBGP_SECRET']    ||= 'test-secret-not-for-production-must-be-at-least-64-bytes-long-xxxx'
 ENV['NOTIFY_TO']      ||= 'test@example.invalid'
 ENV['NOTIFY_UN']      ||= 'test-user'

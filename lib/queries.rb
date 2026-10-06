@@ -586,6 +586,26 @@ end
 #
 # @param primary_id [String] the record's primary identifier value
 # @return [SPARQL::Client::Solutions] result rows with +?g+ bound to the graph URI
+# The form class (e.g. "personnel_project") that wrote the record with this
+# primary id, read from the dcterms:type stamp every record carries - or nil
+# if it has none (an old record), cannot be found, or the store is not
+# answering. Never raises: callers use it to pick the right edit page and
+# must still be able to open a record when it cannot answer.
+def get_record_form(primary_id:)
+  graph = retrieve_dataset_graph_query(primary_id: primary_id).first
+  return nil unless graph
+
+  uri = RDF::URI(graph[:g].to_s)
+  rows = DATABASE.query(<<~SPARQL).to_a
+    #{PREFIXES}
+    SELECT ?form WHERE { <#{uri}> dcterms:type ?form }
+  SPARQL
+  rows.first && rows.first[:form].to_s.split('#').last
+rescue StandardError => e
+  warn "[RECORD-FORM] could not read the form of #{primary_id.inspect}: #{e.class}: #{e.message}"
+  nil
+end
+
 def retrieve_dataset_graph_query(primary_id:)
   retds = <<SELECT_DS
         #{PREFIXES}

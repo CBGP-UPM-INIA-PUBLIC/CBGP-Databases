@@ -41,6 +41,13 @@
     <% unless comment.empty? %>
       <span class="field-help" tabindex="0" title="<%= CGI.escapeHTML(comment) %>">&#9432;</span>
     <% end %>
+    <%# Edit page, admins only: an arrow per stored value that opens the exact-match search for it in a new window %>
+    <% if @mode != 'search' && session[:role] == 'admin' && @entry %>
+      <% search_field = @entry.fields.find { |f| f[:questionclass] == @question.questionid } %>
+      <% if search_field %>
+        <span class="field-search-links"><%= field_search_links_html(field: search_field, database: @database, values: @entry.public_send(@question.objectmethod)) %></span>
+      <% end %>
+    <% end %>
   </h4>
   <% warn "Widget for #{@question.questionid}: #{@question.widget}" %>
   <% warn "Extracted widget: #{widget}" %>

@@ -821,6 +821,17 @@ def set_routes
       # If identifier_type returns nil/nothing special, fall back to the raw identifier
       _idtype, clean_identifier = identifier_type(id: primary_id)
       clean_identifier ||= identifier
+
+      # A record is edited under the form that wrote it, whatever name the URL
+      # used: a link from a search of the shared dbname (e.g. "project") would
+      # otherwise open a page with the fields of EVERY form sharing it, and
+      # saving that page would stamp the record with the dbname instead of its
+      # real form (so it would drop out of that form's searches).
+      record_form = get_record_form(primary_id: clean_identifier)
+      if record_form && record_form != database && !CBGP::Dataset.fields_for(record_form).empty?
+        redirect "/cbgp/dataset/#{ERB::Util.url_encode(record_form)}/#{ERB::Util.url_encode(clean_identifier)}"
+      end
+
       @entry = CBGP::Dataset.load_from_primary_id(database: database, primary_id: clean_identifier)
       @related_panels = CBGP::RelatedRecords.panels_for(entry: @entry, type: @database) # ontology-declared; usually empty
       erb :dataset, layout: :database_layout

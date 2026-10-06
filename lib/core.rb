@@ -234,8 +234,10 @@ end
 # +value+, showing +text+ (default: the value). Plain escaped text - never a
 # link - for a blank value, a field that is prose, or anything we cannot
 # address, so a doubtful case degrades to what the page showed before.
-# +title+ is the full untruncated text for the tooltip.
-def search_link_html(field:, database:, value:, text: nil, title: nil)
+# +title+ is the full untruncated text for the tooltip. +new_window+ opens the
+# search in its own tab (used on the edit page, where leaving would lose
+# unsaved changes).
+def search_link_html(field:, database:, value:, text: nil, title: nil, new_window: false)
   shown = CGI.escapeHTML((text || value).to_s)
   # A value spanning lines is prose whatever its widget says (nobody looks
   # one up), so it is never a link - a backstop for fields the ontology
@@ -246,8 +248,29 @@ def search_link_html(field:, database:, value:, text: nil, title: nil)
   return shown if target_db.to_s.empty? || questionclass.empty?
 
   tip = title ? %( title="#{CGI.escapeHTML(title.to_s)}") : ''
+  window = new_window ? %( target="_blank" rel="noopener noreferrer"#{title ? %( aria-label="#{CGI.escapeHTML(title.to_s)}") : ''}) : ''
   href = CGI.escapeHTML(search_link_path(database: target_db, questionclass: questionclass, value: value))
-  %(<a href="#{href}" class="search-link"#{tip}>#{shown}</a>)
+  %(<a href="#{href}" class="search-link"#{tip}#{window}>#{shown}</a>)
+end
+
+# The "find records with this value" arrows shown beside a field's label on
+# the edit page: one new-window search link per value the record currently
+# STORES (not whatever is being typed - an unsaved value would search for
+# something that does not exist yet). +field+ is the record's field
+# descriptor; a blank field, a new record, or a field that is not linkable
+# yields ''.
+def field_search_links_html(field:, database:, values:)
+  Array(values).filter_map do |v|
+    next if v.to_s.strip.empty?
+
+    link = search_link_html(
+      field: field, database: database, value: v, text: "\u2197", new_window: true,
+      title: "Find records with #{resolve_display_value(field, v)} (opens in a new window)"
+    )
+    link if link.start_with?('<a ')
+  end.join(' ')
+rescue StandardError
+  ''
 end
 
 # The human-readable name of a record's form ("Personnel Project"), in the

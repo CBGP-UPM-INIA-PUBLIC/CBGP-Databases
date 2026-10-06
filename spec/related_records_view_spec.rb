@@ -38,6 +38,7 @@ RSpec.describe 'related-records panel on the edit page', type: :request do
 
   before do
     allow(CBGP::Dataset).to receive(:load_from_primary_id).and_return(entry)
+    allow_any_instance_of(CBGP::DatabasesApp).to receive(:get_record_form).and_return(nil) # no live store in specs
     login_as_admin
   end
 
@@ -116,7 +117,10 @@ RSpec.describe 'related-records panel on the edit page', type: :request do
     get '/cbgp/dataset/member/m-1'
 
     expect(last_response.body).to include('&lt;i&gt;x&lt;&#x2F;i&gt;')
-    expect(last_response.body).not_to include('search-link')
+    # only the panel is meant here: the edit page itself carries search arrows beside its own fields
+    panel_html = last_response.body[/<div class="related-records">.*?<\/table>/m]
+    expect(panel_html).not_to be_nil
+    expect(panel_html).not_to include('search-link')
   end
 
   it 'renders nothing extra for a form with no panels' do

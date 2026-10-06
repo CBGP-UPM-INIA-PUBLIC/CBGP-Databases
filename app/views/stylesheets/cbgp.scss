@@ -509,6 +509,13 @@ button {
   text-decoration: underline solid;
 }
 
+/* The arrows beside an edit-page field label that open a search for its stored value. */
+#databases .field-search-links a.search-link {
+  margin-left: 6px;
+  font-size: 0.85em;
+  text-decoration: none;
+}
+
 /* search results css */
 .download-csv-link {
   float: right;                  /* Aligns nicely to the right of the heading */

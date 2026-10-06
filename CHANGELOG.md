@@ -17,6 +17,14 @@ Ontology changes ship in CBGP-Ontology `ba54d03`; this release needs that
 ontology (several fields are renamed).
 
 ### Added
+- **Search arrows on the edit page** (admins only): beside each field's label, a
+  small arrow per value the record currently stores opens the same exact-match
+  search as the results-page links, in a new window so unsaved edits are not
+  lost. Uses the stored value (not what is being typed) and the same rules as
+  the results page (cross-references go to the referenced record; prose,
+  numbers, dates and URLs get none). One change in `_question.erb`
+  (`field_search_links_html`, `lib/core.rb`); no per-widget changes. Non-admin
+  logins see none.
 - **Record type column on every search result**: each row says what kind of
   record it is (e.g. "Personnel Project" vs "National and Regional Research
   Projects"), per row, so a search of a shared database such as `project` can
@@ -151,6 +159,14 @@ ontology (several fields are renamed).
   printed them raw).
 
 ### Fixed
+- **A record is always edited under the form that wrote it.** Opening
+  `/cbgp/dataset/<dbname>/<id>` (e.g. `project`, which several forms share) showed
+  the fields of every form on that dbname, and saving it would have stamped the
+  record with the dbname instead of its real form, dropping it out of that
+  form's searches. It is now redirected to `/cbgp/dataset/<its form>/<id>`
+  using the record's `dcterms:type` stamp (`get_record_form`); records with no
+  stamp open as before. Surfaced by the new search links (a search of `project`
+  links its results to the `project` URL).
 - **Records were stored under the form name instead of the form's shared
   `local:dbname`.** `write_dataset_to_db_query` took the storage "database" from
   `dataset.form_type` (the specific form), so a `personnel_project` was written

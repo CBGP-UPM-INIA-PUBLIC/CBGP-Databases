@@ -12,6 +12,20 @@ here.
 
 ## [Unreleased]
 
+## [0.18.3] - 2026-10-07
+
+No ontology change.
+
+### Fixed
+- **Spanish sessions crashed on any record holding a number or currency value**
+  (found on the demo server: searching funding commitments in Spanish gave
+  "Invalid value 60.00 for type number"). Stored numbers are canonical ("60.00");
+  loading a record - a search result, the edit page, a related-records panel - and
+  storing a calculated result both went through the setter that parses what a person
+  *types*, in the viewer's notation, and the Spanish form of 60.00 is "60,00". Stored
+  values are now always read as canonical (`CBGP::Dataset.reading_canonical_numbers`);
+  what a person types is still read in their own language. Only Spanish was affected.
+
 ## [0.18.2] - 2026-10-07
 
 **Needs CBGP-Ontology `851d3a0` or later** (live at w3id.org/CBGP-App).

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CBGP-Databases 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-06 18:22+0200\n"
+"POT-Creation-Date: 2026-10-07 14:14+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es\n"
@@ -20,12 +20,12 @@ msgstr ""
 "Generated-By: Babel 2.17.0\n"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:1
-#: 3de79d4ec2c84d0e9e826fb78081d279
+#: 3eceda0deec84268b8a8b7497d6a7d68
 msgid "Data Model"
 msgstr "Modelo de datos"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:3
-#: 99e61a0123334d9580cde51129193532
+#: 1f280324bf7e4027b69c20bfc589b1b1
 msgid ""
 "This page is for anyone who needs to write a raw SPARQL query against the"
 " triple store directly — a report, a one-off analysis, an export this "
@@ -41,7 +41,7 @@ msgstr ""
 "ambas se conectan con la ontología."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:9
-#: 7d7677de12f1451185c75c7986fe86f3
+#: 364955cf63904ce1a1710d6d881fbddb
 msgid ""
 "If you only ever use the web app, you don't need this page — see [Data "
 "Entry](admin/data_entry.md) and [Search & "
@@ -54,12 +54,12 @@ msgstr ""
 "eso."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:13
-#: cb6b9ae703f7493aa377df6f3c73cf92
+#: 603a57361b0c46b6a4fdfeffb4611a3a
 msgid "Two layers, one record"
 msgstr "Dos capas, un solo registro"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:15
-#: 4eb93e4b5c364c1980399e859f9936da
+#: 70541c39098f44288e65ef4a0b13ee79
 msgid ""
 "Every record lives in its own **named graph** — a self-contained bucket "
 "of triples, one per record, identified by its own URI (e.g. "
@@ -72,7 +72,7 @@ msgstr ""
 "describe con tripletes en **dos lugares distintos**, no en uno solo:"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:20
-#: 0a5748df49c54d1f8e4f3ddcb2de4fbf
+#: e4aed9f9e9f5487bacfaf13606849232
 msgid ""
 "**Graph metadata** — a handful of triples *about* the record as a whole "
 "(when it was created, when it last changed, which form produced it). "
@@ -90,7 +90,7 @@ msgstr ""
 "antes qué campos tiene el registro."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:26
-#: 8777f5b0ded948ff843a19c0dc98706d
+#: b1729a55e04a4032894b6a6b4adb15a7
 msgid ""
 "**Graph content** — the record's actual field values, *inside* the named "
 "graph. Every field is stored as a small node of its own (a *reified "
@@ -105,7 +105,7 @@ msgstr ""
 "tiempo](time_travel.md)."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:57
-#: f4d9839f91c842b9918c5d7eb5bd4779
+#: 6f2946e2d3a74dd29a0fef0cebc6fe15
 msgid ""
 "`dcterms:created`/`dcterms:modified`/`dcterms:type` are real, standard "
 "[Dublin Core](https://www.dublincore.org/specifications/dublin-core/dcmi-"
@@ -125,12 +125,12 @@ msgstr ""
 "valor\"."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:65
-#: 1fdf1c74cab2453c9139c64f914ec32d
+#: 20a08964b4fd42de8209ed451572a1b8
 msgid "How values are typed"
 msgstr "Cómo se tipan los valores"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:67
-#: d72c565666294cd68d924afccce3dd9d
+#: 5708f07e809b4d28b89c994bc2f51442
 msgid ""
 "Every field value is an RDF *literal* on the attribute node (the "
 "`sio:SIO_000300` triple above). Most are plain text — including currency "
@@ -144,7 +144,7 @@ msgstr ""
 "`xsd:date`."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:78
-#: dc12e7d16c9c473bb85e7dac07c94621
+#: b7ab89bcf6434e5ca4109d9e6cc4ca8d
 msgid ""
 "This is not cosmetic. A SPARQL comparison between a plain-text literal "
 "and a date does not raise an error on this triple store — it quietly "
@@ -162,12 +162,12 @@ msgstr ""
 "búsqueda por intervalo de fechas."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:85
-#: 740b10683e0e4ae080caeb13b73ef8f4
+#: 75766a52f8d641b1aaef32249acae8f5
 msgid "How a field comes to be a date, and what gets checked:"
 msgstr "Cómo un campo llega a ser una fecha y qué se comprueba:"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:87
-#: e4236633d8fd40beb0f80df11da81a97
+#: 6d60f0c3625841c3915d10cf2d357519
 msgid ""
 "A field is treated as a date if its **widget** is a date picker, "
 "*whatever object-class the ontology declares for it*. (Several date-"
@@ -184,7 +184,7 @@ msgstr ""
 "ontología, solo dice lo que ya se quiere decir.)"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:92
-#: ca23a8d44b364e49bc8c2459d367a98c
+#: 2ef640beaadb4326a6e946f872d11f34
 msgid ""
 "The value is parsed and normalised to `YYYY-MM-DD` when a record is "
 "saved, and a value that is not a real calendar date is **refused**, not "
@@ -195,7 +195,7 @@ msgstr ""
 " guarda como texto."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:95
-#: f3bbe91a2c0c497b990fd318cbfdac39
+#: 5301ad95390445d38385ca8d6ccb5db8
 msgid ""
 "Reading a date back, and every display and export, uses the same `YYYY-"
 "MM-DD` text as before, so nothing downstream changes."
@@ -205,7 +205,7 @@ msgstr ""
 "viene después cambia."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:98
-#: 5eea7aafd6914757852413583f59732d
+#: e3a183358ce34f118fc51e15eef522ef
 msgid ""
 "**Writing queries.** In SPARQL, compare a stored date with the **function"
 " form** of the bound, not a typed literal:"
@@ -214,7 +214,7 @@ msgstr ""
 "**forma de función** del límite, no con un literal tipado:"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:115
-#: 9d47563727094ac1bf378f2cdb003a5c
+#: f937379654a64feea5fedb9b89688716
 msgid ""
 "The `xsd:date(\"…\")` form is the one Virtuoso's own [date-range "
 "documentation](http://docs.openlinksw.com/virtuoso/virtuosotipsandtricksmanagedaterangequery/)"
@@ -234,7 +234,7 @@ msgstr ""
 "observado de este almacén y no como una regla documentada."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:122
-#: 04f397daf21149f5be0afda3589c666e
+#: b2a2dca94e12416bbc842f442127d1fb
 msgid ""
 "Records written before this change hold their dates as text. They are "
 "converted with a one-off script — see [Backup & "
@@ -246,12 +246,12 @@ msgstr ""
 "text)."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:126
-#: d456d9cc239d4a63a4cd8060778a72a5
+#: cbc61b02d40c4698933c2d252a8c88b7
 msgid "`dcterms:type`: which form wrote this record"
 msgstr "`dcterms:type`: qué formulario creó este registro"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:128
-#: cca20fe46fa1400cb6b998d96a860c45
+#: 1e990608a2394d5fad961d6424ff06ad
 msgid ""
 "Several record types share one underlying table (Research Project and "
 "Personnel Project both live under the `project` dbname, for example), so "
@@ -269,7 +269,7 @@ msgstr ""
 "ontología del formulario**, no una simple cadena de texto:"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:145
-#: 89c588405f754a39a9fe4cb65b133f8c
+#: 854ed3e0d9ee4015b0c214d715a3c452
 msgid ""
 "Because the object is a real class URI, its display label comes for free "
 "from the ontology itself — every Form already carries a bilingual "
@@ -280,7 +280,7 @@ msgstr ""
 " un `rdfs:label` bilingüe:"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:160
-#: 7f04c770a51b47f1949c38ef3a077de5
+#: cfb63f4d21d44dc395134036f830435d
 msgid ""
 "This stamp is written automatically, for every record on every form, at "
 "save time — there is nothing to configure in the ontology for a new form "
@@ -294,12 +294,12 @@ msgstr ""
 "el que este trabajo también afectó al modelo de datos."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:165
-#: fac9221754184a32ac3990ff0eefd4d4
+#: fd3385f5a6584a8890d92c0209a4687e
 msgid "Core and user-facing forms, and sharing a dbname"
 msgstr "Formularios Core y para usuarios, y compartir un dbname"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:167
-#: 940276cb49484fb084e1f77b60384ca6
+#: 3b14d32f697f479785f19ba2e66abd34
 msgid ""
 "A form declares which **category** it belongs to with `local:form-"
 "category`: `Core` for the forms administrators add and edit records with "
@@ -319,14 +319,14 @@ msgstr ""
 "bajo `project`— y el `dcterms:type` de un registro dice cuál lo escribió."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:174
-#: 762791fc13ba4d1a8678200e91de50db
+#: 6ab6214fc38045a5a2615d4817a92583
 msgid "Two consequences, both generic (nothing here is about projects):"
 msgstr ""
 "Dos consecuencias, ambas genéricas (nada de esto trata de proyectos en "
 "particular):"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:176
-#: 8494b857264d4d5693dd057868cd32ea
+#: e93368e2fc6b4c159fd51ebeda2b09f7
 msgid ""
 "A **cross-reference** to a shared dbname resolves to the *union* of every"
 " form's fields, as described in the worked example below, so a reference "
@@ -351,7 +351,7 @@ msgstr ""
 " la dejaría casi vacía."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:185
-#: 026855bc09db41b2b95cfb88831db165
+#: abf9a4975bdb418bb3693033cd1fe489
 msgid ""
 "A record still stamped with a `UserFacing` form can be **curated**: "
 "opened under a Core form of the same dbname and saved, which rewrites the"
@@ -365,12 +365,12 @@ msgstr ""
 "by-a-member)."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:190
-#: 80a51d7a52964677ba0b9bb23ad1ffc9
+#: 5bf7304ef9d24124a22717907bf85adb
 msgid "Crossing both layers in one query"
 msgstr "Cruzando ambas capas en una sola consulta"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:192
-#: c2e36b5ea3284fa0991f3a858d5a554c
+#: 6c77053468494b1fb12834e86a6a7b39
 msgid ""
 "A form-scoped question, like \"what's the total Annual income across "
 "every Personnel Project record,\" needs both layers together: "
@@ -384,12 +384,12 @@ msgstr ""
 "ellos, para extraer de ahí los valores de campo."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:212
-#: fa7dcb1387e44e54ba6cbbf850a48e0c
+#: ba7a5ce76e4f4e88bdb82b0edbf41b5d
 msgid "How this connects to the ontology"
 msgstr "Cómo se conecta esto con la ontología"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:214
-#: f7d1d1426187449e8c1814d482731852
+#: 1d6a28ba337141c6b341dc074bba7e24
 msgid ""
 "Every predicate used above (`cbgp:personnel_project`, "
 "`cbgp:project_annual_income`) is a class declared in the ontology, not an"
@@ -402,7 +402,7 @@ msgstr ""
 "siguientes sean la misma imagen, vista desde dos ángulos distintos."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:254
-#: f394128619ee4d3f8354fd12f43b928a
+#: 2d585df793df40c3ba4d5e9d643cc717
 msgid ""
 "A Question's `local:answer-block`, when it has one, points at a set of "
 "Answer classes the same way — see [Philosophy & Design](philosophy.md"
@@ -417,12 +417,12 @@ msgstr ""
 "estructura de clases."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:260
-#: 8594eed8446b4846852be66022f2f29d
+#: ab17b6fecdfb4454b709e97d6c46520b
 msgid "Interface text lives in the ontology"
 msgstr "El texto de la interfaz vive en la ontología"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:262
-#: d241f6a705c545c2a0cfce464af7778e
+#: c5d27de7d0ea4443b8d9982f4ac32991
 msgid ""
 "Field labels and answers come from the ontology, and so does the *other* "
 "text a person reads on a page: the hints inside boxes, the captions of "
@@ -442,7 +442,7 @@ msgstr ""
 "programador."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:276
-#: eb39b99033624ff89a843df1fb63237a
+#: e102cffce3e7438e85064617113c4c0c
 msgid ""
 "**The name is the key.** The code asks for a text by a dotted key, such "
 "as `search.show_all`, and the class is that key with the dots turned into"
@@ -453,7 +453,7 @@ msgstr ""
 "convertidos en guiones bajos y `ui_` delante: `ui_search_show_all`."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:279
-#: 71f1541f50e040429d2c0fbcf42e365e
+#: ca5c325749514a0f9cbebd113814852a
 #, python-brace-format
 msgid ""
 "**Placeholders.** A `%{name}` in a text is filled in by the code, for "
@@ -465,7 +465,7 @@ msgstr ""
 "idiomas de un texto deben usar exactamente los mismos marcadores."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:282
-#: de4c29a2cdc94ed89fd4b12f88145773
+#: 7e1ab57393fa4b1fa3ee5930ec489396
 msgid ""
 "**Fallbacks.** A text missing in the current language shows its English "
 "version; one missing entirely shows its key, which makes the gap visible "
@@ -476,7 +476,7 @@ msgstr ""
 "hace visible el hueco en la página en lugar de provocar un error."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:285
-#: 9074400a59954313837970338a1e388d
+#: d38cc148c0234209a489d9f6eef1c23d
 msgid ""
 "**Characters.** Because these texts are printed into HTML attributes and "
 "scripts, they may not contain a double quote, a back-tick, `<`, `>`, a "
@@ -487,7 +487,7 @@ msgstr ""
 "`>`, una barra invertida ni `${`."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:288
-#: 6c83a7c30de2453c8a03a36ddbc49232
+#: a1c1353ef05e4150a9c210a575d7c0db
 #, python-brace-format
 msgid ""
 "**Names of search entries.** A group of forms stored together (see above)"
@@ -501,7 +501,7 @@ msgstr ""
 "genérico `ui_dbname_all_types`, «`%{name}` (all types)»."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:293
-#: e53f981a54724ef7bcf8f662b5bbfb9c
+#: 5581a74b31a44a998072cd45a28f224b
 msgid ""
 "`check_ontology.rb` rejects a text whose languages disagree on "
 "placeholders or that contains a forbidden character, and the "
@@ -518,7 +518,7 @@ msgstr ""
 "pasarlo a la ontología consiste solo en añadir la clase y pedir la clave."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:300
-#: a1a9648415094f55ab0b9f7f782dbd92
+#: 13424c8c9ec64810b45c960e40a43570
 msgid ""
 "Worked example: is a field required, defaulted, or calculated on this "
 "form?"
@@ -527,7 +527,7 @@ msgstr ""
 " se calcula en este formulario?"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:302
-#: f27b2277535f46c1a824f718d86bae81
+#: c0621e03c7b64b9c9d18addaaf6809fa
 msgid ""
 "The per-form mechanisms mentioned above (`local:has-defaults`, `local"
 ":has-formulas`, `local:requires-field`, and the conditional variant of "
@@ -539,22 +539,22 @@ msgid ""
 "than pretending all of them apply to one field they don't."
 msgstr ""
 "Los mecanismos por formulario mencionados arriba (`local:has-defaults`, "
-"`local:has-formulas`, `local:requires-field` y la variante condicional de "
-"este último, que se explica al final) se declaran todos en el "
+"`local:has-formulas`, `local:requires-field` y la variante condicional de"
+" este último, que se explica al final) se declaran todos en el "
 "**Formulario**, no en la Pregunta, porque la misma Pregunta compartida "
 "puede comportarse de forma distinta según el Formulario que la use. Cada "
 "uno de los que siguen usa un campo real distinto de los formularios de "
 "Proyecto Personal y de Proyecto de la Comisión Europea, a propósito: el "
-"campo que realmente demuestra ese mecanismo, en lugar de fingir que todos "
-"se aplican a un campo al que no se aplican."
+"campo que realmente demuestra ese mecanismo, en lugar de fingir que todos"
+" se aplican a un campo al que no se aplican."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:311
-#: 57b4bc221bb64b9b80efa4bb69e045cc
+#: 7832714f871d4aa7a0144680a50acd9c
 msgid "`local:requires-field` — direct"
 msgstr "`local:requires-field` — directo"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:313
-#: 43411d0f44f34934881944c9d30ec0dd
+#: bdf33807b9df4329ba65ed034017d5db
 msgid ""
 "This one links the Form straight to the Question, no node in between. "
 "Personnel Project requires its Total funding:"
@@ -563,7 +563,7 @@ msgstr ""
 "intermedio. Proyecto Personal requiere su Financiación total:"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:320
-#: 5848c34451cf4de686fd87524d628137
+#: c733fd4324874de1add1a0f3750cefd0
 msgid ""
 "`local:has-defaults` and `local:has-formulas` are *not* this simple — "
 "each needs **two** pieces of information (which field, and what "
@@ -574,21 +574,21 @@ msgid ""
 "equivalent single triple for a default or a formula."
 msgstr ""
 "`local:has-defaults` y `local:has-formulas` *no* son tan simples — cada "
-"uno necesita **dos** datos (qué campo, y qué valor/fórmula), no uno solo, "
-"así que cada uno necesita un lugar donde guardar ambos. Los dos pasan por "
-"un **nodo intermedio** en lugar de un enlace directo — esta es la parte "
-"que no resulta obvia con solo echar un vistazo a una tripleta como "
+"uno necesita **dos** datos (qué campo, y qué valor/fórmula), no uno solo,"
+" así que cada uno necesita un lugar donde guardar ambos. Los dos pasan "
+"por un **nodo intermedio** en lugar de un enlace directo — esta es la "
+"parte que no resulta obvia con solo echar un vistazo a una tripleta como "
 "`local:requires-field cbgp:personnel_project_total_funding`, porque no "
 "hay una única tripleta equivalente para un valor por defecto o una "
 "fórmula."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:328
-#: 48eebc11e13943a9bae851f366e85467
+#: db1daedb2c5f4265ae83fcd02fd68ee8
 msgid "`local:has-defaults` — via an intermediate node"
 msgstr "`local:has-defaults` — mediante un nodo intermedio"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:330
-#: 7d6a278fec0e48208a17f58fee2f0a62
+#: ac3aa7dac35946f2913584097ed35f14
 msgid ""
 "Every Core project form gives the shared *Funding status* field the same "
 "starting value, `Proposed` — but each does it through its **own** node, "
@@ -597,27 +597,27 @@ msgid ""
 msgstr ""
 "Cada formulario Core de proyecto da al campo compartido *Estado de "
 "financiación* el mismo valor inicial, `Proposed` — pero cada uno lo hace "
-"mediante su **propio** nodo, lo que permitiría que un formulario empezara "
-"con un valor distinto sin tocar los demás. El de Proyecto Personal:"
+"mediante su **propio** nodo, lo que permitiría que un formulario empezara"
+" con un valor distinto sin tocar los demás. El de Proyecto Personal:"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:345
-#: 044199a956ac4286952592238483d5cf
+#: fa29a5c892224d219bcb0c1ab689418e
 msgid ""
 "The European Commission Research Project form points at *its own* node, "
 "`cbgp:european_research_project_status_default`, for the exact same "
 "`local:default-for-field`."
 msgstr ""
 "El formulario de Proyecto de Investigación de la Comisión Europea apunta "
-"a *su propio* nodo, `cbgp:european_research_project_status_default`, para "
-"el mismo `local:default-for-field`."
+"a *su propio* nodo, `cbgp:european_research_project_status_default`, para"
+" el mismo `local:default-for-field`."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:349
-#: 1ac47f93df434f679fb711cbabd2dc5e
+#: b9f159a601584fa381d9b993fcfc8671
 msgid "`local:has-formulas` — the same shape, one field computed from another"
 msgstr "`local:has-formulas` — la misma forma, un campo calculado a partir de otro"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:351
-#: fae50e51dccd40eb923a405f0e3c8106
+#: fbaef005742c46ff8c58249cb56fe7aa
 msgid ""
 "On the European Commission Research Project form, *Total overheads* is "
 "calculated *from* *Total funding* (not the other way around — Total "
@@ -629,7 +629,7 @@ msgstr ""
 "costes indirectos es lo que se calcula):"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:365
-#: a98c6a3a93544a2da13531d7cd178d63
+#: 4f7c909bc70e4eb7be8ae741e36908eb
 msgid ""
 "In both cases the Form never points at the Question directly - it points "
 "at an in-between node (an ordinary class, named after the form and the "
@@ -644,17 +644,17 @@ msgstr ""
 "por convención en el formulario y el campo, pero el nombre en sí no "
 "significa nada para el código), y *ese* nodo es el que nombra el campo "
 "real mediante `local:default-for-field`/`local:formula-for-field`. "
-"Consultar «qué hace este formulario con este campo» significa siempre dar "
-"un salto a través del nodo, nunca una tripleta directa de Formulario a "
+"Consultar «qué hace este formulario con este campo» significa siempre dar"
+" un salto a través del nodo, nunca una tripleta directa de Formulario a "
 "Pregunta:"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:396
-#: 9fe4020ed5764c40b47bdc86528bb6ad
+#: d483570497a24050951dade63cd927d0
 msgid "Conditional requirements"
 msgstr "Requisitos condicionales"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:398
-#: ee452fc86d4147159c517e09727fa838
+#: a963b9250abf4dcc9872d8cfa8763970
 msgid ""
 "`local:requires-field` is unconditional. A field that is required only "
 "*sometimes* needs more pieces of information — which field, which other "
@@ -671,7 +671,7 @@ msgstr ""
 " proyecto está Concedido:"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:416
-#: 41477dcdf28f42cda11f98031df68189
+#: e92c5f45c9a844c486566b0d8e1d17a4
 msgid ""
 "`local:conditional-requirement-when-answer` can be repeated, meaning "
 "\"any of these answers\". The answers are the stored answer classes "
@@ -692,7 +692,7 @@ msgstr ""
 "obligatorio."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:437
-#: 899b0414f70846fa983cedc3592b0b92
+#: c8270f9f3e774ccc8d5c91fdda781bed
 msgid ""
 "The rule is enforced on the server when a record is saved (the error "
 "names the condition) and shown as a small note beside the field. If the "
@@ -709,7 +709,7 @@ msgstr ""
 "no se aplicaría nunca."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:443
-#: ceceb41146f245dbabd76db3c43564db
+#: b9efd78549e7482b8be505c0543f5c90
 msgid ""
 "Querying the *content* of a record never needs to know any of this — a "
 "field's value is stored and read the same reified way regardless of "
@@ -728,12 +728,12 @@ msgstr ""
 "el lado de quien rellena el formulario."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:451
-#: a9ef56c631ba4e8cab2019d214962856
+#: 8bb796fbe7d540c4a7a86c8042d437a0
 msgid "Worked example: one record that points at two others"
 msgstr "Ejemplo práctico: un registro que apunta a otros dos"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:453
-#: 558fd514485c4a739ab74f37c191059a
+#: fa7b5647a66e416fb63d68aa7bc2f188
 msgid ""
 "A person funded 50/30/20 by three projects is the case where a flat field"
 " can't do the job: \"project X, 50%\" is a *pair*, and a list of projects"
@@ -751,7 +751,7 @@ msgstr ""
 " pareja:"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:479
-#: 8be49285d5f24bdf8af986aec998da15
+#: 6885971e41e34d8e861be46977605559
 msgid ""
 "`cbgp:project` there is not a form: since the project forms were split "
 "(European, National/Regional, Private, Personnel) no ontology class is "
@@ -771,7 +771,50 @@ msgstr ""
 "apunte a un proyecto sea cual sea el formulario que lo creó."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:486
-#: d347394f9e8f4b928367db34f89c9a39
+#: ce744a134718417191f8413a41c8fae1
+msgid "Cross-reference labels and companions"
+msgstr "Etiquetas de referencia cruzada y acompañantes"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:488
+#: c789a29c399c4a05b2c3cf03c8825dd6
+msgid ""
+"What a person is called in a lookup list is the field named by `local"
+":references-label`. A surname alone does not tell people apart — in the "
+"institute's member list 24 surnames are shared by two or three different "
+"people — so a label field can have **companions** (`local:label-"
+"companion`): other fields of the same record, shown after it, comma-"
+"separated."
+msgstr ""
+"El nombre con el que se muestra a una persona en una lista de búsqueda es"
+" el del campo indicado por `local:references-label`. Un apellido por sí "
+"solo no distingue a las personas —en la lista de miembros del instituto "
+"hay 24 apellidos compartidos por dos o tres personas distintas—, por lo "
+"que un campo de etiqueta puede tener **acompañantes** (`local:label-"
+"companion`): otros campos del mismo registro que se muestran a "
+"continuación, separados por comas."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:499
+#: 8f0f76372e9c4c18a5d8b3e37dd1c22a
+msgid ""
+"The companion is a property of the label *field*, so it applies wherever "
+"that field serves as a label (every lookup of a member, whichever form it"
+" is on), and with several companions they follow in question order. A "
+"companion the record has no value for is skipped, and without any the "
+"label is the field alone, as before. `check_ontology.rb` reports a "
+"companion that points at a class that does not exist. Only the label "
+"field is *searched*; companions are shown, not matched."
+msgstr ""
+"El acompañante es una propiedad del *campo* de etiqueta, por lo que se "
+"aplica allí donde ese campo sirve de etiqueta (toda búsqueda de un "
+"miembro, en cualquier formulario), y si hay varios acompañantes se "
+"muestran en el orden de las preguntas. Un acompañante para el que el "
+"registro no tiene valor se omite, y sin acompañantes la etiqueta es solo "
+"el campo, como antes. `check_ontology.rb` avisa de un acompañante que "
+"apunta a una clase que no existe. Solo el campo de etiqueta se *busca*; "
+"los acompañantes se muestran, no se comparan."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:507
+#: d8836369fcf94647b10480dedd5d6542
 msgid ""
 "The list shown under a member's or project's edit form is declared the "
 "same way as the other per-form mechanisms — an intermediate node that "
@@ -782,8 +825,8 @@ msgstr ""
 "mediante un nodo intermedio que contiene los detalles, sin nada en el "
 "código que conozca los compromisos:"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:508
-#: 81b2796899fc465ead6f91a52b38a259
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:529
+#: c165f311ba9342da81628267e2ca3e23
 msgid ""
 "The project-side panel is the same shape with `related-via "
 "cbgp:commitment_project` and no sum. The warning is computed every time "
@@ -793,8 +836,8 @@ msgstr ""
 "cbgp:commitment_project` y sin suma. El aviso se calcula cada vez que se "
 "muestra la página y nunca se almacena."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:512
-#: f9a0cdf81b7e44f980165df0ed3c884f
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/data_model.md:533
+#: 2aa568d44ecd4b86859a02f76d44f8b6
 msgid ""
 "To find the commitments themselves in the data, use the same two-layer "
 "shape as the query above — for instance, every commitment for one person "

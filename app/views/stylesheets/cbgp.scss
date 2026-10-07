@@ -274,6 +274,38 @@ h3 {
   font-size: 0.85em;
 }
 
+/* The suggestion list under a lookup box (app/public/js/typeahead.js) */
+.cbgp-suggest {
+  position: absolute;
+  z-index: 1000;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid #9aa89a;
+  border-top: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  max-height: 18em;
+  overflow-y: auto;
+  font-size: 0.95em;
+  text-align: left;
+}
+
+.cbgp-suggest li {
+  padding: 0.35em 0.6em;
+  cursor: pointer;
+}
+
+.cbgp-suggest li.active {
+  background: #dfeedd;
+}
+
+.cbgp-suggest .cbgp-suggest-key {
+  margin-left: 0.6em;
+  color: #666;
+  font-size: 0.85em;
+}
+
 .reference-input-wrapper [id$="_add_btn"] {
   margin-top: 4px;
 }

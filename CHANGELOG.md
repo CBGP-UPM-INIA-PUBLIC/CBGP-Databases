@@ -12,6 +12,22 @@ here.
 
 ## [Unreleased]
 
+## [0.18.1] - 2026-10-07
+
+### Fixed
+- **Lookup lists (PI, members, other cross-references).** The suggestion list
+  stopped working once an accented letter was typed (`Alarcón`) and showed only
+  the surname. It is now a purpose-built list (`app/public/js/typeahead.js`)
+  that shows exactly what the server returns: matched ignoring accents and
+  capitals, each person shown as "Surname(s), Name", with the stored identifier
+  beside any two choices that would otherwise read alike. Search is still on the
+  surname only.
+- New ontology property `local:label-companion` (on the label field, e.g.
+  `member_surnames` -> `member_name`) says which fields follow the label; it
+  applies to the suggestions, the text beside a stored value and related-record
+  lists. **Needs CBGP-Ontology `b1439bf` or later**; without it labels
+  are the surname alone, as before. `check_ontology.rb` validates it.
+
 ## [0.18.0] - 2026-10-07
 Search across every kind of record that shares a storage name ("what projects
 are running now?"), Show all records, curating a member's project submission,

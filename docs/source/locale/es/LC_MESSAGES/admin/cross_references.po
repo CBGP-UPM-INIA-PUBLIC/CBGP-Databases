@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CBGP-Databases 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-06 18:22+0200\n"
+"POT-Creation-Date: 2026-10-07 14:14+0200\n"
 "PO-Revision-Date: 2026-07-09 17:01+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es\n"
@@ -20,17 +20,17 @@ msgstr ""
 "Generated-By: Babel 2.17.0\n"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:1
-#: 39c46c410456420e84b10a134ab536a3
+#: f38c6a636fd543d48260a35932c0e372
 msgid "Cross-References"
 msgstr "Referencias cruzadas"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:3
-#: 4f05148e234c49e7bfb6edc160b5a6f3
+#: 672ab864521c4e0e9fa0a3ed67c27f43
 msgid "What a cross-reference field is"
 msgstr "Qué es un campo de referencia cruzada"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:5
-#: 23c860d1ccc14c9a9f098894d0bb6ff9
+#: b249746bfc0c4051919cf682e823b95a
 msgid ""
 "Some fields don't hold a value typed directly into them — instead, they "
 "point at *another* record entirely. The clearest example is a "
@@ -41,15 +41,15 @@ msgid ""
 "records and links to one of them."
 msgstr ""
 "Algunos campos no contienen un valor escrito directamente en ellos — en "
-"su lugar, apuntan a *otro* registro por completo. El ejemplo más claro es "
-"el autor de una publicación: en lugar de escribir un nombre en una "
+"su lugar, apuntan a *otro* registro por completo. El ejemplo más claro es"
+" el autor de una publicación: en lugar de escribir un nombre en una "
 "casilla de texto (lo que crearía cada vez un fragmento de texto nuevo y "
 "desconectado, sin forma de saber que «M. García» y «María García» en dos "
 "publicaciones distintas son la misma persona), el campo busca en los "
 "registros reales de Miembros y enlaza con uno de ellos."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:13
-#: 03c4698568b74df39a58e63d39dd8f5e
+#: b9448fbfe658433b85e016c5fe376369
 msgid ""
 "This shows up on both the add/edit forms described in [Data "
 "Entry](data_entry.md) and the search forms described in [Search & "
@@ -62,12 +62,12 @@ msgstr ""
 "búsqueda funciona de igual manera en ambos lugares."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:18
-#: 9ec500f819f543ed8786c6a01413ebdc
+#: 661bbe2769374d33b17ec163420da256
 msgid "How the lookup works"
 msgstr "Cómo funciona la búsqueda"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:20
-#: 7275da27b8ab4ec8897cdd0a170d58aa
+#: 96b60f95bcb046b79392fee109951cb7
 msgid ""
 "Typing into a cross-reference field searches the target record type by a "
 "human-readable label — a person's surname, for instance — and shows "
@@ -84,8 +84,8 @@ msgstr ""
 "Escribir en un campo de referencia cruzada busca en el tipo de registro "
 "destino por una etiqueta legible para las personas — el apellido de una "
 "persona, por ejemplo — y muestra las coincidencias como opciones entre "
-"las que elegir. Al elegir una, se rellena el campo, pero lo que realmente "
-"se guarda por detrás es un valor distinto y más estable que el texto "
+"las que elegir. Al elegir una, se rellena el campo, pero lo que realmente"
+" se guarda por detrás es un valor distinto y más estable que el texto "
 "buscado — un número de DNI/NIE/PAS (o, para los autores de una "
 "publicación, un ORCID) en el caso de una persona, por ejemplo, en lugar "
 "de su nombre. Esto importa porque los nombres cambian, se escriben de "
@@ -94,8 +94,58 @@ msgstr ""
 "enlazan con la misma persona o proyecto enlazan realmente con la *misma* "
 "cosa, y no solo con un texto que se le parezca."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:33
-#: e00067b8570a410c98b0c9158a841d86
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:32
+#: 026ed2e5e89c4c74814f39c717bb4468
+msgid ""
+"The suggestions appear in a list under the box as you type, from the "
+"second character on. They are matched **ignoring accents and capital "
+"letters** — typing `Alarco` finds *Alarcón* — and each choice is shown "
+"with enough to tell people apart: for a person, the surname(s) followed "
+"by the name, for example *Alarcón Moreno, Sara*. If two choices would "
+"still read exactly alike (two people with the same name and surnames), "
+"the stored identifier is shown beside each in grey. Click a choice, or "
+"move with the arrow keys and press Enter; the box fills in the label and "
+"the identifier is kept behind it. The search itself is on the surname "
+"only — typing a first name finds nothing; the name is there to tell "
+"people apart, not to search by."
+msgstr ""
+"Las sugerencias aparecen en una lista bajo el cuadro a medida que "
+"escribe, a partir del segundo carácter. La búsqueda **ignora acentos y "
+"mayúsculas** —escribir `Alarco` encuentra *Alarcón*— y cada opción se "
+"muestra con lo necesario para distinguir a las personas: para una "
+"persona, el o los apellidos seguidos del nombre, por ejemplo *Alarcón "
+"Moreno, Sara*. Si dos opciones siguen siendo idénticas (dos personas con "
+"el mismo nombre y apellidos), el identificador almacenado aparece junto a"
+" cada una, en gris. Pulse una opción, o muévase con las flechas y pulse "
+"Intro; el cuadro se rellena con la etiqueta y el identificador se "
+"conserva detrás. La búsqueda se hace solo por apellido: escribir un "
+"nombre de pila no encuentra nada; el nombre está para distinguir a las "
+"personas, no para buscar."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:43
+#: bfd07d1110c24e8f972ad5557fbf3209
+msgid ""
+"**For the ontology editor:** the field that is searched and shown is the "
+"one named by `local:references-label` (for a person, `member_surnames`). "
+"To show other fields after it, give that field a `local:label-companion` "
+"— for a person, `cbgp:member_surnames local:label-companion "
+"cbgp:member_name`. It then applies everywhere that label appears: the "
+"suggestions, the text beside a stored value, and the lists of related "
+"records. See [Data Model](../data_model.md#cross-reference-labels-and-"
+"companions)."
+msgstr ""
+"**Para quien edita la ontología:** el campo que se busca y se muestra es "
+"el indicado por `local:references-label` (para una persona, "
+"`member_surnames`). Para mostrar otros campos a continuación, asigne a "
+"ese campo un `local:label-companion` —para una persona, "
+"`cbgp:member_surnames local:label-companion cbgp:member_name`—. Entonces "
+"se aplica en todos los lugares donde aparece esa etiqueta: las "
+"sugerencias, el texto junto a un valor almacenado y las listas de "
+"registros relacionados. Véase [Modelo de datos](../data_model.md#cross-"
+"reference-labels-and-companions)."
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:52
+#: ed12a50e757147868c1d02b3eab8df6f
 msgid ""
 "Screenshot needed: `docs/source/_static/screenshots/admin-xref-"
 "typeahead.png` — a cross-reference field mid-search, showing the dropdown"
@@ -106,8 +156,8 @@ msgstr ""
 "búsqueda, mostrando el desplegable de sugerencias coincidentes mientras "
 "se escribe."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:39
-#: 2f3b8eab8aed4764afaab34fbbfd8951
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:58
+#: a4a810072a4b46d8940b0c288d39befc
 msgid ""
 "![Cross-reference typeahead](../_static/screenshots/admin-xref-"
 "typeahead.png) *A cross-reference field, showing suggestions while "
@@ -117,18 +167,18 @@ msgstr ""
 "typeahead.png) *Un campo de referencia cruzada, mostrando sugerencias "
 "mientras se escribe.*"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:39
-#: f1d5ea3f973e4799afeb7191d98b1e8b
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:58
+#: 9a6627e428954625b4449d27cf3c9196
 msgid "Cross-reference typeahead"
 msgstr "Referencia cruzada con sugerencias"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:42
-#: e1c2186e0fda420e8b2c85155878b19d
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:61
+#: 7381c09d6830491885ca9e31b9a39662
 msgid "What this means in practice"
 msgstr "Qué significa esto en la práctica"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:44
-#: f04c7961d6634c948aa3e4b20a8ad01a
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:63
+#: de7867011069436382b16a9dc66210ac
 msgid ""
 "**Search by whatever's easiest to remember, not by an ID.** There's never"
 " a need to know or type an ORCID, an accession number, or any other "
@@ -140,8 +190,8 @@ msgstr ""
 " u otro identificador interno — buscar por nombre (o por la etiqueta que "
 "corresponda a ese campo) siempre es suficiente."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:48
-#: d690df2ed7e94e0dbf46f39d12d321b5
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:67
+#: a9fd0a49803b480eba49e9b2598743cf
 msgid ""
 "**A field can accept more than one link.** A publication with several "
 "authors, for example, offers a repeatable set of these lookups, one per "
@@ -153,8 +203,8 @@ msgstr ""
 "una por autor — el mismo comportamiento de \"añadir otra entrada\\! "
 "mencionado en [Entrada de datos](data_entry.md)."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:52
-#: dced9def5a0e4816a8029a03515cf83f
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:71
+#: 9618202e42564544b0f25a493c898f14
 msgid ""
 "**The record being linked to must already exist.** If a search doesn't "
 "find the person or project being looked for, that record needs to be "
@@ -168,13 +218,13 @@ msgstr ""
 "referenciarlo desde otro lugar — un campo de referencia cruzada no puede "
 "crear sobre la marcha aquello a lo que apunta."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:58
-#: ef88ef3197124b18a5ba2e53488df300
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:77
+#: de2a5d7e8ffd4cda997f887d0c8f3198
 msgid "The DOI importer's automatic member matching"
 msgstr "Vinculación automática de miembros por el importador de DOI"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:60
-#: 71a9aa85f1984fe19c636822f176f1f2
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:79
+#: fa714528c6c94319a39bad7a3181b5d2
 msgid ""
 "The single-DOI and bulk-DOI importers (under **Data Loaders** on the main"
 " menu) don't just fetch a publication's title, journal, and author list "
@@ -185,32 +235,32 @@ msgid ""
 "prefix is removed automatically, and a DOI that is already in the system "
 "is not loaded twice."
 msgstr ""
-"Los importadores de DOI individual y masivo (en **Data Loaders** del menú "
-"principal) no se limitan a obtener el título, la revista y la lista de "
+"Los importadores de DOI individual y masivo (en **Data Loaders** del menú"
+" principal) no se limitan a obtener el título, la revista y la lista de "
 "autores de una publicación de DataCite, Crossref u OpenAIRE — según qué "
-"agencia registrara el DOI — sino que también intentan averiguar cuáles de "
-"esos autores son miembros del CBGP y enlazan a los que coinciden. Un DOI "
-"puede escribirse tal cual (`10.1000/xyz`) o pegarse como enlace de "
+"agencia registrara el DOI — sino que también intentan averiguar cuáles de"
+" esos autores son miembros del CBGP y enlazan a los que coinciden. Un DOI"
+" puede escribirse tal cual (`10.1000/xyz`) o pegarse como enlace de "
 "resolución (`https://doi.org/10.1000/xyz`); el prefijo del enlace se "
 "elimina automáticamente, y un DOI que ya está en el sistema no se carga "
 "dos veces."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:68
-#: 720b6e1d706947c3a549f3a6083ff1ee
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:87
+#: 0f7fc11c3f394d13889d23e611874093
 msgid "An author is matched to a member in one of two ways, tried in this order:"
 msgstr ""
-"Un autor se vincula a un miembro de una de estas dos maneras, probadas en "
-"este orden:"
+"Un autor se vincula a un miembro de una de estas dos maneras, probadas en"
+" este orden:"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:70
-#: 2fb1aade51ef46f9a42aa2be326c9f04
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:89
+#: c1e11ad37236461b8d23506bf89ba0da
 msgid "**By ORCID** — an exact match against the ORCID on a member record."
 msgstr ""
 "**Por ORCID** — una coincidencia exacta con el ORCID de un registro de "
 "miembro."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:71
-#: 7fb3087cd366466ba2c7722a0f6205fa
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:90
+#: 61ada172818545edb2e5cbf171894b1a
 msgid ""
 "**By name**, when there is no ORCID match — the first word of the given "
 "name must be the same, and at least one word of the surname must be the "
@@ -219,27 +269,27 @@ msgid ""
 "matches \"María del Carmen García López\")."
 msgstr ""
 "**Por nombre**, cuando no hay coincidencia de ORCID — la primera palabra "
-"del nombre de pila debe ser la misma, y al menos una palabra del apellido "
-"debe ser la misma, sin tener en cuenta acentos ni mayúsculas (de modo que "
-"«Garcia» en un artículo coincide con «García» en el registro del miembro, "
-"y un «María García» truncado coincide con «María del Carmen García "
-"López»)."
+"del nombre de pila debe ser la misma, y al menos una palabra del apellido"
+" debe ser la misma, sin tener en cuenta acentos ni mayúsculas (de modo "
+"que «Garcia» en un artículo coincide con «García» en el registro del "
+"miembro, y un «María García» truncado coincide con «María del Carmen "
+"García López»)."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:77
-#: 9f21f8abd27d4db99e3b34cb22c1852c
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:96
+#: f5a21ca4a3814b3ba1c7f1b3e7633e45
 msgid ""
 "Only a member who **has an ORCID recorded** can be linked this way, "
 "because the \"CBGP Author(s)\" field on a publication stores the member's"
 " ORCID (unlike the person fields on projects, which store the "
 "DNI/NIE/PAS)."
 msgstr ""
-"Solo se puede enlazar así a un miembro que **tenga un ORCID registrado**, "
-"porque el campo «CBGP Author(s)» de una publicación guarda el ORCID del "
+"Solo se puede enlazar así a un miembro que **tenga un ORCID registrado**,"
+" porque el campo «CBGP Author(s)» de una publicación guarda el ORCID del "
 "miembro (a diferencia de los campos de persona de los proyectos, que "
 "guardan el DNI/NIE/PAS)."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:82
-#: 23f9a61a7e384e96aae7712e9b6800d2
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:101
+#: 271f8d51e27b47a1972aaa78d2078bf9
 msgid ""
 "**This matching can only find member records that already exist.** If "
 "members haven't been loaded into the system yet — or a particular "
@@ -258,8 +308,8 @@ msgstr ""
 "ni aviso cuando esto ocurre; el campo «CBGP Author(s)» simplemente queda "
 "vacío."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:90
-#: 644662006a5a431c9a40056c02082082
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:109
+#: c83fee14b7394b71a93e7206b0683f49
 msgid ""
 "**Practical consequence:** load the members *before* relying on the DOI "
 "importer's automatic author linking. Importing publications first and "
@@ -268,14 +318,14 @@ msgid ""
 " and retry once the members exist."
 msgstr ""
 "**Consecuencia práctica:** cargue los miembros *antes* de confiar en la "
-"vinculación automática de autores del importador de DOI. Importar primero "
-"las publicaciones y después los miembros implica que cada publicación "
+"vinculación automática de autores del importador de DOI. Importar primero"
+" las publicaciones y después los miembros implica que cada publicación "
 "cargada en ese intervalo necesitará que se añadan sus enlaces de autores "
-"a mano después — el importador no vuelve atrás ni lo reintenta cuando los "
-"miembros ya existen."
+"a mano después — el importador no vuelve atrás ni lo reintenta cuando los"
+" miembros ya existen."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:96
-#: 98f6e7fe39d34e5c9dc0460edd62149f
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:115
+#: 624eccca756741dc831a007904767e2e
 msgid ""
 "If member data won't be loaded for a while, or a specific author is never"
 " going to have a member record (an external co-author, for example), the "
@@ -287,13 +337,13 @@ msgstr ""
 "Si los datos de los miembros no van a cargarse durante un tiempo, o un "
 "autor concreto nunca va a tener un registro de miembro (un coautor "
 "externo, por ejemplo), la referencia cruzada «CBGP Author(s)» de una "
-"publicación siempre puede añadirse o corregirse a mano después, igual que "
-"se edita cualquier otro campo de referencia cruzada (véase [Entrada de "
+"publicación siempre puede añadirse o corregirse a mano después, igual que"
+" se edita cualquier otro campo de referencia cruzada (véase [Entrada de "
 "datos](data_entry.md)) — la vinculación del importador es una comodidad, "
 "no la única forma de establecer este campo."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:103
-#: fe9c7696866b44b49ce7338a4c64c94f
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/cross_references.md:122
+#: 8fa4a49b3d9b45d4b6b6cd851a835e99
 msgid ""
 "**The name rule is looser than an exact full-name match, deliberately.** "
 "Journals and DOI agencies routinely shorten names, and most staff have "
@@ -313,8 +363,8 @@ msgstr ""
 "con los registros reales del instituto. El precio es que dos miembros "
 "*distintos* que compartan el nombre de pila y una palabra del apellido "
 "podrían confundirse entre sí; una coincidencia de ORCID, cuando la hay, "
-"es siempre inequívoca. Compruebe los autores enlazados de una publicación "
-"cuando importe, y corríjalos a mano si es necesario."
+"es siempre inequívoca. Compruebe los autores enlazados de una publicación"
+" cuando importe, y corríjalos a mano si es necesario."
 
 #~ msgid "The DOI importer's automatic personnel matching"
 #~ msgstr ""

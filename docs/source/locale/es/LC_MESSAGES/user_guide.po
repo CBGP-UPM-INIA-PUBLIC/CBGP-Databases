@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CBGP-Databases 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-06 18:01+0200\n"
+"POT-Creation-Date: 2026-10-07 14:14+0200\n"
 "PO-Revision-Date: 2026-07-09 17:15+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es\n"
@@ -20,12 +20,12 @@ msgstr ""
 "Generated-By: Babel 2.17.0\n"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:1
-#: a27f5848f6fe475ba12e9ad01eb093ff
+#: 2e18cc8283d94835b27bb593addf8243
 msgid "User Guide"
 msgstr "Guía del usuario"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:3
-#: 3f131fd3ac0a48e8ac8dda7f5b9999a4
+#: fd3a7dce33e34dc081eb7bb5f8560286
 msgid ""
 "This page is for the **User** side of the application — day-to-day "
 "contributors submitting information, as opposed to the **Admin** side "
@@ -43,12 +43,12 @@ msgstr ""
 "configura las cuentas y asigna a cada una el rol `admin` o `user`."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:10
-#: 109efb2e9276490694f18b153eaea31e
+#: 64e2b1e57c384f5aaae5d5484f714fd5
 msgid "Logging in"
 msgstr "Iniciar sesión"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:12
-#: 8d857ca2410d41a9a9a04f66f62adf11
+#: 76befd2b5f414073b4007d5c1285c2a8
 msgid ""
 "The login screen is the same one everyone uses — there's no separate "
 "\"User\" login page. After entering a username and password, a User "
@@ -65,7 +65,7 @@ msgstr ""
 "envíos públicos."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:19
-#: 919a5af7bb734222b5715c503fa4ab2c
+#: 5371eb3e5ef14449a511c386e442c9cf
 msgid ""
 "Screenshot needed: `docs/source/_static/screenshots/user-dashboard.png` —"
 " the User dashboard after logging in, showing the record types available "
@@ -76,7 +76,7 @@ msgstr ""
 "mostrando los tipos de registro disponibles para enviar."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:24
-#: 822da97d9e8b45668c8c9107f7fca439
+#: 93b12d1447ed4273a1ba408672156778
 msgid ""
 "![User dashboard](_static/screenshots/user-dashboard.png) *The User "
 "dashboard.*"
@@ -85,17 +85,17 @@ msgstr ""
 "*El panel de control del Usuario.*"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:24
-#: d97369ed45ec461883c8fb086e8fca83
+#: 8259ddb42ef041f3a0b8841b5b9c7df5
 msgid "User dashboard"
 msgstr "Panel de control del Usuario"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:27
-#: 9865518092ab442a972fcb9680a61cfe
+#: 0bf6a98d10074dd186c88060353cf341
 msgid "Submitting a form"
 msgstr "Enviar un formulario"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:29
-#: af18d30acf2c4e2ea2270d8d13c5db92
+#: e925b67d4e7e4736907e31e1c02e0d2c
 msgid ""
 "Choosing a record type opens a form — built the same ontology-driven way "
 "described in [Philosophy & Design](philosophy.md), but offering only a "
@@ -118,7 +118,7 @@ msgstr ""
 "pierde."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:39
-#: 26adf455473d4f85997e003c0d3f0cf6
+#: fd80744141554e09b4cbb115162dcc1d
 msgid ""
 "Screenshot needed: `docs/source/_static/screenshots/user-submission-"
 "form.png` — a User submission form, showing its (smaller) set of fields."
@@ -128,7 +128,7 @@ msgstr ""
 "conjunto (más reducido) de campos."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:44
-#: 16f36d9d9b654973b7ef37e7a392bd21
+#: d28a8c7a90a743789de207e2af2707fd
 msgid ""
 "![User submission form](_static/screenshots/user-submission-form.png) *A "
 "User-facing submission form.*"
@@ -137,17 +137,17 @@ msgstr ""
 "form.png) *Un formulario de envío orientado al Usuario.*"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:44
-#: 8b3bbfb775e943d4a60e8cb12576b832
+#: d51b1a04cfde47379dabf7cb3a820be9
 msgid "User submission form"
 msgstr "Formulario de envío de Usuario"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:48
-#: a5ea6196319f4f7dac049331d97ac273
+#: 3a792fafdef64ea59d90a0748dd502c2
 msgid "Announcing a project application"
 msgstr "Avisar de una solicitud de proyecto"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:50
-#: 1dd762a350bb4eaa83b739a322e475e0
+#: b2eb3a6929b84a9fb8e79965d2d63567
 msgid ""
 "The main thing the User side is used for is telling the administrators "
 "that you have **applied for a project**. The project form asks for the "
@@ -158,28 +158,30 @@ msgstr ""
 "proyecto pide lo básico:"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:53
-#: 204e2776b189419784f1274d2d49c976
+#: 96cb8713c5d041779ceb5e45788769a0
 msgid "**Title** of the project."
 msgstr "**Título** del proyecto."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:54
-#: 273be9b801b5437ab3dfd276f977186f
+#: cefe2e4f3c4a4a41adf80f7fc1fe9c76
 msgid ""
 "**PI** — the principal investigator. This is a lookup, not free text: "
-"start typing a surname and choose the person from the list that appears. "
-"It is **required**, and it is how the administrators know who is "
+"start typing a surname and choose the person from the list that appears "
+"(accents don't matter, and the list shows each person as surname and "
+"name). It is **required**, and it is how the administrators know who is "
 "responsible for what you are announcing. More than one can be given, and "
 "a **co-PI** can be added the same way."
 msgstr ""
 "**IP**: el investigador principal. Es una búsqueda, no texto libre: "
 "empiece a escribir un apellido y elija a la persona de la lista que "
-"aparece. Es **obligatorio**, y es la forma en que los administradores "
-"saben quién es el responsable de lo que se está comunicando. Se puede "
-"indicar a más de una persona, y de la misma manera se puede añadir un "
-"**co-IP**."
+"aparece (los acentos no importan, y la lista muestra a cada persona como "
+"apellido y nombre). Es **obligatorio**, y es la forma en que los "
+"administradores saben quién es el responsable de lo que se está "
+"comunicando. Se puede indicar a más de una persona, y de la misma manera "
+"se puede añadir un **co-IP**."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:59
-#: ec8ef353a150410086b5d0570af4c5f3
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:60
+#: 2b13959c66ac4bef90c0d36c82e45870
 msgid ""
 "**Call for proposal title**, and the **Application URL** — the full web "
 "address of the call or application page, starting `http://` or `https://`"
@@ -190,8 +192,8 @@ msgstr ""
 "por `http://` o `https://` (obligatoria; no se acepta un identificador "
 "solo)."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:62
-#: db8ca5cf0c1642f0b81f14fd21bdfdcb
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:63
+#: 454bc922e22b445b97f7935d64648f4f
 msgid ""
 "**Funding status** (usually *Proposed* at this stage) and the funding "
 "amounts, if you know them."
@@ -199,8 +201,8 @@ msgstr ""
 "**Estado de financiación** (normalmente *Propuesto* en esta fase) y los "
 "importes de la financiación, si se conocen."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:64
-#: 14b1832e2b8643f9be97acb2a75b5542
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:65
+#: edf499c930514d1eb2d068e8e3ada5b8
 msgid ""
 "**Comments** — a free-text box for anything the administrators should "
 "know that the other fields don't cover, for example that the project is "
@@ -208,12 +210,12 @@ msgid ""
 "they receive."
 msgstr ""
 "**Comentarios**: un cuadro de texto libre para cualquier cosa que los "
-"administradores deban saber y que no cubran los demás campos, por ejemplo "
-"que el proyecto financia su propio contrato, o una fecha límite. Se "
+"administradores deban saber y que no cubran los demás campos, por ejemplo"
+" que el proyecto financia su propio contrato, o una fecha límite. Se "
 "incluye en el correo que reciben."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:69
-#: dc684aa27f0f445caba128e26a34c851
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:70
+#: 6744fed05cfa4c3f95b2bc5cfc700f2c
 msgid ""
 "You are *not* asked what **kind** of project it is, and there are no "
 "dates to fill in: both are decided later by the administrators, who go "
@@ -228,8 +230,8 @@ msgstr ""
 "Las fechas solo pasan a ser obligatorias cuando el proyecto ha sido "
 "concedido."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:75
-#: a4406355d858431bbfc9674dad1b17eb
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:76
+#: 78810c5f5ae74226b8628fc49ac27bf7
 msgid ""
 "A note on the login: the User account is a shared one set up by the "
 "administrator, not a personal login (see "
@@ -245,18 +247,18 @@ msgstr ""
 "envío indica quién es el responsable; si usted es la persona a quien "
 "afecta pero no es el IP, indíquelo en los Comentarios."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:81
-#: 472bc465230a44d4af93071da80dd47c
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:82
+#: 6a585e777ddc42b1ac808b99754a1e9f
 msgid "What happens after submitting"
 msgstr "Qué ocurre después de enviar"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:83
-#: c022ec718b8147cc8cb4243108f8d290
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:84
+#: adc7b13bc1f84e489cf2d36026d8bb98
 msgid "Once a submission passes validation, two things happen right away:"
 msgstr "En cuanto un envío pasa la validación, ocurren dos cosas de inmediato:"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:85
-#: b23efb8217d14c389d57c8b0592c2962
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:86
+#: d8a9e5a253eb4671acfdd7d4f3209cd1
 msgid ""
 "**A new record is created immediately** — a User's submission isn't held "
 "in some separate queue waiting for an administrator to approve it before "
@@ -268,8 +270,8 @@ msgstr ""
 "administrador lo apruebe antes de existir; se escribe en la base de datos"
 " como un registro real en cuanto se envía."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:89
-#: 2d35179e03724f808462dc67068ce7fe
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:90
+#: fdc0511911ae41cab6b45111fae0b268
 msgid ""
 "**An administrator is emailed automatically**, so someone reviews the new"
 " submission — the email lists exactly what was submitted and links "
@@ -284,8 +286,8 @@ msgstr ""
 "administrador» de [Configuración](configuration.md) para saber cómo se "
 "configura esa dirección)."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:95
-#: 0ce65afa30e2479e91358fca8e02e905
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:96
+#: 2612166c87bf4138991f70ddd37c6b2b
 msgid ""
 "The screen that appears after a successful submission confirms this and "
 "says it's safe to close the window — there's nothing further to do."
@@ -293,8 +295,8 @@ msgstr ""
 "La pantalla que aparece tras un envío correcto lo confirma e indica que "
 "ya se puede cerrar la ventana con seguridad — no hay nada más que hacer."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:99
-#: 60bddae71b1b44e2bfb289bad8aafb1b
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:100
+#: 1e13f3b958014e2d83805a6854220e50
 msgid ""
 "Screenshot needed: `docs/source/_static/screenshots/user-thank-you.png` —"
 " the confirmation screen shown after a successful submission."
@@ -303,8 +305,8 @@ msgstr ""
 "thank-you.png` — la pantalla de confirmación mostrada tras un envío "
 "correcto."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:103
-#: 71602c603dab4389892bc203d34f7102
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:104
+#: a9ba4b4dcfdf41fa903da54c94bbdf14
 msgid ""
 "![Thank-you screen](_static/screenshots/user-thank-you.png) *The "
 "confirmation screen after a successful submission.*"
@@ -312,13 +314,13 @@ msgstr ""
 "![Pantalla de agradecimiento](_static/screenshots/user-thank-you.png) *La"
 " pantalla de confirmación tras un envío correcto.*"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:103
-#: 1343223304a945598eed5a9b9070f7fe
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:104
+#: 4ff89326a2fa417cada1e2a15406b53f
 msgid "Thank-you screen"
 msgstr "Pantalla de agradecimiento"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:106
-#: 0eda20a787d243979c084ae8f2b1fb99
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/user_guide.md:107
+#: 7a7872677bb84d35af4bebf90cc8a54d
 msgid ""
 "In short: submitting a form through the User side bootstraps a new record"
 " and lets an administrator know there's something new to look at — it's "

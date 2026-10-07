@@ -1,6 +1,7 @@
 # Secrets / local environment config - never commit real credentials.
 .env
 .env.*
+!.env.example
 utilities/.env
 
 # Personal Claude Code permission overrides - not shared with the team.

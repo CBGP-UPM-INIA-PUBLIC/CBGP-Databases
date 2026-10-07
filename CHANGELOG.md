@@ -11,12 +11,28 @@ forward, every release ships with a matching `VERSION` file bump and an entry
 here.
 
 ## [Unreleased]
-Funding Commitments (who is paid by which project, and for what share), the
-Application URL field, and a run of fixes found by trying them in the browser.
-Ontology changes ship in CBGP-Ontology `ba54d03`; this release needs that
-ontology (several fields are renamed).
+
+## [0.18.0] - 2026-10-07
+Search across every kind of record that shares a storage name ("what projects
+are running now?"), Show all records, curating a member's project submission,
+dates stored as real dates, Funding Commitments, a rewritten and verified
+Backup & Migration guide with a portable export, and a safer Docker image.
+
+**Needs CBGP-Ontology `4a537e5` or later** (live at w3id.org/CBGP-App): this
+release removes `project_type` and the project-level `project_dni_nie_pas`,
+replaces the Personnel "Responsible PI" with the one shared PI field, makes the
+project dates required only once Awarded, and adds interface texts.
+**Existing data:** records written before this release hold their dates as
+text; convert them once with `utilities/retype_dates.rb` (see Backup &
+Migration). **Images before this one** (0.17.0 and earlier) were built without a
+`.dockerignore` and contain the build machine's `.env` and local database
+files; do not use or publish them, and change any password that was in that
+`.env`.
 
 ### Added
+- **`.env.example`**, the settings template the documentation always told
+  people to copy but which did not exist (and which `.gitignore` would have
+  hidden); a spec keeps it in step with the settings the code reads.
 - **Portable N-Quads export and import for Virtuoso**
   (`utilities/virtuoso_nquads.sh`, with OpenLink's own dump procedure in
   `utilities/virtuoso_dump_nquads.sql`): writes a whole store as gzipped
@@ -234,6 +250,11 @@ ontology (several fields are renamed).
   printed them raw).
 
 ### Fixed
+- **The Docker image no longer contains secrets or local data.** There was no
+  `.dockerignore`, so `COPY . /server` put the real `.env`, the whole local
+  Virtuoso database (`virtuoso-data/`), the built docs and `.git` into every
+  image (about 233 MB of application directory, now 1.3 MB). Added a
+  `.dockerignore`, with a spec that keeps the secrets out.
 - **A record is always edited under the form that wrote it.** Opening
   `/cbgp/dataset/<dbname>/<id>` (e.g. `project`, which several forms share) showed
   the fields of every form on that dbname, and saving it would have stamped the

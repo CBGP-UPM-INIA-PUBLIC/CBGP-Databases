@@ -1,0 +1,28 @@
+# What must NOT go into the Docker image (Dockerfile: COPY . /server).
+# Without this file the image would contain the real .env (passwords), the
+# whole local Virtuoso database (virtuoso-data/ - real personal data), and
+# hundreds of MB of built docs and git history - and it gets pushed to a
+# registry.
+
+# Secrets and local configuration
+.env
+.env.*
+utilities/.env
+.claude
+
+# Local database files (bind-mounted into the Virtuoso containers, never code)
+virtuoso-data
+
+# Not needed to run the application
+.git
+.gitignore
+.sass-cache
+docs
+spec
+data
+launch.json
+generate_html.txt
+HANDOFF*
+docker-compose.yml
+Dockerfile
+.dockerignore

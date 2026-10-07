@@ -562,6 +562,15 @@ module CBGP
 
     def coerce_value(value, klass, cardinality)
       klass = klass.to_s.downcase
+      if value.is_a?(Array) && cardinality.to_s.downcase != 'multiple'
+        # A single-valued field handed a list (a page opened while the field was still
+        # repeatable, saved after the ontology made it Single). Never store the text of
+        # the list - take the one value in it, or refuse if there are several.
+        kept = value.map { |v| v.to_s.strip }.reject(&:empty?)
+        raise ArgumentError, 'only one value is allowed here' if kept.size > 1
+
+        value = kept.first.to_s
+      end
       return '' if value.to_s.strip.empty?
 
       if cardinality.downcase == 'multiple' && value.is_a?(Array)

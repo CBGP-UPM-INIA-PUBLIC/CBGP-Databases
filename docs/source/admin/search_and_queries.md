@@ -128,11 +128,27 @@ comparisons reliable. A date that is not a real calendar date — `30
 February`, say — is refused when a record is saved rather than stored as
 something that looks like a date but would compare wrongly.
 
-**`today`.** In a saved link or bookmark — not in the date picker — a date
-may be written as the word `today`, meaning the day the search is *run*
-rather than the day the link was made. That is what lets a bookmarked
-"running now" search stay correct next week. See [What is running
-now?](#what-is-running-now) below for the recipe it was made for.
+**Today.** Beside each of the two boxes is a tick box, **Today (changes
+daily)**. Ticking it greys out the date and searches with *the day the
+search is run* instead. It is a **relative** statement, not a date: the same
+search run tomorrow uses tomorrow's date, and so finds different records.
+That is exactly what you want for a question such as "what is running
+now?", and exactly what you must remember if you bookmark the result page or
+save the link. The bookmark is a saved *question*, not a saved *answer*.
+
+Whenever a search used Today, the results page says so — "In this search,
+'today' means 2026-10-07. It is not a fixed date: the same search run
+tomorrow will use tomorrow's date." — so a relative search is never mistaken
+for one on fixed dates. To keep a result that does not move, enter the
+actual date instead of ticking the box.
+
+In a link, the same thing is written as the word `today` in place of the
+date (this is how the search tools that work from links ask for it). *Today* is the date on the server, which can differ
+from the date where you are by a few hours around midnight. The tick box
+exists only on the search screen: the data-entry forms have a **Today**
+button that fills in the date (see [Data
+Entry](data_entry.md#the-form-itself)), and what is saved there is always a real
+date, never the word.
 
 (excluding-matches)=
 ## Excluding matches, and "or no value"
@@ -162,11 +178,11 @@ Each date field on the search screen has two boxes, labelled **Start
 Date** and **End Date** (the beginning and end of the range being asked
 about — not to be confused with the project's own start and end dates):
 
-1. In the project's **Start date** field, fill in only the second box
-   (*End Date*) with today's date: *started on or before today*.
-2. In the project's **End date** field, fill in only the first box (*Start
-   Date*) with today's date: *ends on or after today*. Then tick **or no
-   value** beside that field: *or has no end date at all*.
+1. In the project's **Start date** field, tick **Today** under the second
+   box (*End Date*): *started on or before today*.
+2. In the project's **End date** field, tick **Today** under the first box
+   (*Start Date*): *ends on or after today*. Then tick **or no value**
+   beside that field: *or has no end date at all*.
 3. Optionally, set **Funding status** to narrow it further — `Awarded` for
    what is actually funded, say.
 
@@ -197,6 +213,25 @@ they do when adding or editing a record — see
 the lookup works.
 
 (reading-the-results)=
+## Bookmarking and sharing a search
+
+After you search, the address of the results page *is* the search: only the
+boxes you filled in appear in it, for example
+`/cbgp/query-dataset/project?project_start_date[end]=today&project_end_date[start]=today&project_end_date__orempty=1`.
+Bookmark it, paste it into an email or a document, and anyone with a login who
+opens it runs the same search. Refreshing the page re-runs it too.
+
+A search that used **Today** (see [Date fields](#date-fields)) is saved as a
+*question*, not an answer: opened tomorrow, it is asked again with tomorrow's
+date. That makes a bookmarked "what is running now?" always current, and it is
+the way to re-run a complicated query at a later date without filling it in
+again. If you want the answer as it stood on one day, use that day's date
+instead of **Today**.
+
+Because the address contains what was typed, a personal identifier searched
+for (a DNI, say) ends up in bookmarks, browser history and the web server's
+logs. Share such links as carefully as the data itself.
+
 ## Reading the results
 
 Results appear as a list below the search form. Opening one from the

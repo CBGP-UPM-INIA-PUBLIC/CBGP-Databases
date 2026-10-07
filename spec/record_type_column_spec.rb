@@ -46,7 +46,7 @@ RSpec.describe 'the Record type column on search results', type: :request do
   end
 
   def table_rows
-    last_response.body.scan(%r{<tr>\s*<td>.*?</tr>}m)
+    last_response.body.scan(%r{<tr>\s*<td class="dataset-id-cell">.*?</tr>}m)
   end
 
   def tsv
@@ -82,12 +82,12 @@ RSpec.describe 'the Record type column on search results', type: :request do
   it 'is there for a POST search too, and for any kind of record' do
     allow_any_instance_of(CBGP::DatabasesApp).to receive(:batch_retrieve_record_forms)
       .and_return('graph://p1' => 'member')
-    post '/cbgp/query-dataset/project', 'project_title' => 'x'
+    get '/cbgp/query-dataset/project', 'project_title' => 'x'
     expect(table_rows[0]).to include('href="/cbgp/query-dataset/member"', '>' + record_type_label('member') + '</a>')
   end
 
   it 'is there when the last search is replayed' do
-    post '/cbgp/query-dataset/project', 'project_title' => 'x'
+    get '/cbgp/query-dataset/project', 'project_title' => 'x'
     get '/cbgp/last-search/project'
     expect(last_response.body).to include('<th>Record type</th>', 'href="/cbgp/query-dataset/personnel_project"')
   end

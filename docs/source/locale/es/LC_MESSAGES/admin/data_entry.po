@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CBGP-Databases 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-06 18:22+0200\n"
+"POT-Creation-Date: 2026-10-07 18:19+0200\n"
 "PO-Revision-Date: 2026-07-09 16:51+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es\n"
@@ -20,12 +20,12 @@ msgstr ""
 "Generated-By: Babel 2.17.0\n"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:1
-#: 7963d3138daf4c90bc0a0dd4edee7930
+#: cf59c4879f1a4065aa0ccf84bc88190f
 msgid "Data Entry"
 msgstr "Entrada de datos"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:3
-#: 9b705cfa2314462989cf788330b66101
+#: 11d24f75c06a45ddad95fd4fd25d06ce
 msgid ""
 "This page covers adding and editing records as an administrator — "
 "Projects, Members, and Publications all work the same way, since (per "
@@ -41,12 +41,12 @@ msgstr ""
 "determinado."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:9
-#: 3dc6f31d13e44b5a96e1b79030c1a954
+#: dfa91be9e7204e2381062b77b94f363c
 msgid "Logging in and finding the dashboard"
 msgstr "Iniciar sesión y encontrar el panel de control"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:11
-#: 4b4fd3e28ea7468baffa5f97cdf03182
+#: b22c9b3776034cb999f7fab6ba3ad612
 msgid ""
 "After logging in with an admin account (see "
 "[Configuration](../configuration.md) for how accounts are set up), the "
@@ -66,7 +66,7 @@ msgstr ""
 " o eliminar un registro concreto."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:20
-#: 93d550ab2da448dbacde100943729a37
+#: ae4c507e5da946b891501ef0569bb140
 msgid ""
 "Screenshot needed: `docs/source/_static/screenshots/admin-dashboard.png` "
 "— the admin dashboard showing the list of record types."
@@ -76,7 +76,7 @@ msgstr ""
 " de tipos de registro."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:24
-#: 3dc1b41ede1b4c0c8176f2783557cc4b
+#: f348d1a0989a468da59eb4825cfb171c
 msgid ""
 "![Admin dashboard](../_static/screenshots/admin-dashboard.png) *The admin"
 " dashboard.*"
@@ -85,17 +85,17 @@ msgstr ""
 "dashboard.png) *El panel de control del administrador.*"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:24
-#: 8ed9280dbcc84526bb46f70b7e55049d
+#: 7d594099904d46b4967d7855f458fb50
 msgid "Admin dashboard"
 msgstr "Panel de control del administrador"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:27
-#: 7d43cbd09c554a4c8e1221d30bef17e0
+#: 89d0c71c4a0049e3bfbeb542e6e7368d
 msgid "The form itself"
 msgstr "El formulario en sí"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:29
-#: 1e6826840b54424c9662908269214d13
+#: c7e0c83133934ed8b6e2f1ba8fb6c608
 msgid ""
 "Every field on an add/edit form, in the order it appears, its label, and "
 "what kind of input it accepts, comes straight from the ontology at the "
@@ -104,16 +104,16 @@ msgid ""
 "instance is configured to manage, including ones that don't exist yet at "
 "the time this is being read. A few field types show up repeatedly:"
 msgstr ""
-"Cada campo de un formulario de añadir/editar, el orden en que aparece, su "
-"etiqueta y el tipo de entrada que acepta, proviene directamente de la "
+"Cada campo de un formulario de añadir/editar, el orden en que aparece, su"
+" etiqueta y el tipo de entrada que acepta, proviene directamente de la "
 "ontología en el momento en que se carga la página — nada de esta página "
-"es específico de Proyectos, Miembros o Publicaciones; se aplica por igual "
-"a cualquier tipo de registro que esta instancia esté configurada para "
+"es específico de Proyectos, Miembros o Publicaciones; se aplica por igual"
+" a cualquier tipo de registro que esta instancia esté configurada para "
 "gestionar, incluidos los que aún no existen en el momento de leer esto. "
 "Algunos tipos de campo aparecen repetidamente:"
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:36
-#: e286440ca8da40a28e87f24d27f6942b
+#: 80f240e31823405aa46bde04fb53c100
 msgid ""
 "**Plain text** — a single line or a larger text box, for anything without"
 " a more specific type below."
@@ -123,12 +123,22 @@ msgstr ""
 "siguientes."
 
 #: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:38
-#: d38a7a34a3a24468b54194b7338cf8e1
-msgid "**Date** — a date picker."
-msgstr "**Fecha** — un selector de fechas."
+#: 9d3a670ccd7b4c52a1270194c08f1c0b
+msgid ""
+"**Date** — a date picker, with a **Today** button beside it that fills in"
+" today's date. What is saved is that date, never the word \"today\": a "
+"record saved on 7 October holds 2026-10-07 for good, and does not change "
+"tomorrow. (Searching is different: see [Search & "
+"Queries](search_and_queries.md#date-fields).)"
+msgstr ""
+"**Fecha**: un selector de fecha, con un botón **Hoy** al lado que rellena"
+" la fecha de hoy. Lo que se guarda es esa fecha, nunca la palabra «hoy»: "
+"un registro guardado el 7 de octubre conserva para siempre 2026-10-07 y "
+"no cambia mañana. (La búsqueda es distinta: véase [Búsqueda y "
+"consultas](search_and_queries.md#date-fields).)"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:39
-#: a61397a90051497bbc2a7aea13dc1784
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:43
+#: 6f6b0f41853a455f929ebbbf69379fa1
 msgid ""
 "**Currency** — a monetary amount, typed and displayed in whichever number"
 " format matches the current language (e.g. `1,234.56` in English, "
@@ -143,8 +153,8 @@ msgstr ""
 "también afecta a la búsqueda, y [Exportaciones](exports.md) para ver cómo"
 " aparece en una hoja de cálculo descargada."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:45
-#: 37eec669062b4912ac53cba82a5ee623
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:49
+#: fa4f0b165fe84fc2a2f195d6192419f4
 msgid ""
 "**Dropdown / radio buttons** — a fixed list of choices defined in the "
 "ontology, shown in whichever language is currently selected. A "
@@ -158,8 +168,8 @@ msgstr ""
 " en categorías se usa una variante jerárquica (un árbol desplegable en "
 "lugar de una lista plana)."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:50
-#: 1ec536b5633f4d52aadc8b90b59b7bf8
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:54
+#: d699b2f1a0844d42952c50ab02d639c8
 msgid ""
 "**Cross-reference lookup** — search another record type by a human-"
 "readable label (e.g. a person's surname) and store a different, more "
@@ -172,8 +182,8 @@ msgstr ""
 "ejemplo, su ORCID). Esto tiene su propia página: [Referencias "
 "cruzadas](cross_references.md)."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:55
-#: 45155cfed3c04f858ac4be276994e6d8
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:59
+#: edf42944354f4eceaf1bd61e663688ca
 msgid ""
 "Some fields accept more than one value (for example, a publication can "
 "have several authors) — those show up as a repeatable group of inputs "
@@ -183,8 +193,8 @@ msgstr ""
 "puede tener varios autores) — estos aparecen como un grupo repetible de "
 "entradas en lugar de una sola, con la opción añadir otra entrada."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:60
-#: 03d350480f9643b390a2c8df23bca387
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:64
+#: cbcc92837da04819b50ffb0e8b5c46cb
 msgid ""
 "Screenshot needed: `docs/source/_static/screenshots/admin-add-form.png` —"
 " an add/edit form showing a mix of field types (text, dropdown, currency,"
@@ -195,8 +205,8 @@ msgstr ""
 "tipos de campo (texto, lista desplegable, moneda, una búsqueda por "
 "referencia cruzada)."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:65
-#: da8cb2d947d64c39a60f15999d26b9a7
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:69
+#: fa022885ad93469bb96e3027eb97af34
 msgid ""
 "![Add/edit form](../_static/screenshots/admin-add-form.png) *An add/edit "
 "form, showing several different field types.*"
@@ -205,18 +215,18 @@ msgstr ""
 " *Un formulario de añadir/editar, mostrando varios tipos de campo "
 "distintos.*"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:65
-#: d151ab3e239444cb8d5991760f0898de
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:69
+#: 6761064fc640433c905d326aec76e793
 msgid "Add/edit form"
 msgstr "Formulario de añadir/editar"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:68
-#: 3d519f9f856e4a58b6d35bb971e4b03e
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:72
+#: 5746a83c6f1f47629e42933079df18ca
 msgid "Required fields and validation"
 msgstr "Campos obligatorios y validación"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:70
-#: 47db63e25826433a81715da419cb4fae
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:74
+#: e33899f6a33f4971a746ac6716d633ab
 msgid ""
 "Some fields must be filled in before a record can be saved (the ontology "
 "marks which ones); trying to save without them, or with a value that "
@@ -235,8 +245,8 @@ msgstr ""
 "corregirlo y volver a enviarlo. No se escribe nada en la base de datos "
 "hasta que todos los campos son válidos."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:78
-#: bab30601ce8443d897a93bbd358cd2a1
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:82
+#: 8373b5287aa54f88a2aeb1267137fbbe
 msgid ""
 "Since several record types can share the same underlying field (Research "
 "Project and Personnel Project both use a \"Title\" field, for example), a"
@@ -255,13 +265,13 @@ msgstr ""
 "asterisco rojo junto a su etiqueta, de modo que esto sea visible antes de"
 " enviar el formulario, no solo después."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:87
-#: 670d927982d64e198f9c7659da254e89
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:91
+#: f53fbfcb1ff44bfab62543626854f29a
 msgid "Required only once something else is true"
 msgstr "Obligatorio solo cuando se cumple otra condición"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:89
-#: acb4cb4d2ff0461da1e2a6c9b1ebd931
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:93
+#: e9e6f8a28688441f994827a43655242d
 msgid ""
 "A few fields are not always required, but become required when *another* "
 "field has a particular answer. The start and end dates of a project are "
@@ -280,8 +290,8 @@ msgstr ""
 " al campo indica cuándo lo son: «Obligatorio cuando Estado de "
 "financiación es Concedido»."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:96
-#: 23b30b39ad3f47ae86ab024fc626b4cf
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:100
+#: 4c6b761ce2474ac6be8449547236c048
 msgid ""
 "Saving an Awarded project with a date missing is refused in the usual way"
 " (see above), naming the condition: \"End date is required when Funding "
@@ -296,8 +306,8 @@ msgstr ""
 " sin fechas. Como con cualquier campo obligatorio, esto se comprueba en "
 "el servidor al guardar, no solo en la página."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:102
-#: a25cc45ed1874f25b435a812c0e9396d
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:106
+#: 97dc104fd5414ed08cb2981d47f2f7ac
 msgid ""
 "**For the ontology editor:** like the other per-form rules, this is "
 "declared on the **form**, with a small rule node that names the field, "
@@ -316,13 +326,13 @@ msgstr ""
 "que nombra una clase que no existe, y que de otro modo simplemente no se "
 "aplicaría nunca."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:110
-#: a973a0ccf2cf48959ec4438a19f1b553
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:114
+#: db6bc0418f7547359188cc56e7f39c3c
 msgid "Calculated fields"
 msgstr "Campos calculados"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:112
-#: a9835f9c004f497cbdc2fa465fac75d8
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:116
+#: 564c40a823d14e2b8e434a1c06ebc014
 msgid ""
 "A few fields aren't typed in at all — they're computed automatically from"
 " other fields on the same form, at the moment you save. These are shown "
@@ -336,9 +346,9 @@ msgid ""
 "screen. That also means there's no way to type over a calculated field's "
 "value, even by accident."
 msgstr ""
-"Algunos campos no se escriben en absoluto — se calculan automáticamente a "
-"partir de otros campos del mismo formulario, en el momento de guardar. Se "
-"muestran en gris, marcados con «(calculated automatically)», con la "
+"Algunos campos no se escriben en absoluto — se calculan automáticamente a"
+" partir de otros campos del mismo formulario, en el momento de guardar. "
+"Se muestran en gris, marcados con «(calculated automatically)», con la "
 "fórmula que los produjo mostrada debajo en texto sencillo (p. ej. "
 "`european_private_research_project_total_funding * 0.25`) para que nunca "
 "sea un misterio de dónde sale el número. Una vista previa en vivo se "
@@ -349,8 +359,8 @@ msgstr ""
 "también que no hay forma de escribir encima del valor de un campo "
 "calculado, ni siquiera por accidente."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:124
-#: 006dc0214bda4f78a703844d40c71bf4
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:128
+#: 8a3b11a73d8b4989b6802edc5387ed0f
 msgid ""
 "Screenshot needed: `docs/source/_static/screenshots/admin-calculated-"
 "field.png` — a form showing a calculated field's greyed-out box, its "
@@ -361,8 +371,8 @@ msgstr ""
 "campo calculado, el texto de su fórmula, y los campos normales (no "
 "calculados) de los que depende."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:129
-#: 37c76abb79fd454fa8f6a8c47c0d413e
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:133
+#: cea7347b596f4e9a8093f5d711f80242
 msgid ""
 "![Calculated field](../_static/screenshots/admin-calculated-field.png) *A"
 " calculated field, showing its formula and a live preview.*"
@@ -371,13 +381,13 @@ msgstr ""
 " campo calculado, mostrando su fórmula y una vista previa en tiempo "
 "real.*"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:129
-#: d271ce0d5d2b457c82ebef0ac8514433
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:133
+#: a1d90707af4248c3ac78d73b2e412afa
 msgid "Calculated field"
 msgstr "Campo calculado"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:132
-#: d3addcbc18014a5db65406f3c70e348c
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:136
+#: dd229c51a7ca48a0a63976f1e93bf1d8
 msgid ""
 "Occasionally one calculated field is itself used in another calculated "
 "field's formula (for example, an institutional overhead percentage "
@@ -394,8 +404,8 @@ msgstr ""
 "automáticamente — no es necesario rellenar los campos en un orden "
 "concreto, y el cálculo se resuelve correctamente en cualquier caso."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:139
-#: f31ea3a06a014f27a610d2cd4a3895d5
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:143
+#: 06ab5813d5ad44b1b1403c4bc7bd4a6b
 msgid ""
 "**For the ontology editor:** like required fields, a calculated field's "
 "formula is declared per **form**, not on the shared field itself — the "
@@ -428,8 +438,8 @@ msgstr ""
 " declaración por formulario. Véase `local:has-formulas` en el archivo de "
 "la ontología para conocer el mecanismo exacto."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:155
-#: 878170b47b2847a49b8f5002f34c75f4
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:159
+#: 2262e5b74cab44c8a118eca2f364c835
 msgid ""
 "Screenshot needed: `docs/source/_static/screenshots/admin-validation-"
 "error.png` — a form redisplayed after a validation error, showing the "
@@ -439,8 +449,8 @@ msgstr ""
 "validation-error.png` — un formulario mostrado de nuevo tras un error de "
 "validación, con el aviso de error."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:159
-#: 00bfc5ec417f4c7e91cc9d80ad9967ad
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:163
+#: 4fb4dcb9c6394bffa398aa3403380d1f
 msgid ""
 "![Validation error banner](../_static/screenshots/admin-validation-"
 "error.png) *A friendly validation-error banner after an invalid "
@@ -450,18 +460,18 @@ msgstr ""
 "error.png) *Un aviso de error de validación, en un lenguaje sencillo y "
 "claro, tras un envío no válido.*"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:159
-#: f08cc70f9e9d4de48c53313f8bf8a933
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:163
+#: ca8035d60e3f4c0c9987f207cfe2018c
 msgid "Validation error banner"
 msgstr "Aviso de error de validación"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:162
-#: b1a09761a3f943c0900904fa6a08fc32
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:166
+#: 4975731d83bc4bc2a581bf7714c0e5d4
 msgid "Web address (URL) fields"
 msgstr "Campos de dirección web (URL)"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:164
-#: 00a8ff206161426b8b56168c2f1def2c
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:168
+#: 0021f719e25f4ff5950433d87ad20d69
 msgid ""
 "Some fields hold a web address rather than free text — the **Application "
 "URL** on a project is the link to the call or application page itself "
@@ -484,8 +494,8 @@ msgstr ""
 "nada por usted. Pegue el enlace entero, incluido todo lo que va después "
 "del `?`."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:173
-#: 1397b511ae154d3ba35e02547a8db380
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:177
+#: 7cbd87044cd54e1ab5feab051660d6c4
 msgid ""
 "Once saved, the address shows as a clickable link in search results, and "
 "beside the field when you edit the record (**open ↗**), opening in a new "
@@ -500,13 +510,13 @@ msgstr ""
 "un enlace resulta ser erróneo, ábralo, edite después el registro e "
 "introduzca el correcto."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:180
-#: 55839289f23e4e58b34d39c0c9395d78
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:184
+#: 8ecbebc053b64661a0e7d19bb13130f9
 msgid "The project forms"
 msgstr "Los formularios de proyecto"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:182
-#: 99d1e31195b440a2b16cc4400e92f232
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:186
+#: 7f39cd1a1403468fbf8c700f682b13c1
 msgid ""
 "Projects come in four kinds, each with its own form, and a fifth, smaller"
 " form that members fill in themselves (see [User "
@@ -521,8 +531,8 @@ msgstr ""
 "en una búsqueda ([Búsqueda y consultas](search_and_queries.md#reading-"
 "the-results))."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:187
-#: ef3929d017bd4d469d31163c1577eb4b
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:191
+#: b4778ddead6b4e708dd650d3e57ad79b
 msgid ""
 "**European Commission Research Projects**, **National and Regional "
 "Research Projects** and **Private Research Projects** record a research "
@@ -535,8 +545,8 @@ msgstr ""
 "financiación. Se diferencian en los campos que dependen de quien "
 "financia, como la institución financiadora."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:191
-#: 614541fb46334da49c102234d11760ff
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:195
+#: c8c0d4e6a347473f887b542906a5d95e
 msgid ""
 "**Personnel Project** is a different thing: a grant that pays for **one "
 "person's contract** (a fellowship, for instance) rather than a research "
@@ -552,13 +562,13 @@ msgstr ""
 "ese contrato. También registra la entidad financiadora y la afiliación "
 "del beneficiario (UPM o CSIC)."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:198
-#: 3852f7519bf24b948cf6f85bf619f6e9
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:202
+#: c2e0ac1866324b9fad515033eff5f0d6
 msgid "What every project form has in common:"
 msgstr "Lo que tienen en común todos los formularios de proyecto:"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:200
-#: 654b957af3084c9e9ac20b65affaecd8
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:204
+#: 4addf4cd20b0404db5424a29c763cce9
 msgid ""
 "**Title**, **Internal code**, **Application URL** and **Funding status** "
 "(*Proposed*, *Awarded*, *Rejected* or *Withdrawn*; a new record starts as"
@@ -568,8 +578,8 @@ msgstr ""
 "financiación** (*Propuesto*, *Concedido*, *Rechazado* o *Retirado*; un "
 "registro nuevo empieza como *Propuesto*)."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:203
-#: 1c3a78b3a7ba4c728db0252f518cdc1a
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:207
+#: 80f7ef5e15364917aaa84189e2ef1634
 msgid ""
 "**PI** — the principal investigator, chosen with the same lookup as any "
 "other [cross-reference](cross_references.md) (search by surname, the "
@@ -583,8 +593,8 @@ msgstr ""
 "varios. Es el mismo campo en todos los tipos de proyecto, incluidos los "
 "Proyectos Personales, donde es el IP responsable del beneficiario."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:208
-#: db4cc898fa0942358c40212f26b0ef83
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:212
+#: fc4d13d5acca4220a7144dc2b2c82510
 msgid ""
 "**Start date** and **End date**, required only once the project is "
 "Awarded (see [above](#required-when))."
@@ -592,8 +602,8 @@ msgstr ""
 "**Fecha de inicio** y **Fecha de fin**, obligatorias solo cuando el "
 "proyecto está Concedido (véase [más arriba](#required-when))."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:210
-#: fdc92c60a172427488ceeafb0e1cd578
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:214
+#: a627d1747de943a287e7cbeace002189
 msgid ""
 "**Comments**, free text for anything that doesn't fit elsewhere. A "
 "member's note with their submission is kept here and stays on the record "
@@ -603,8 +613,8 @@ msgstr ""
 " de un miembro con su envío se guarda aquí y permanece en el registro "
 "cuando se clasifica."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:214
-#: 1b87c2d2bd23416d9c77612cc3345341
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:218
+#: e2d78411db1a4ec6a7bb3c64ca42afd7
 msgid ""
 "People are linked to a project only through these member lookups — the PI"
 " (and, on the research kinds, a co-PI), the beneficiary of a Personnel "
@@ -618,15 +628,15 @@ msgstr ""
 "financiación](#funding-commitments-splitting-a-persons-salary-across-"
 "projects). Un proyecto no tiene ningún otro campo de persona propio."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:219
-#: 48e557253cb04cd2b9799e57d9f15de4
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:223
+#: bb9c4e88bed540128a5541fe5856ab4d
 msgid "Funding commitments: splitting a person's salary across projects"
 msgstr ""
 "Compromisos de financiación: repartir el salario de una persona entre "
 "proyectos"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:221
-#: 20bc72f1eac94f87a7a66288e462957d
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:225
+#: ce428d82d3404392bad45ec9dbd121e2
 #, python-format
 msgid ""
 "A researcher can be paid by several projects at once — say 50% from one, "
@@ -640,8 +650,8 @@ msgstr ""
 "tiene su propio registro, el **Compromiso de financiación**, con un "
 "registro por cada pareja miembro-proyecto:"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:226
-#: 26f760c6ed49406d830fe09ea514f6a7
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:230
+#: 0b38907f1bbd4a57b86279a37acb80da
 msgid ""
 "**Member** and **Project** — both are [cross-reference "
 "fields](cross_references.md): search by surname or project title, and the"
@@ -653,8 +663,8 @@ msgstr ""
 "proyecto, y lo que se almacena es el DNI/NIE/PAS del miembro y el código "
 "interno del proyecto."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:230
-#: 84a73708bddf419fa0fff90f3a874976
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:234
+#: f4f64e88995c4e8e89c0cb609e0910eb
 msgid ""
 "**Percentage of salary cost** — the share of this person's salary cost "
 "charged to the project, from 0 to 100. Decimals are fine (`33.3`, or "
@@ -664,8 +674,8 @@ msgstr ""
 "persona que se imputa al proyecto, de 0 a 100. Se admiten decimales "
 "(`33.3`, o `33,3` con la interfaz en español)."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:233
-#: d115a86783174d55b4e756d126412d6b
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:237
+#: 229645cf32d64c1e8918cc41fcd9f9f0
 msgid ""
 "**Start date**, and an **End date** that you leave blank while the "
 "allocation is current."
@@ -673,13 +683,13 @@ msgstr ""
 "**Fecha de inicio**, y una **Fecha de fin** que se deja en blanco "
 "mientras la asignación esté vigente."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:235
-#: 08522d1152b949dfb758f4ffa7a166c7
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:239
+#: 3f8dc15389a84f47aaf9034b027ef9a3
 msgid "**Notes**, optional."
 msgstr "**Notas**, opcional."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:237
-#: 6692107f4e674069804aef942ada4ee6
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:241
+#: 381522aff2a44a1092e003eed6ba9255
 msgid ""
 "A Personnel Project (a grant that pays for one person) gets its own "
 "commitment record too, at 100% — the beneficiary field on the project "
@@ -690,8 +700,8 @@ msgstr ""
 "beneficiario del proyecto dice *quién*, y el compromiso dice *qué parte "
 "de su salario, y cuándo*."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:241
-#: 5f78ef10cfd1418fa1da4296f5bcf0e0
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:245
+#: acd96a9b06904d3bb28be66b5b7c2666
 #, python-format
 msgid ""
 "**To change a split, don't edit the old record.** Close it by giving it "
@@ -714,8 +724,8 @@ msgstr ""
 "[historial](history_and_snapshots.md) normal solo indicaría cuándo "
 "alguien *introdujo* un cambio, no cuándo entró en vigor."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:250
-#: 2870f2e874bf4298b8b28ca266fbf167
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:254
+#: 13fd2eb7f9254d1ebd91c5de555fed02
 #, python-format
 msgid ""
 "Open any member's record and, under the form, a **Funding commitments** "
@@ -739,13 +749,13 @@ msgstr ""
 "No aparece en absoluto para un miembro sin compromisos vigentes, ya que "
 "alguien que no se financia con proyectos no es un error."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:260
-#: ffc4a66056db45c2a3bcc7af28c3ea82
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:264
+#: d4b73110747149518e85c2cd7fdeaf6b
 msgid "Editing and deleting an existing record"
 msgstr "Editar y eliminar un registro existente"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:262
-#: 19354f9f31714fc4a3828b61954223e8
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:266
+#: 821ca4b27bfb4492923e324269113b0f
 msgid ""
 "Editing an existing record starts from a search result (see [Search & "
 "Queries](search_and_queries.md)), not from the dashboard — opening one "
@@ -766,8 +776,8 @@ msgstr ""
 "instantáneas](history_and_snapshots.md) para saber qué ocurre en realidad"
 " y porqué es importante."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:271
-#: 32088618eba54de18c1f018b04e257c8
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:275
+#: 0481bebbc7e34440b918a6de455425a6
 msgid ""
 "**A record always opens under the form that wrote it.** Opening a record "
 "from a list that mixes several kinds — an all-types search, say — takes "
@@ -785,13 +795,40 @@ msgstr ""
 "tipo equivocado. (La única excepción es clasificar un envío de un "
 "miembro, que se describe a continuación.)"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:279
-#: 362522db29564dfebc3ad3e47e534f5d
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:282
+#: 4c4973bbf6c14cc8897c5b77a25abeea
+msgid ""
+"**After you save.** If you opened the record from a search, saving takes "
+"you back to those results with a \"Record saved.\" notice, so the next "
+"record is one click away. Otherwise — a new record, or one you reached "
+"some other way — the saved record opens at its **own web address** "
+"(`/cbgp/dataset/<form>/<identifier>`), with the same notice. That address"
+" can be bookmarked or shared and opens the same record every time, and "
+"pressing refresh just reloads it instead of submitting the form again. "
+"(If a save is refused because something is missing or invalid, the form "
+"is shown again with the problems marked; nothing has been saved yet, so "
+"it has no address of its own.)"
+msgstr ""
+"**Después de guardar.** Si abrió el registro desde una búsqueda, al "
+"guardar volverá a esos resultados con el aviso «Record saved.», de modo "
+"que el siguiente registro queda a un clic. En los demás casos —un "
+"registro nuevo, o uno al que llegó de otra manera— el registro guardado "
+"se abre en su **propia dirección web** "
+"(`/cbgp/dataset/<formulario>/<identificador>`), con el mismo aviso. Esa "
+"dirección se puede guardar como favorito o compartir, abre siempre el "
+"mismo registro, y al pulsar «actualizar» simplemente se vuelve a cargar, "
+"en lugar de enviar de nuevo el formulario. (Si se rechaza un guardado "
+"porque falta algo o hay algo no válido, el formulario se muestra de nuevo"
+" con los problemas marcados; como todavía no se ha guardado nada, no "
+"tiene una dirección propia.)"
+
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:294
+#: 576af77289404d55a279d7d6b5b5c112
 msgid "Curating a project submitted by a member"
 msgstr "Clasificar un proyecto enviado por un miembro"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:281
-#: c8b302e95d71489ba4bb60acb14ee506
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:296
+#: 0c167c790aa44f7d974aca20fa0e1017
 msgid ""
 "A member who has applied for a project tells the administrators through "
 "the smaller, user-facing project form ([User Guide](../user_guide.md)). "
@@ -811,8 +848,8 @@ msgstr ""
 "indica de qué **tipo** es el proyecto y, hasta que se concede, no hay "
 "fechas. Así es como se completan ambas."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:289
-#: 3536e53bb300445a89eb64d6ed1319d1
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:304
+#: ca3d19d10a9b4f89afceea9466e58abd
 msgid ""
 "Above the submitted data, administrators see a panel: *\"This record was "
 "submitted through a simplified form and has not been classified yet. "
@@ -826,8 +863,8 @@ msgstr ""
 "como:»*, seguido de un enlace por cada tipo de proyecto. **Lea primero lo"
 " que se introdujo** —es lo que indica de qué tipo es— y después elija."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:296
-#: 8546b63c79e54c4eb3689b4e420a7174
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:311
+#: 88990c39ce1a47a1bd2541d9b9477bc3
 msgid ""
 "Screenshot needed: `docs/source/_static/screenshots/admin-curate-"
 "panel.png` — the panel above a submitted project, with the four kind "
@@ -837,8 +874,8 @@ msgstr ""
 "curate-panel.png` — el panel encima de un proyecto enviado, con los "
 "cuatro enlaces de tipo."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:300
-#: 0e596e6ff1544d6e9ef804635229267c
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:315
+#: 03f060b2009a438bb3e643991d4b5a4e
 msgid ""
 "![The curate-as panel](../_static/screenshots/admin-curate-panel.png) "
 "*The panel shown above a record that is still on the smaller form.*"
@@ -847,13 +884,13 @@ msgstr ""
 "panel.png) *El panel que se muestra encima de un registro que aún está en"
 " el formulario reducido.*"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:300
-#: f997d46ba15b467b93da516d0077ab20
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:315
+#: 12fc078557a24b3d863411220c305baa
 msgid "The curate-as panel"
 msgstr "El panel para clasificar"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:303
-#: 6222cc0d5d6f49928d8db39cd93064fc
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:318
+#: ec40a0b780a345fb8ff95ab2e542ca7d
 msgid ""
 "Choosing a kind opens **the same record** under that kind's form. A "
 "banner says *\"Curating this submitted record as …. Nothing changes until"
@@ -873,8 +910,8 @@ msgstr ""
 "conservarán al guardar (la versión anterior permanece en el historial). "
 "Rellene lo que aún necesite el nuevo formulario y guarde."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:311
-#: cda0c7f4bebc41dcb3b117f13b3d0441
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:326
+#: a0f18a65f8d5499d8e3c50fbdfd90886
 msgid ""
 "Saving makes the record an ordinary record of that kind: it has the same "
 "identifier as before, a new **Record type**, and from now on is found by "
@@ -891,13 +928,13 @@ msgstr ""
 "pierde: se conserva como una instantánea, igual que cualquier otra "
 "versión anterior ([Historial e instantáneas](history_and_snapshots.md))."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:318
-#: dd37c276b6304e1fbd539601b8b7c99e
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:333
+#: e70a0a41c58540cfb484f4877dd23b96
 msgid "A few limits worth knowing:"
 msgstr "Algunos límites que conviene conocer:"
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:320
-#: c91057244b4149009b36400a2468d39c
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:335
+#: bb176d054e154d08a02437db86737b5f
 msgid ""
 "Only **administrators** see the panel, and only on records still on a "
 "user-facing form. Once a record is on a full form its kind is fixed and "
@@ -907,8 +944,8 @@ msgstr ""
 "están en un formulario para usuarios. Cuando un registro está en un "
 "formulario completo, su tipo queda fijado y el panel deja de aparecer."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:323
-#: 274f5d744a2446b29c2c5dad83b182f3
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:338
+#: 3bda26d856be41179c46caab3f8606fa
 msgid ""
 "There is no built-in way yet to move an already-classified record to a "
 "different kind. If one was classified wrongly, add it again under the "
@@ -919,8 +956,8 @@ msgstr ""
 "correcto y elimine el erróneo; la eliminación queda registrada en el "
 "historial."
 
-#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:326
-#: 4158ebaac8344cf4a4e8199dc379c8b8
+#: ../../../../../../home/osboxes/CODE/CBGP-Databases/docs/source/admin/data_entry.md:341
+#: 3ed92652e288497d814203499d4e5153
 msgid ""
 "Nothing about this is specific to projects: it works for any record type "
 "that has both a user-facing form and full forms stored together."
@@ -928,4 +965,7 @@ msgstr ""
 "Nada de esto es específico de los proyectos: sirve para cualquier tipo de"
 " registro que tenga a la vez un formulario para usuarios y formularios "
 "completos almacenados juntos."
+
+#~ msgid "**Date** — a date picker."
+#~ msgstr "**Fecha** — un selector de fechas."
 

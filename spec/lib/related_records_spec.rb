@@ -24,10 +24,10 @@ RSpec.describe CBGP::RelatedRecords do
     ds
   end
 
-  def project_entry(codes: ['INT-001'], id: 'p-1')
+  def project_entry(code: 'INT-001', id: 'p-1')
     ds = CBGP::Dataset.new(type: 'personnel_project')
     ds.primary_id = id
-    ds.int_project_code = codes
+    ds.int_project_code = code
     ds
   end
 
@@ -228,7 +228,7 @@ RSpec.describe CBGP::RelatedRecords do
       stub_related([])
       panel = described_class.panels_for(entry: member_entry(dni: '12345678Z'), type: 'member').first
       expect(panel.prefill).to eq('commitment_member' => '12345678Z')
-      project = described_class.panels_for(entry: project_entry(codes: %w[INT-001 INT-002]), type: 'project').first
+      project = described_class.panels_for(entry: project_entry(code: 'INT-001'), type: 'project').first
       expect(project.prefill).to eq('commitment_project' => 'INT-001')
     end
 
@@ -239,10 +239,10 @@ RSpec.describe CBGP::RelatedRecords do
       expect(panel.warning).to be false
     end
 
-    it 'has a project-side panel (multiple internal codes, no expected total, so never a warning)' do
-      stub_related([commitment(id: 'c-1', project: 'INT-001', percentage: '30'), commitment(id: 'c-2', project: 'INT-002', percentage: '10')])
+    it 'has a project-side panel (one internal code, no expected total, so never a warning)' do
+      stub_related([commitment(id: 'c-1', project: 'INT-001', percentage: '30'), commitment(id: 'c-2', member: '87654321X', project: 'INT-001', percentage: '10')])
       allow(CBGP::RelatedRecords).to receive(:execute_search).and_return(['graph://c-1', 'graph://c-2'])
-      panel = described_class.panels_for(entry: project_entry(codes: %w[INT-001 INT-002]), type: 'project', as_of: Date.new(2026, 6, 1)).first
+      panel = described_class.panels_for(entry: project_entry(code: 'INT-001'), type: 'project', as_of: Date.new(2026, 6, 1)).first
       expect(panel.title).to eq('Staff funded by this project')
       expect(panel.rows.size).to eq(2)
       expect(panel.expected_total).to be_nil

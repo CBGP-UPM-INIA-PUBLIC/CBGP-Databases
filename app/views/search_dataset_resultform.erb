@@ -60,6 +60,9 @@ end
   <% if rw[:skipped].to_i.positive? %>
     <div class="flash-notice">Totals were checked for the first <%= rw[:messages].size.zero? ? 'results' : 'results shown above' %> only; <%= rw[:skipped] %> more could not be checked. Narrow the search to see them.</div>
   <% end %>
+  <% if @today_date %>
+    <div class="flash-notice" role="status"><%= CGI.escapeHTML(ui_text('search.today_note', date: @today_date)) %></div>
+  <% end %>
   <h3>
     Search Results
     <% unless @datasets.empty? %>
@@ -88,10 +91,6 @@ end
         <table>
           <thead>
             <tr>
-              <th>
-                <!-- Select All checkbox -->
-                <!-- <input type="checkbox" id="select-all" /> -->
-              </th>
               <th>Action</th>
               <th>Record type</th>
               <% @fields.each do |field| %>
@@ -102,9 +101,6 @@ end
           <tbody>
             <% @datasets.each do |dataset| %>
               <tr>
-                <td>
-                  <!-- <input type="checkbox" name="selected_ids[]" value="<%= dataset.primary_id %>" class="select-item" /> -->
-                </td>
                 <td class="dataset-id-cell">
                   <% primary_id = dataset.primary_id %>
                   <a href="/cbgp/dataset/<%= @database %>/<%= primary_id %>" class="dataset-link">

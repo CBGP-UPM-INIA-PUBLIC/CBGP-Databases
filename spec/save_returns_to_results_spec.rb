@@ -55,7 +55,7 @@ RSpec.describe 'saving returns to the search results', type: :request do
   end
 
   def search!
-    post '/cbgp/query-dataset/funding_commitment', 'commitment_project' => 'X'
+    get '/cbgp/query-dataset/funding_commitment', 'commitment_project' => 'X'
   end
 
   it 'redirects an edit made from a search back to the results, with a notice' do
@@ -88,24 +88,36 @@ RSpec.describe 'saving returns to the search results', type: :request do
     expect(last_response.body).not_to include('class="flash-warning"')
   end
 
-  it 'keeps showing the saved record for a brand-new record (no primary_id yet)' do
+  # Anything else goes to the saved record's own, bookmarkable address (never
+  # left on the POST URL, which has no record to give back when reloaded).
+  it 'sends a brand-new record (no primary_id yet) to its own address' do
     search!
     post '/cbgp/validate-dataset/commitment', save_params.merge('primary_id' => '')
 
-    expect(last_response.status).to eq(200)
+    expect(last_response.status).to eq(302)
+    expect(last_response.headers['Location']).to end_with('/cbgp/dataset/funding_commitment/c-1')
   end
 
-  it 'keeps showing the saved record when the session has no search for that form' do
+  it 'sends the saved record to its own address when the session has no search for that form' do
     post '/cbgp/validate-dataset/commitment', save_params
 
-    expect(last_response.status).to eq(200)
+    expect(last_response.status).to eq(302)
+    expect(last_response.headers['Location']).to end_with('/cbgp/dataset/funding_commitment/c-1')
   end
 
-  it 'keeps showing the saved record when the last search was on a different form' do
-    post '/cbgp/query-dataset/member', 'member_surnames' => 'X'
+  it 'sends the saved record to its own address when the last search was on a different form' do
+    get '/cbgp/query-dataset/member', 'member_surnames' => 'X'
     post '/cbgp/validate-dataset/commitment', save_params
 
-    expect(last_response.status).to eq(200)
+    expect(last_response.status).to eq(302)
+    expect(last_response.headers['Location']).to end_with('/cbgp/dataset/funding_commitment/c-1')
+  end
+
+  it 'escapes a path-hostile form or id in that address' do
+    entry.primary_id = 'a b/c'
+    post '/cbgp/validate-dataset/commitment', save_params.merge('primary_id' => '')
+
+    expect(last_response.headers['Location']).to end_with('/cbgp/dataset/funding_commitment/a%20b%2Fc')
   end
 
   describe 'GET /cbgp/last-search/:database' do

@@ -84,7 +84,7 @@ RSpec.describe 'project identifiers with arbitrary characters' do
           q_all = build_search_query(search_params: { field => code }, dataset_type: 'project')
           expect { SPARQL.parse(q_all) }.not_to raise_error
 
-          params = { 'database' => 'project', 'primary_id' => '', 'project_title' => 'T', field => (field == 'project_internal_code' ? [code] : code) }
+          params = { 'database' => 'project', 'primary_id' => '', 'project_title' => 'T', field => code }
           dataset = nil
           allow(CBGP::Dataset).to receive(:write_dataset_to_db)
           allow(CBGP::Dataset).to receive(:get_primary_id).and_return(nil)
@@ -97,7 +97,7 @@ RSpec.describe 'project identifiers with arbitrary characters' do
           ds = CBGP::Dataset.new(type: 'european_research_project')
           ds.primary_id = 'rec-1'
           method = ds.fields.find { |f| f[:questionclass] == field }[:method]
-          ds.public_send("#{method}=", field == 'project_internal_code' ? [code.strip] : code.strip)
+          ds.public_send("#{method}=", code.strip)
           update = write_dataset_to_db_query(dataset: ds, form: 'european_research_project')[:query]
           expect { SPARQL.parse(update, update: true) }.not_to raise_error
           expect(Array(ds.public_send(method)).first).to eq(code.strip) unless code.strip.empty?
@@ -140,7 +140,7 @@ RSpec.describe 'project identifiers with arbitrary characters' do
         ds = CBGP::Dataset.new(type: 'personnel_project')
         ds.primary_id = 'rec-1'
         ds.title = 'T'
-        ds.int_project_code = [stripped]
+        ds.int_project_code = stripped
         update = write_dataset_to_db_query(dataset: ds, form: 'personnel_project')[:query]
         expect { SPARQL.parse(update, update: true) }.not_to raise_error
       end
@@ -158,7 +158,7 @@ RSpec.describe 'project identifiers with arbitrary characters' do
       it 'matches the commitment from the project\'s page (project panel) and the member page' do
         pr = CBGP::Dataset.new(type: 'personnel_project')
         pr.primary_id = 'p-1'
-        pr.int_project_code = [stripped]
+        pr.int_project_code = stripped
         mine = commitment(id: 'c-1', project: stripped)
         other = commitment(id: 'c-2', project: "#{stripped}X")
 

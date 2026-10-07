@@ -550,8 +550,10 @@ module CBGP
       # plain fixed-point ("80.0") instead - the form every other numeric
       # string in this codebase is already in.
       result_str = result.is_a?(BigDecimal) ? result.to_s('F') : result.to_s
-      coerced = dataset.coerce_value(result_str, field[:class], field[:cardinality])
-      dataset.public_send("#{field[:method]}=", coerced)
+      reading_canonical_numbers do # the result is canonical ("1950.07"), not typed in the viewer's notation
+        coerced = dataset.coerce_value(result_str, field[:class], field[:cardinality])
+        dataset.public_send("#{field[:method]}=", coerced)
+      end
       nil
     rescue Dentaku::UnboundVariableError
       nil
@@ -836,6 +838,33 @@ module CBGP
       end
     end
 
+    # Runs the block with numbers read in their canonical form. What is IN the store
+    # ("60.00", "1234.56") and what a calculated field produces is always canonical - a
+    # point for the decimals, no thousands separators, which is the English notation -
+    # whatever language the viewer uses. The field setters parse what a person TYPES, in
+    # the viewer's own notation, so without this a Spanish session reads "60.00" as a
+    # malformed amount. The viewer's language is put back afterwards, even on an error.
+    def self.reading_canonical_numbers
+      previous = Thread.current[:language]
+      Thread.current[:language] = 'en'
+      yield
+    ensure
+      Thread.current[:language] = previous
+    end
+
+    # Copies a record's stored field values (keyed by questionclass symbol) onto +dataset+.
+    def self.assign_stored_values(dataset, details)
+      reading_canonical_numbers do
+        dataset.fields.each do |field|
+          next unless field[:method]
+
+          value = details[field[:questionclass].to_sym]
+          dataset.public_send("#{field[:method]}=", value) if value
+        end
+      end
+    end
+    private_class_method :assign_stored_values
+
     # Loads a Dataset by its primary_id string, searching across all graphs.
     #
     # @param primary_id [String] the record's primary identifier value
@@ -856,12 +885,7 @@ module CBGP
       details_array = fetch_datasets_raw_data(graph_uris: [graphuri], database: database)
       details = details_array.first || { dataset: graphuri }
 
-      dataset.fields.each do |field|
-        next unless field[:method]
-
-        value = details[field[:questionclass].to_sym]
-        dataset.public_send("#{field[:method]}=", value) if value
-      end
+      assign_stored_values(dataset, details)
 
       dataset
     end
@@ -894,12 +918,7 @@ module CBGP
         details = details_array.first || { dataset: graph }
       end
 
-      dataset.fields.each do |field|
-        next unless field[:method]
-
-        value = details[field[:questionclass].to_sym]
-        dataset.public_send("#{field[:method]}=", value) if value
-      end
+      assign_stored_values(dataset, details)
 
       dataset
     end

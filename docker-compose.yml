@@ -44,7 +44,7 @@ services:
       - cbgp-default
 
   cbgp-databases:
-    image: markw/cbgp-databases:0.18.2
+    image: markw/cbgp-databases:0.18.3
     restart: always
     hostname: databases
     depends_on:

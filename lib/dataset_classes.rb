@@ -641,6 +641,38 @@ module CBGP
     #   field when nil
     # @return [Array<Hash>] array of +{ value:, label: }+ hashes ready for JSON
     #   serialisation; +value+ is what gets stored, +label+ is what is displayed
+    # The questionclasses shown with +questionclass+ when it serves as a
+    # cross-reference label (local:label-companion), in question order. Empty
+    # for a field with none, and for a name that is not a safe identifier.
+    #
+    # @param target_form [String] the referenced form/dbname, e.g. +"member"+
+    # @param questionclass [String, nil] the label field, e.g. +"member_surnames"+
+    # @return [Array<String>] e.g. +["member_name"]+
+    def self.label_companions(target_form, questionclass)
+      return [] if questionclass.to_s.strip.empty?
+
+      found = get_label_companions_query(questionclass: questionclass).map { |row| row[:companion].to_s.split('#').last }
+      order = fields_for(target_form).map { |f| f[:questionclass] }
+      found.select { |qc| order.include?(qc) }.sort_by { |qc| order.index(qc) }
+    rescue ArgumentError
+      []
+    end
+
+    # What a referenced record is called in a lookup list or beside a stored
+    # value: its label field, then each companion field, comma-separated -
+    # e.g. "Alarcón Moreno, Juan". Fields the record has no value for are
+    # skipped; with no companions this is exactly the label field as before.
+    def self.reference_display_label(record, target_form:, label_questionclass:, label_method:)
+      parts = [reference_values(record, label_method) { [] }.join(', ')]
+      label_companions(target_form, label_questionclass).each do |companion|
+        method = resolve_key_method(target_form, companion)
+        next if method.to_s.strip.empty?
+
+        parts << reference_values(record, method) { [] }.join(', ')
+      end
+      parts.map(&:strip).reject(&:empty?).join(', ')
+    end
+
     def self.fetch_reference_suggestions(target_form:, limit: 100,
                                          search_query: nil, via_class: nil,
                                          label_method: nil)
@@ -684,10 +716,9 @@ module CBGP
         # key value is its own suggestion; stringifying the Array would store
         # the literal text ["ABC-1"] as the cross-reference.
         keys = reference_values(ds, key_method) { ds.primary_id }
-        keys.map do |value|
-          label = reference_values(ds, search_method) { [] }.join(', ')
-          { value: value, label: label.empty? ? value : label }
-        end
+        label = reference_display_label(ds, target_form: target_form, label_questionclass: search_questionclass,
+                                            label_method: search_method)
+        keys.map { |value| { value: value, label: label.empty? ? value : label } }
       end
     end
 
@@ -738,7 +769,8 @@ module CBGP
       ds = CBGP::Dataset.load_from_graph(graph: graph_uri, database: target_form)
       return nil unless ds
 
-      label = reference_values(ds, label_ruby_method) { [] }.join(', ')
+      label = reference_display_label(ds, target_form: target_form, label_questionclass: label_questionclass,
+                                          label_method: label_ruby_method)
       label.empty? ? nil : label
     end
 

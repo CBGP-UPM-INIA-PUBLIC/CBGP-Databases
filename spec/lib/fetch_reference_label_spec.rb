@@ -14,6 +14,9 @@ RSpec.describe 'CBGP::Dataset.fetch_reference_label' do
       .with('member', 'member_orcid').and_return('orcid')
     allow(CBGP::Dataset).to receive(:resolve_key_method)
       .with('member', 'member_surnames').and_return('surname')
+    # This spec is about the plain label field; companions (a first name
+    # shown with the surname) are covered in spec/lib/label_companion_spec.rb.
+    allow(CBGP::Dataset).to receive(:label_companions).and_return([])
   end
 
   it 'looks up the value against the via field and returns the label field' do

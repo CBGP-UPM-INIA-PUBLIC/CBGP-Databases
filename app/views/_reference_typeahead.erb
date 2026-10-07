@@ -55,7 +55,6 @@
         name="<%= qid %><%= is_multi ? '[]' : '' %>"
         id="<%= qid %>_ANSWER_<%= idx %>"
         value="<%= CGI.escapeHTML(sv) %>"
-        list="<%= qid %>_suggestions"
         placeholder="<%= CGI.escapeHTML(std_hint) %>"
         size="60"
         autocomplete="off"
@@ -66,39 +65,24 @@
     </div>
     <% end %>
 
-    <!-- Shared datalist for standard typeahead (all rows search the same thing) -->
-    <datalist id="<%= qid %>_suggestions"></datalist>
-
     <% if is_multi %>
       <button type="button" id="<%= qid %>_add_btn" style="margin-top:4px;">+ <%= CGI.escapeHTML(ui_text('typeahead.add_another')) %></button>
     <% end %>
 
     <script>
     (function() {
-      const datalist   = document.getElementById('<%= qid %>_suggestions');
       const targetForm = '<%= target %>';
       const qid        = '<%= qid %>';
-      let timeout;
 
-      // Attach fetch-on-input to every existing row, and new rows added later
+      // Attach the suggestion list to every existing row, and to new rows added later.
+      // (typeahead.js: the list shows exactly what the server returns.)
       function attachStdListener(input) {
-        input.addEventListener('input', function() {
-          const query = this.value.trim();
-          clearTimeout(timeout);
-          if (query.length < 2) { datalist.innerHTML = ''; return; }
-          timeout = setTimeout(() => {
-            fetch(`/cbgp/reference/suggest/${encodeURIComponent(targetForm)}?q=${encodeURIComponent(query)}&via=&label_method=`)
-              .then(r => r.json())
-              .then(data => {
-                datalist.innerHTML = '';
-                data.forEach(item => {
-                  const opt = document.createElement('option');
-                  opt.value = item.value;
-                  datalist.appendChild(opt);
-                });
-              })
-              .catch(err => console.error('[typeahead] fetch failed:', err));
-          }, 250);
+        CBGPSuggest.attach(input, {
+          fetchItems: function(query) {
+            return fetch(`/cbgp/reference/suggest/${encodeURIComponent(targetForm)}?q=${encodeURIComponent(query)}&via=&label_method=`)
+              .then(r => r.json());
+          },
+          onPick: function(item) { input.value = item.value; }   // here the stored text IS the value
         });
       }
 
@@ -113,7 +97,7 @@
         row.id = qid + '_row_' + rowCount;
         row.innerHTML = `
           <input type="text" name="${qid}[]" id="${qid}_ANSWER_${rowCount}"
-                 list="${qid}_suggestions" placeholder="<%= CGI.escapeHTML(std_hint) %>"
+                 placeholder="<%= CGI.escapeHTML(std_hint) %>"
                  size="60" autocomplete="off">
           <button type="button" onclick="this.closest('.std-row').remove()" style="font-size:0.8em;">− <%= CGI.escapeHTML(ui_text('typeahead.remove')) %></button>`;
         container.insertBefore(row, this);
@@ -134,10 +118,8 @@
       <div class="xref-row" id="<%= qid %>_row_<%= idx %>">
         <div>
           <input type="text" id="<%= qid %>_SEARCH_<%= idx %>"
-                 list="<%= qid %>_suggestions_<%= idx %>"
                  placeholder="<%= CGI.escapeHTML(xref_hint) %>"
                  size="50" autocomplete="off">
-          <datalist id="<%= qid %>_suggestions_<%= idx %>"></datalist>
           <% if is_multi %>
             <button type="button" onclick="this.closest('.xref-row').remove()" style="font-size:0.8em; margin-left:4px;">− <%= CGI.escapeHTML(ui_text('typeahead.remove')) %></button>
           <% end %>
@@ -172,7 +154,7 @@
       const xrefHint   = <%= xref_hint.to_json.gsub('</', '<\\/') %>;
 
       // Initialise one cross-ref row by its numeric suffix.
-      // Each call gets its own independent valueMap and timeout — no sharing.
+      // Each call gets its own suggestion list — no sharing.
       function initXrefRow(suffix) {
         const input       = document.getElementById(qid + '_SEARCH_'     + suffix);
         const hiddenInput = document.getElementById(qid + '_ANSWER_'     + suffix);
@@ -180,10 +162,6 @@
         const labelEl     = document.getElementById(qid + '_LABEL_'      + suffix);
         const storedRow   = document.getElementById(qid + '_stored_row_' + suffix);
         const clearBtn    = document.getElementById(qid + '_CLEAR_'      + suffix);
-        const datalist    = document.getElementById(qid + '_suggestions_' + suffix);
-
-        let timeout;
-        let valueMap = new Map();   // entirely private to this row
 
         // labelText is omitted when the caller doesn't know it yet (kept as
         // whatever was already shown) - see the initial-load lookup below.
@@ -199,8 +177,6 @@
         clearBtn.addEventListener('click', function() {
           setStoredValue('', '');
           input.value = '';
-          datalist.innerHTML = '';
-          valueMap.clear();
         });
 
         // On page load, a row may already carry a stored value (e.g. an
@@ -217,31 +193,19 @@
             .catch(err => console.error('[typeahead] label lookup failed:', err));
         }
 
-        input.addEventListener('input', function() {
-          const query = this.value.trim();
-          const realValue = valueMap.get(query);
-          if (realValue !== undefined) setStoredValue(realValue, query); // query IS the label just searched by
-
-          clearTimeout(timeout);
-          if (query.length < 2) { datalist.innerHTML = ''; valueMap.clear(); return; }
-
-          timeout = setTimeout(() => {
+        // The suggestion list (typeahead.js) shows exactly what the server returns -
+        // matched ignoring accents, shown as "Surname(s), Name" - and hands back the
+        // chosen person, so two people who read alike are never mixed up.
+        CBGPSuggest.attach(input, {
+          fetchItems: function(query) {
             const url = `/cbgp/reference/suggest/${encodeURIComponent(targetForm)}` +
               `?q=${encodeURIComponent(query)}&via=${encodeURIComponent(via)}&label_method=${encodeURIComponent(labelMeth)}`;
-            fetch(url)
-              .then(r => r.json())
-              .then(data => {
-                datalist.innerHTML = '';
-                valueMap.clear();
-                data.forEach(item => {
-                  const opt = document.createElement('option');
-                  opt.value = item.label;
-                  valueMap.set(item.label, item.value);
-                  datalist.appendChild(opt);
-                });
-              })
-              .catch(err => console.error('[typeahead] fetch failed:', err));
-          }, 250);
+            return fetch(url).then(r => r.json());
+          },
+          onPick: function(item) {
+            input.value = item.label;
+            setStoredValue(item.value, item.label);
+          }
         });
       }
 
@@ -263,10 +227,8 @@
         row.innerHTML = `
           <div>
             <input type="text" id="${qid}_SEARCH_${suffix}"
-                   list="${qid}_suggestions_${suffix}"
                    placeholder="${xrefHint}"
                    size="50" autocomplete="off">
-            <datalist id="${qid}_suggestions_${suffix}"></datalist>
             <button type="button" onclick="this.closest('.xref-row').remove()" style="font-size:0.8em; margin-left:4px;">− <%= CGI.escapeHTML(ui_text('typeahead.remove')) %></button>
           </div>
           <div id="${qid}_stored_row_${suffix}" style="display:none; margin-top:4px;">
@@ -278,7 +240,7 @@
           <input type="hidden" name="${qid}[]" id="${qid}_ANSWER_${suffix}" value="">`;
 
         container.appendChild(row);
-        initXrefRow(suffix);   // fresh valueMap, fresh timeout, fresh listeners
+        initXrefRow(suffix);   // fresh suggestion list, fresh listeners
       });
       <% end %>
     })();

@@ -52,7 +52,8 @@ you have **applied for a project**. The project form asks for the basics:
 
 - **Title** of the project.
 - **PI** — the principal investigator. This is a lookup, not free text:
-  start typing a surname and choose the person from the list that appears.
+  start typing a surname and choose the person from the list that appears
+  (accents don't matter, and the list shows each person as surname and name).
   It is **required**, and it is how the administrators know who is
   responsible for what you are announcing. More than one can be given, and a
   **co-PI** can be added the same way.

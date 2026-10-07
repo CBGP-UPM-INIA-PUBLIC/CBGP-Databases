@@ -377,6 +377,26 @@ def get_form_conditional_requirements_query(form_class:)
   qs.execute($ontology)
 end
 
+# The fields that accompany +questionclass+ whenever it is used as the label
+# of a cross-reference: local:label-companion. A person's surname alone does
+# not tell two people apart, so the ontology can say that wherever
+# member_surnames is shown as a label the member's name comes with it:
+#
+#   cbgp:member_surnames local:label-companion cbgp:member_name .
+#
+# @param questionclass [String]
+# @return [RDF::Query::Solutions] rows with ?companion
+def get_label_companions_query(questionclass:)
+  questionclass = validate_local_name!(questionclass, field: 'questionclass')
+  qs = <<~GET_LABEL_COMPANIONS
+    #{PREFIXES}
+    SELECT ?companion WHERE {
+      cbgp:#{questionclass} local:label-companion ?companion .
+    }
+  GET_LABEL_COMPANIONS
+  SPARQL.parse(qs).execute($ontology)
+end
+
 # Fetches an ANSWER's trigger declarations: local:has-triggers, a fourth
 # sibling of has-defaults/has-formulas/requires-field. Unlike those three,
 # this is keyed by the ANSWER class, not the form class - a trigger is a

@@ -29,6 +29,25 @@ while the stored identifier doesn't; it also means every record that
 links to the same person or project genuinely links to the *same* thing,
 not just to text that happens to look similar.
 
+The suggestions appear in a list under the box as you type, from the second
+character on. They are matched **ignoring accents and capital letters** —
+typing `Alarco` finds *Alarcón* — and each choice is shown with enough to tell
+people apart: for a person, the surname(s) followed by the name, for example
+*Alarcón Moreno, Sara*. If two choices would still read exactly alike (two
+people with the same name and surnames), the stored identifier is shown beside
+each in grey. Click a choice, or move with the arrow keys and press Enter; the
+box fills in the label and the identifier is kept behind it. The search itself
+is on the surname only — typing a first name finds nothing; the name is there
+to tell people apart, not to search by.
+
+**For the ontology editor:** the field that is searched and shown is the one
+named by `local:references-label` (for a person, `member_surnames`). To show
+other fields after it, give that field a `local:label-companion` — for a
+person, `cbgp:member_surnames local:label-companion cbgp:member_name`. It then
+applies everywhere that label appears: the suggestions, the text beside a
+stored value, and the lists of related records. See [Data
+Model](../data_model.md#cross-reference-labels-and-companions).
+
 ```{note}
 Screenshot needed:
 `docs/source/_static/screenshots/admin-xref-typeahead.png` — a

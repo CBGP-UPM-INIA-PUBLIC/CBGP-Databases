@@ -483,6 +483,27 @@ share. A cross-reference to a name that is a shared dbname rather than a
 form resolves to the **union of the fields of every form using it**, which
 is what lets a commitment point at a project whichever form created it.
 
+### Cross-reference labels and companions
+
+What a person is called in a lookup list is the field named by
+`local:references-label`. A surname alone does not tell people apart — in the
+institute's member list 24 surnames are shared by two or three different
+people — so a label field can have **companions** (`local:label-companion`): other fields of the same
+record, shown after it, comma-separated.
+
+```turtle
+cbgp:member_surnames
+    local:label-companion cbgp:member_name .     # "Alarcón Moreno, Sara"
+```
+
+The companion is a property of the label *field*, so it applies wherever that
+field serves as a label (every lookup of a member, whichever form it is on),
+and with several companions they follow in question order. A companion the
+record has no value for is skipped, and without any the label is the field
+alone, as before. `check_ontology.rb` reports a companion that points at a
+class that does not exist. Only the label field is *searched*; companions are
+shown, not matched.
+
 The list shown under a member's or project's edit form is declared the same
 way as the other per-form mechanisms — an intermediate node that holds the
 details, nothing in the code that knows about commitments:

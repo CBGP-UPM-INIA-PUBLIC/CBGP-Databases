@@ -12,6 +12,47 @@ here.
 
 ## [Unreleased]
 
+## [0.18.2] - 2026-10-07
+
+**Needs CBGP-Ontology `851d3a0` or later** (live at w3id.org/CBGP-App).
+
+### Added
+- **"Today" beside date boxes.** On every search date range, a tick box
+  **Today (changes daily)** under each bound searches with the day the search is
+  run (a *relative* statement, not a date - the same search tomorrow finds
+  different records). A results page that used it says what it was read as and
+  that it is not fixed. On the data-entry forms a **Today** button fills the box
+  with today's real date; a saved record never holds the word. Documented
+  (EN + ES) in Search & Queries and Data Entry.
+- **A search is bookmarkable.** The search form still posts, but is answered with
+  a redirect to the same search as a plain link holding only the filled-in boxes
+  (`/cbgp/query-dataset/<form>?...`), so the results page can be bookmarked,
+  shared and re-run; with Today ticked it is re-run as of the day it is opened.
+- A second horizontal scrollbar above wide results tables (`table_scroll.js`).
+- **Saving goes to the record's own address.** After a save that did not return
+  to a search, the record opens at `/cbgp/dataset/<form>/<id>` with a
+  "Record saved." notice, so the address is bookmarkable and refresh no longer
+  re-submits the form.
+- `check_ontology.rb` (CBGP-Ontology) now rejects a primary-id field that is
+  repeatable (`primary_id_repeatable`).
+
+### Changed
+- `project_internal_code` is single-valued (it is the project's identifier).
+  **Needs CBGP-Ontology `851d3a0` or later, which makes it `Single` and adds the new
+  interface texts** (`ui_search_today`, `ui_search_today_note`, `ui_entry_today`,
+  and the new wording of `ui_typeahead_stored_value`).
+- Lookup boxes say "Currently selected value" (was "Stored value") and show it
+  prominently; form row titles are smaller.
+- Results table: removed an empty first column and a second, nested white card.
+- The related-records panel (e.g. a member's other commitments) is now a proper
+  white card with readable text and table.
+
+### Fixed
+- A single-valued field that received a list (a page opened while the field was
+  still repeatable, saved after the ontology made it single) stored the text of
+  the list, e.g. `["UI-PROJ-1"]`, silently breaking every lookup by that value.
+  It now takes the one value, or refuses several with a clear message.
+
 ## [0.18.1] - 2026-10-07
 
 ### Fixed

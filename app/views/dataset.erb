@@ -3,6 +3,10 @@
 
     <!-- incoming @entry object and @questionnaire object -->
 
+    <% if flash[:notice] %>
+      <div class="flash-notice" role="status"><%= Rack::Utils.escape_html(flash[:notice]) %></div>
+    <% end %>
+
     <% if session[:role] == 'admin' && @curation_targets && !@curation_targets.empty? %>
       <div class="flash-notice curation-panel" role="status">
         <strong><%= CGI.escapeHTML(ui_text('curate.panel_title')) %></strong>

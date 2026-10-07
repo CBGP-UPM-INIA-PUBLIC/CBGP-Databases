@@ -55,7 +55,7 @@ RSpec.describe 'search results: show all and empty searches', type: :request do
   end
 
   it 'says nothing was entered, and offers Show all, for a form submitted with every box empty' do
-    post '/cbgp/query-dataset/project', 'project_title' => '', 'project_status' => '', 'project_start_date' => { 'start' => '', 'end' => '' }
+    get '/cbgp/query-dataset/project', 'project_title' => '', 'project_status' => '', 'project_start_date' => { 'start' => '', 'end' => '' }
 
     expect(last_response.body).to include('Nothing was entered to search for.')
     expect(last_response.body).to include('href="/cbgp/query-dataset/project?__all=1"')
@@ -63,14 +63,14 @@ RSpec.describe 'search results: show all and empty searches', type: :request do
   end
 
   it 'still says "no results" for a real search that found nothing' do
-    post '/cbgp/query-dataset/project', 'project_title' => 'zzz'
+    get '/cbgp/query-dataset/project', 'project_title' => 'zzz'
 
     expect(last_response.body).to include('No results found for your search.')
     expect(last_response.body).not_to include('Nothing was entered to search for.')
   end
 
   it 'does not show the all-records notice for an ordinary search' do
-    post '/cbgp/query-dataset/project', 'project_title' => 'zzz'
+    get '/cbgp/query-dataset/project', 'project_title' => 'zzz'
 
     expect(last_response.body).not_to include('Showing all records')
   end

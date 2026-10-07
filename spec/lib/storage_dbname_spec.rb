@@ -58,7 +58,7 @@ RSpec.describe 'storage dbname of written records' do
         'beneficiary_nie' => '12345678Z', 'project_pi_nie' => '12345678Z',
         'personnel_project_total_funding' => '1000.00', 'project_funding_entity' => 'F',
         'project_affiliation' => 'affiliation_upm', 'project_application_url' => 'https://example.org/call/C',
-        'project_internal_code' => %w[A-1 B-2],
+        'project_internal_code' => 'A-1',
         'project_start_date' => '2026-01-01', 'project_end_date' => '2026-12-31'
       }
     end
@@ -71,18 +71,23 @@ RSpec.describe 'storage dbname of written records' do
       end
     end
 
-    it 'searches the shared dbname, not the form class, one value at a time' do
+    it 'searches the shared dbname, not the form class' do
       calls = []
       stub_lookup { |o| calls << [o[:questionvalue], o[:dataset_type]] && nil }
       CBGP::Dataset.load_from_params_and_write(params: params, form: 'personnel_project')
-      expect(calls).to include(%w[A-1 project], %w[B-2 project])
-      expect(calls.map(&:last).uniq).to eq(['project'])
+      expect(calls).to eq([%w[A-1 project]])
     end
 
-    it 'adopts the first existing record any of the values matches' do
-      stub_lookup { |o| o[:questionvalue] == 'B-2' ? 'existing-id' : nil }
+    it 'adopts the existing record the value matches' do
+      stub_lookup { |o| o[:questionvalue] == 'A-1' ? 'existing-id' : nil }
       ds = CBGP::Dataset.load_from_params_and_write(params: params, form: 'personnel_project')
       expect(ds.primary_id).to eq('existing-id')
+    end
+
+    it 'refuses several values for the one-valued identifier, saying why' do
+      stub_lookup { |_o| nil }
+      expect { CBGP::Dataset.load_from_params_and_write(params: params.merge('project_internal_code' => %w[A-1 B-2]), form: 'personnel_project') }
+        .to raise_error(CBGP::Dataset::ValidationError, /Internal code.*only one value is allowed/)
     end
 
     it 'creates a new record when nothing matches' do

@@ -124,8 +124,8 @@
             <button type="button" onclick="this.closest('.xref-row').remove()" style="font-size:0.8em; margin-left:4px;">− <%= CGI.escapeHTML(ui_text('typeahead.remove')) %></button>
           <% end %>
         </div>
-        <div id="<%= qid %>_stored_row_<%= idx %>"
-             style="margin-top:4px;<%= sv.empty? ? ' display:none' : '' %>">
+        <div id="<%= qid %>_stored_row_<%= idx %>" class="xref-stored"
+             style="<%= sv.empty? ? 'display:none' : '' %>">
           <small><%= CGI.escapeHTML(ui_text('typeahead.stored_value')) %>:&nbsp;</small>
           <code id="<%= qid %>_DISPLAY_<%= idx %>"><%= CGI.escapeHTML(sv) %></code>
           <span id="<%= qid %>_LABEL_<%= idx %>" class="xref-label"></span>
@@ -231,7 +231,7 @@
                    size="50" autocomplete="off">
             <button type="button" onclick="this.closest('.xref-row').remove()" style="font-size:0.8em; margin-left:4px;">− <%= CGI.escapeHTML(ui_text('typeahead.remove')) %></button>
           </div>
-          <div id="${qid}_stored_row_${suffix}" style="display:none; margin-top:4px;">
+          <div id="${qid}_stored_row_${suffix}" class="xref-stored" style="display:none;">
             <small><%= CGI.escapeHTML(ui_text('typeahead.stored_value')) %>:&nbsp;</small>
             <code id="${qid}_DISPLAY_${suffix}"></code>
             <span id="${qid}_LABEL_${suffix}" class="xref-label"></span>

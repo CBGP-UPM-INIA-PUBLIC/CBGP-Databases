@@ -8,4 +8,6 @@
     <label for=<%= @answerblock.ablockid  %> style="font-size: .75em;">
     </label><br/>
     <input type="date" name="<%= @question.questionid  %>" id="<%= @answerblock.ablockid  %>" value="<%= formatted_date %>">
+    <%# fills the box with today's date; the date itself is what gets saved (today.js) %>
+    <button type="button" class="today-button" data-fill-today><%= CGI.escapeHTML(ui_text('entry.today')) %></button>
   </div>

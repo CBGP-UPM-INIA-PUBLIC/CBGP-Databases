@@ -132,7 +132,7 @@ RSpec.describe 'related-records panel on the edit page', type: :request do
     expect(last_response.body).not_to include('class="related-records"')
   end
 
-  it 'also shows the panel on the page returned right after a successful save' do
+  it 'sends a successful save to the record\'s own address, where the panel is shown' do
     row = CBGP::RelatedRecords::Row.new(primary_id: 'c-1', cells: ['My project', '70,00'], active: true)
     allow(CBGP::Dataset).to receive(:load_from_params_and_write).and_return(entry)
     allow(CBGP::Triggers).to receive(:check_and_fire)
@@ -140,8 +140,8 @@ RSpec.describe 'related-records panel on the edit page', type: :request do
 
     post '/cbgp/validate-dataset/member', 'form_class' => 'member', 'primary_id' => ''
 
-    expect(last_response.status).to eq(200)
-    expect(last_response.body).to include('Funding commitments', 'My project')
+    expect(last_response.status).to eq(302)
+    expect(last_response.headers['Location']).to end_with('/cbgp/dataset/member/m-1')
   end
 
   describe 'the search form' do

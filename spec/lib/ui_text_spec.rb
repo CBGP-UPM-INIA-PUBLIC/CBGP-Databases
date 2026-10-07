@@ -120,15 +120,15 @@ RSpec.describe 'the interface hints in the page', type: :request do
     body = page_in('es', '/cbgp/dataset/funding_commitment')
     expect(body).to include('Escriba al menos 2 caracteres de')
     expect(body).not_to include('Type at least 2 characters')
-    expect(body).not_to include('<small>Stored value') # nor the other captions of the widget
-    expect(body).to include('Valor guardado')
+    expect(body).not_to include('<small>Currently selected value') # nor the other captions of the widget
+    expect(body).to include('Valor seleccionado actualmente')
     expect(body).to include("✕ borrar")
   end
 
   it 'shows the same hint in English when English is selected' do
     body = page_in('en', '/cbgp/dataset/funding_commitment')
     expect(body).to include('Type at least 2 characters of the')
-    expect(body).to include('<small>Stored value:')
+    expect(body).to include('<small>Currently selected value:')
     expect(body).not_to include('Escriba al menos')
   end
 

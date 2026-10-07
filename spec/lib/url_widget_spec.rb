@@ -232,7 +232,7 @@ RSpec.describe 'URL widget' do
       allow_any_instance_of(CBGP::DatabasesApp).to receive(:fetch_datasets_raw_data).and_return([])
       allow(CBGP::Dataset).to receive(:load_from_graph).and_return(entry)
 
-      post '/cbgp/query-dataset/european_research_project', 'project_title' => 'x'
+      get '/cbgp/query-dataset/european_research_project', 'project_title' => 'x'
 
       body = last_response.body
       expect(body).to include("href=\"#{CGI.escapeHTML(EC_URL)}\" target=\"_blank\" rel=\"noopener noreferrer\"")

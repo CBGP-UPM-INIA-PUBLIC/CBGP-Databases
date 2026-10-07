@@ -373,6 +373,13 @@ def set_routes
         flash[:warning] = warnings.join(' ') unless warnings.empty?
         redirect "/cbgp/last-search/#{Rack::Utils.escape_path(search_form)}"
       end
+
+      # Otherwise show the saved record at its own address, not at this form-handler
+      # URL (a POST has no address worth keeping: bookmarking it, or pressing
+      # refresh, would not give the record back). The panel warnings are drawn by
+      # the record page itself, so only the confirmation rides along.
+      flash[:notice] = 'Record saved.'
+      redirect "/cbgp/dataset/#{ERB::Util.url_encode(@form)}/#{ERB::Util.url_encode(@entry.primary_id.to_s)}"
     rescue CBGP::Dataset::ValidationError => e
       @validation_errors = e.errors
       # type: @form (NOT params['database']) - same dbname-vs-form distinction
@@ -434,6 +441,17 @@ def set_routes
   %i[get post].each do |verb|
     public_send(verb, '/cbgp/query-dataset/:database') do
       @database = params[:database]
+
+      # The search form posts, but a POST has no address worth keeping: bookmarking its
+      # results page (or pressing refresh) would not run the search again. So a posted
+      # search is answered with a redirect to the same search as a plain link holding
+      # only the boxes that were filled in - the one URL that can be bookmarked, shared
+      # and re-run later (a "today" in it is read on the day it is opened).
+      if request.post?
+        query = Rack::Utils.build_nested_query(compact_search_params(to_plain_hash(params.except('database').to_h)) || {})
+        redirect "/cbgp/query-dataset/#{ERB::Util.url_encode(@database)}#{query.empty? ? '' : "?#{query}"}"
+      end
+
       @questionnaire = generate_questionnaire(questionnaire_type: @database)
       @fields = search_fields_for(@database) # Cached
 
@@ -861,6 +879,7 @@ def set_routes
     def note_search_kind(search_params) # rubocop:disable Lint/NestedMethodDefinition
       @show_all = show_all_requested?(search_params)
       @no_terms = !@show_all && search_terms_blank?(search_params)
+      @today_date = search_uses_today?(search_params.to_h) ? Date.today.iso8601 : nil # said on the results page
     end
 
     # Loads @database/@fields/@datasets for the search this session last ran on

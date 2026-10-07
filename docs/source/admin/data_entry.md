@@ -35,7 +35,11 @@ the time this is being read. A few field types show up repeatedly:
 
 - **Plain text** — a single line or a larger text box, for anything without
   a more specific type below.
-- **Date** — a date picker.
+- **Date** — a date picker, with a **Today** button beside it that fills in
+  today's date. What is saved is that date, never the word "today": a record
+  saved on 7 October holds 2026-10-07 for good, and does not change
+  tomorrow. (Searching is different: see
+  [Search & Queries](search_and_queries.md#date-fields).)
 - **Currency** — a monetary amount, typed and displayed in whichever
   number format matches the current language (e.g. `1,234.56` in English,
   `1.234,56` in Spanish) — see
@@ -274,6 +278,17 @@ to the edit page of *its own* kind, with that kind's fields, whatever form
 the link named. Otherwise you would be shown the fields of every kind
 together, and saving could mark the record as the wrong kind. (The one
 exception is curating a member's submission, described next.)
+
+**After you save.** If you opened the record from a search, saving takes you
+back to those results with a "Record saved." notice, so the next record is
+one click away. Otherwise — a new record, or one you reached some other way —
+the saved record opens at its **own web address**
+(`/cbgp/dataset/<form>/<identifier>`), with the same notice. That address can
+be bookmarked or shared and opens the same record every time, and pressing
+refresh just reloads it instead of submitting the form again. (If a save is
+refused because something is missing or invalid, the form is shown again
+with the problems marked; nothing has been saved yet, so it has no address
+of its own.)
 
 (curating-a-submission)=
 ## Curating a project submitted by a member

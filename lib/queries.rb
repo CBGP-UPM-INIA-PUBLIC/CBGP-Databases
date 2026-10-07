@@ -802,6 +802,35 @@ def resolve_date_keyword(value)
   value.to_s.strip.casecmp?('today') ? Date.today.iso8601 : value
 end
 
+# +search_params+ without its blank parts: empty strings, lists of blanks and
+# ranges with both ends blank are dropped (the search form posts every box, filled
+# or not). Blank parts never change a search, so what is left means exactly the
+# same - and, as a query string, is short enough to bookmark.
+def compact_search_params(search_params)
+  case search_params
+  when Hash
+    search_params.each_with_object({}) do |(k, v), kept|
+      c = compact_search_params(v)
+      kept[k] = c unless c.nil?
+    end.then { |h| h.empty? ? nil : h }
+  when Array
+    kept = search_params.map { |v| compact_search_params(v) }.compact
+    kept.empty? ? nil : kept
+  else
+    search_params.to_s.strip.empty? ? nil : search_params
+  end
+end
+
+# True when any value in +search_params+ (at any depth: a date range is a Hash)
+# is the keyword "today", i.e. the search means something different tomorrow.
+def search_uses_today?(search_params)
+  case search_params
+  when Hash then search_params.values.any? { |v| search_uses_today?(v) }
+  when Array then search_params.any? { |v| search_uses_today?(v) }
+  else search_params.to_s.strip.casecmp?('today')
+  end
+end
+
 # Validates and normalizes a date string about to be interpolated into a
 # SPARQL FILTER as a bare xsd:date literal (e.g.
 # "#{start_date}"^^xsd:date) — same reasoning as validate_local_name!: this

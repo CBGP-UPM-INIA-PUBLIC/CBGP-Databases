@@ -151,6 +151,26 @@ Without `APP_BASE_URL`, trigger emails' "open this record" links default to
 `http://localhost:4567`, which is only correct for local development — set
 it to this deployment's real external URL in production.
 
+## AI agent access (MCP)
+
+```
+MCP_TOKEN=change-me-to-a-long-random-string
+```
+
+The application can answer questions for an AI agent (anything that speaks the
+Model Context Protocol, such as Hermes) at `POST /mcp`, read-only. It is **off
+unless `MCP_TOKEN` is set**: with the setting missing or blank the endpoint refuses
+every request, it never means "no password". An agent proves itself by sending
+the same string as an `Authorization: Bearer <token>` header, instead of the
+session login a person uses. Generate a value with
+`ruby -rsecurerandom -e 'puts SecureRandom.hex(32)'`, and treat it like any other
+secret on this page. Changing it needs the container to be recreated (see
+[After changing `.env`](#after-changing-env)). The whole deployment is meant to
+sit behind the institute's network barrier; the token is the backstop if that
+barrier is ever misconfigured. See
+[Asking questions through an AI agent](admin/ai_agent.md) for what an agent can do
+and how to connect one.
+
 ## Verbose SPARQL/debug logging
 
 Set `CBGP_DEBUG_SPARQL=true` (any truthy string) to re-enable a large volume

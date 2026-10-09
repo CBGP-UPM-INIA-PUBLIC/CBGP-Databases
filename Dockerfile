@@ -14,6 +14,8 @@ RUN apt-get update -qq && \
     libxml++2.6-dev \
     libraptor2-0 \
     libxslt1-dev \
+    librsvg2-bin \
+    fonts-dejavu-core \
     locales \
     software-properties-common \
     cron && \

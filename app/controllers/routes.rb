@@ -85,6 +85,8 @@ def set_routes
     ]
     # Skip authentication check for public paths
     return if public_paths.include?(request.path_info)
+    # The MCP endpoint is for agents, not browsers: it checks its own bearer token (app/controllers/mcp_routes.rb)
+    return if request.path_info == '/mcp'
 
     # All other paths require login
     halt(401, erb(:unauthorized)) unless session[:username]

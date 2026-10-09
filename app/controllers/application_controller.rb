@@ -10,6 +10,7 @@ require 'cgi'
 # App specific requires
 require_relative 'configuration'
 require_relative 'routes'
+require_relative 'mcp_routes'
 
 require_rel '../../lib'
 require_rel '../views'
@@ -19,6 +20,7 @@ module CBGP
     helpers MyHelpers
     register Sinatra::Flash
     set_routes
+    register Mcp::Routes
   end
 end
 

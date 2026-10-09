@@ -8,4 +8,5 @@ history_and_snapshots
 search_and_queries
 cross_references
 exports
+ai_agent
 ```

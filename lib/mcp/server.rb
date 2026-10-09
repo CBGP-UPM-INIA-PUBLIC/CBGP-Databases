@@ -81,7 +81,8 @@ module Mcp
       warn format('[MCP] %<tool>s ok %<ms>dms', tool: tool.tool_name, ms: (Process.clock_gettime(Process::CLOCK_MONOTONIC) - started) * 1000)
       result_response(id, content: content, isError: false)
     rescue ToolError, ArgumentError => e
-      warn "[MCP] #{params['name']} rejected: #{e.message}"
+      # The reason goes back to the model, not into the log: it can echo a value the caller sent (a name in a label).
+      warn "[MCP] #{params['name']} rejected"
       result_response(id, tool_failure(e.message))
     rescue StandardError => e
       warn "[MCP] #{params['name']} failed: #{e.class}: #{e.message}\n#{e.backtrace.first(5).join("\n")}"

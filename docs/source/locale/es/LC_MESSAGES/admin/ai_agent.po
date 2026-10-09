@@ -1,0 +1,359 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, CBGP-UPM-INIA
+# This file is distributed under the same license as the CBGP-Databases
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: CBGP-Databases 0.9.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-09 10:54+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: es\n"
+"Language-Team: es <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: ../../source/admin/ai_agent.md:1 bf629a302e934e9db9eb90ac9eab4ab6
+msgid "Asking questions through an AI agent"
+msgstr "Consultar los datos mediante un agente de IA"
+
+#: ../../source/admin/ai_agent.md:3 d5ee090bf5344155989ad83b625ea4f0
+msgid ""
+"The application can be questioned by an AI agent, in plain language, "
+"instead of through the search pages: \"how many members are active?\", "
+"\"who is funded by this project?\", \"show me a timeline of this person's"
+" funding\". The agent only *reads* the same records the search pages "
+"show. It cannot add, change or delete anything."
+msgstr ""
+"Un agente de IA puede consultar la aplicación en lenguaje natural, en "
+"lugar de usar las páginas de búsqueda: «¿cuántos miembros están "
+"activos?», «¿quién está financiado por este proyecto?», «muéstrame una "
+"cronología de la financiación de esta persona». El agente solo *lee* los "
+"mismos registros que muestran las páginas de búsqueda. No puede añadir, "
+"modificar ni borrar nada."
+
+#: ../../source/admin/ai_agent.md:8 f7b1069ad20048e390eff15f089820d1
+msgid ""
+"This is built on the Model Context Protocol (MCP), so any agent that "
+"speaks it can be connected. Nothing in it is specific to this institute: "
+"what the agent knows about the data comes from the ontology, exactly like"
+" the rest of the application."
+msgstr ""
+"Esto se basa en el Protocolo de Contexto de Modelo (MCP), de modo que se "
+"puede conectar cualquier agente que lo hable. Nada de ello es específico "
+"de este instituto: lo que el agente sabe de los datos procede de la "
+"ontología, igual que el resto de la aplicación."
+
+#: ../../source/admin/ai_agent.md:13 cc6b77f444e749b0bab7522ff5799b2f
+msgid "Connecting an agent"
+msgstr "Conectar un agente"
+
+#: ../../source/admin/ai_agent.md:15 76b52cc90f5d4d6e8280c361960c0787
+msgid ""
+"The address is the application's own address followed by `/mcp`, for "
+"example `https://staff.admin.cbgp.upm.es/mcp`. It accepts `POST` requests"
+" only, and every request must carry the `Authorization: Bearer <token>` "
+"header, with the token set as `MCP_TOKEN` (see "
+"[Configuration](../configuration.md#ai-agent-access-mcp)). Until "
+"`MCP_TOKEN` is set the endpoint is switched off."
+msgstr ""
+"La dirección es la propia dirección de la aplicación seguida de `/mcp`, "
+"por ejemplo `https://staff.admin.cbgp.upm.es/mcp`. Solo acepta peticiones"
+" `POST`, y cada petición debe llevar la cabecera `Authorization: Bearer "
+"<token>`, con el token definido como `MCP_TOKEN` (véase "
+"[Configuración](../configuration.md#ai-agent-access-mcp)). Mientras no se"
+" defina `MCP_TOKEN`, el punto de acceso está desactivado."
+
+#: ../../source/admin/ai_agent.md:21 f2ce9a5461a74982b515cbc83b2342d1
+msgid ""
+"For an agent that is configured with a file, the entry looks like this "
+"(this example is for Hermes; other agents use the same two pieces of "
+"information):"
+msgstr ""
+"Para un agente que se configura con un archivo, la entrada es así (este "
+"ejemplo es para Hermes; los demás agentes usan los mismos dos datos):"
+
+#: ../../source/admin/ai_agent.md:32 4d33184ecd1b4a16bf13ba843608467c
+msgid ""
+"Keep the name short. Agents usually put it in front of every tool's name,"
+" and some model providers limit how long a tool name may be."
+msgstr ""
+"Conviene que el nombre sea corto. Los agentes suelen anteponerlo al "
+"nombre de cada herramienta, y algunos proveedores de modelos limitan la "
+"longitud del nombre de una herramienta."
+
+#: ../../source/admin/ai_agent.md:35 8853d8f6250e4c8a875f5e31bd12e9d9
+msgid "To check the connection from the server, before involving the agent:"
+msgstr "Para comprobar la conexión desde el servidor, antes de implicar al agente:"
+
+#: ../../source/admin/ai_agent.md:43 652af924bf134ce09430c6a85ca1d2ac
+msgid ""
+"A list of tools means it works. A `401` means the token is wrong, and a "
+"message saying MCP is disabled means `MCP_TOKEN` is not set in the "
+"running container."
+msgstr ""
+"Una lista de herramientas significa que funciona. Un `401` significa que "
+"el token es incorrecto, y un mensaje que dice que MCP está desactivado "
+"significa que `MCP_TOKEN` no está definido en el contenedor en ejecución."
+
+#: ../../source/admin/ai_agent.md:46 f00d2577e8ec453abc105607b6a7bbf5
+msgid "What the agent can do"
+msgstr "Qué puede hacer el agente"
+
+#: ../../source/admin/ai_agent.md b9ff4f6f01bb48dc9611eca7d31be662
+msgid "Tool"
+msgstr "Herramienta"
+
+#: ../../source/admin/ai_agent.md 68cc4a75d03c442aa85e1160870fb281
+msgid "What it is for"
+msgstr "Para qué sirve"
+
+#: ../../source/admin/ai_agent.md 9f65a5ffa1174b84822630f2fd0ff608
+msgid "`describe_form`"
+msgstr "`describe_form`"
+
+#: ../../source/admin/ai_agent.md 8c9a022fb81347d8b2689e896e3f9a4e
+msgid "What data exists: the forms, and the fields of each one"
+msgstr "Qué datos existen: los formularios y los campos de cada uno"
+
+#: ../../source/admin/ai_agent.md 59f8813f0b08436c8a6340cf87862eae
+msgid "`search_records`"
+msgstr "`search_records`"
+
+#: ../../source/admin/ai_agent.md df632096660b454e8294c9f02f76b66a
+msgid "Find records by text, exact value or date; also counts (\"how many\")"
+msgstr ""
+"Encontrar registros por texto, valor exacto o fecha; también cuenta "
+"(«cuántos»)"
+
+#: ../../source/admin/ai_agent.md cf472fbe6f4a4e4a936b440fd1b749c3
+msgid "`get_record`"
+msgstr "`get_record`"
+
+#: ../../source/admin/ai_agent.md 8505128da00a4cc1990af6fe53ef028d
+msgid "One record in full, with cross-references shown as names"
+msgstr "Un registro completo, con las referencias cruzadas mostradas como nombres"
+
+#: ../../source/admin/ai_agent.md c96edef275ce41d2a72b00c34baee152
+msgid "`linked_records`"
+msgstr "`linked_records`"
+
+#: ../../source/admin/ai_agent.md ccc8864dcc1c4890bb18f986d9769056
+msgid ""
+"Follow relationships: a person's projects, commitments and publications; "
+"a project's people"
+msgstr ""
+"Seguir relaciones: los proyectos, compromisos y publicaciones de una "
+"persona; las personas de un proyecto"
+
+#: ../../source/admin/ai_agent.md cb915d8480454e5496291a5bda1c18c2
+msgid "`record_history`"
+msgstr "`record_history`"
+
+#: ../../source/admin/ai_agent.md 3754c7c0dae347deaca0008ee69a3b41
+msgid "How one record changed over time, field by field"
+msgstr "Cómo cambió un registro a lo largo del tiempo, campo por campo"
+
+#: ../../source/admin/ai_agent.md 995d8cd0816d45909f648cd2ae1f3021
+msgid "`render_timeline`"
+msgstr "`render_timeline`"
+
+#: ../../source/admin/ai_agent.md 86c9cdb54183440dbc2fafd044c65e89
+msgid "Draw a timeline of dated facts the agent gathered"
+msgstr "Dibujar una cronología de hechos fechados que el agente ha reunido"
+
+#: ../../source/admin/ai_agent.md:57 d64aefcce4e44f94b9894974d68d60d5
+msgid ""
+"The agent is told to use these before searching the web for anything "
+"about the institute's own people, projects, publications or funding, and "
+"to say which source each figure came from. It works from what is in the "
+"database: if the records are incomplete, so is the answer, and a good "
+"agent says so."
+msgstr ""
+"Se le indica al agente que los use antes de buscar en la web cualquier "
+"cosa sobre las personas, proyectos, publicaciones o financiación propios "
+"del instituto, y que diga de qué fuente procede cada cifra. Trabaja con "
+"lo que hay en la base de datos: si los registros están incompletos, la "
+"respuesta también lo estará, y un buen agente lo dice."
+
+#: ../../source/admin/ai_agent.md:62 0d4c72e78a324b2999c8e4fdbfe25416
+msgid ""
+"Only the staff-facing forms are offered. Forms that members use to submit"
+" information are not, because nobody queries them."
+msgstr ""
+"Solo se ofrecen los formularios del personal. Los formularios que usan "
+"los miembros para enviar información no se ofrecen, porque nadie los "
+"consulta."
+
+#: ../../source/admin/ai_agent.md:65 643de7eb805c4ce083085c04aad88942
+msgid "Describing your data for the agent"
+msgstr "Describir los datos para el agente"
+
+#: ../../source/admin/ai_agent.md:67 6ea74384916849eb90299ab5cf253b38
+msgid ""
+"An agent chooses its tools by reading short descriptions, so it needs to "
+"know what the data *is*, and which everyday words mean which form (an "
+"agent asked about \"employees\" has to work out that they are in the "
+"Member form). That text is written in the ontology, in the same place and"
+" the same way as the forms' names, in **both languages**:"
+msgstr ""
+"Un agente elige sus herramientas leyendo descripciones breves, por lo que"
+" necesita saber qué *son* los datos y qué palabras corrientes designan "
+"cada formulario (un agente al que se pregunta por los «empleados» debe "
+"deducir que están en el formulario Miembro). Ese texto se escribe en la "
+"ontología, en el mismo lugar y de la misma manera que los nombres de los "
+"formularios, en **los dos idiomas**:"
+
+#: ../../source/admin/ai_agent.md:73 1e232d7dcd1541b585de153b60df6114
+msgid ""
+"one `rdfs:comment` on the `cbgp:forms` class says what the whole dataset "
+"is;"
+msgstr ""
+"un `rdfs:comment` en la clase `cbgp:forms` dice qué es el conjunto de "
+"datos en su totalidad;"
+
+#: ../../source/admin/ai_agent.md:74 5e42fe688b19415199a98d50a42d4a33
+msgid "one `rdfs:comment` on each form says what its records are."
+msgstr "un `rdfs:comment` en cada formulario dice qué son sus registros."
+
+#: ../../source/admin/ai_agent.md:88 7f7c1cc0ba0f45ff8105c0ca5ebdd2c6
+msgid ""
+"Write the **first sentence** so that it stands alone: it is the only part"
+" shown in the agent's one-line list of forms. Say what the records are "
+"and use the words people use for them. Put the detail in the sentences "
+"after it, and the agent sees those when it asks about that form. If "
+"something has a precise definition (such as \"current staff\"), state it "
+"here: the agent will not guess it."
+msgstr ""
+"Hay que escribir la **primera frase** de modo que se entienda sola: es la"
+" única parte que aparece en la lista de formularios de una línea del "
+"agente. Debe decir qué son los registros y usar las palabras que la gente"
+" emplea para ellos. El detalle va en las frases siguientes, que el agente"
+" ve cuando pregunta por ese formulario. Si algo tiene una definición "
+"precisa (como «personal actual»), se debe indicar aquí: el agente no la "
+"adivinará."
+
+#: ../../source/admin/ai_agent.md:94 56581cbccd7444d3aa8fa55d02f2a8b4
+msgid ""
+"`check_ontology.rb` warns about any form, or the dataset itself, that has"
+" no description in a language, so a form added later cannot go without "
+"one. A change shows up for the agent after `/cbgp/refresh`, with no "
+"restart."
+msgstr ""
+"`check_ontology.rb` avisa de cualquier formulario, o del propio conjunto "
+"de datos, que no tenga descripción en algún idioma, de modo que un "
+"formulario añadido más adelante no puede quedarse sin ella. Un cambio "
+"llega al agente tras `/cbgp/refresh`, sin reiniciar."
+
+#: ../../source/admin/ai_agent.md:98 a653c5d8fbbe41cb897a4f5097eb735e
+msgid "Timelines and saving the picture"
+msgstr "Cronologías y cómo guardar la imagen"
+
+#: ../../source/admin/ai_agent.md:100 4fb5b901094f467cbfacec09b4d12873
+msgid ""
+"When asked to show something over time, the agent draws a timeline: bars "
+"for things with a start and an end, a diamond for a single date, a bar "
+"that runs on to today for something still going, and a dashed line "
+"marking today. Rows are grouped into labelled bands, and hovering over a "
+"row shows its dates."
+msgstr ""
+"Cuando se le pide mostrar algo a lo largo del tiempo, el agente dibuja "
+"una cronología: barras para lo que tiene inicio y fin, un rombo para una "
+"fecha única, una barra que llega hasta hoy para lo que sigue en curso, y "
+"una línea discontinua que marca hoy. Las filas se agrupan en bandas con "
+"nombre, y al pasar el ratón sobre una fila se ven sus fechas."
+
+#: ../../source/admin/ai_agent.md:105 72e2a83de97942ce9c2f678d87864d5f
+msgid ""
+"The picture can be saved from the timeline itself with **Download SVG** "
+"(a vector file that opens in any drawing program or slide deck) and "
+"**Download PNG** (an ordinary image). The PNG link appears only where the"
+" page is allowed to run its own small script: in a saved copy of the "
+"page, or one opened on its own, but not inside a chat window that blocks "
+"scripts. If you want the agent to hand over a PNG as an attachment "
+"instead, ask it for \"an image\", and it will request one."
+msgstr ""
+"La imagen se puede guardar desde la propia cronología con **Descargar "
+"SVG** (un archivo vectorial que se abre en cualquier programa de dibujo o"
+" presentación) y **Descargar PNG** (una imagen corriente). El enlace PNG "
+"aparece solo donde la página puede ejecutar su pequeño script: en una "
+"copia guardada de la página, o abierta por separado, pero no dentro de "
+"una ventana de chat que bloquee scripts. Si se quiere que el agente "
+"entregue un PNG como archivo adjunto, basta pedirle «una imagen» y la "
+"solicitará."
+
+#: ../../source/admin/ai_agent.md:112 42ad0f69fb524cff8fc88b63ad7c55ff
+msgid ""
+"Making a PNG on the server needs the `rsvg-convert` program and a font. "
+"The supplied Docker image includes both (`librsvg2-bin` and `fonts-"
+"dejavu-core`); on a server without them an attachment request quietly "
+"falls back to the timeline page."
+msgstr ""
+"Generar un PNG en el servidor requiere el programa `rsvg-convert` y una "
+"tipografía. La imagen Docker suministrada incluye ambos (`librsvg2-bin` y"
+" `fonts-dejavu-core`); en un servidor que no los tenga, una petición de "
+"archivo adjunto recurre sin avisar a la página de la cronología."
+
+#: ../../source/admin/ai_agent.md:116 09f0a9b72cbf4cb8bb0341ed8700fb5c
+msgid "Languages"
+msgstr "Idiomas"
+
+#: ../../source/admin/ai_agent.md:118 ac70252c1f2343e6b7b886ead6e578e1
+msgid ""
+"Questions can be asked in English or Spanish. A value can be named in "
+"either: a category called \"Catedrático\" and one called \"Full "
+"professor\" are the same value to the agent. Dates can be written as "
+"`today` or `hoy`."
+msgstr ""
+"Las preguntas pueden hacerse en inglés o en español. Un valor se puede "
+"nombrar en cualquiera de los dos: una categoría llamada «Catedrático» y "
+"otra llamada «Full professor» son el mismo valor para el agente. Las "
+"fechas pueden escribirse como `today` o `hoy`."
+
+#: ../../source/admin/ai_agent.md:122 7e6c20cfa9fd4f96917fc96d81b6bdd7
+msgid "Good to know"
+msgstr "Conviene saber"
+
+#: ../../source/admin/ai_agent.md:124 b14a1806e26144b08254a48b1e52232e
+msgid ""
+"The agent is a language model: it can misread a question. Counts and "
+"lists come from the database, but which records it decides to count is "
+"its own judgement, which is why the descriptions above state definitions "
+"such as \"current staff\"."
+msgstr ""
+"El agente es un modelo de lenguaje: puede malinterpretar una pregunta. "
+"Los recuentos y las listas proceden de la base de datos, pero qué "
+"registros decide contar es criterio suyo, y por eso las descripciones "
+"anteriores fijan definiciones como «personal actual»."
+
+#: ../../source/admin/ai_agent.md:127 bebb9898b0c149c0969f6d9992e6806a
+msgid ""
+"The application does not store what an agent asks. Its log records only "
+"which tool ran and how long it took (and, if something breaks inside the "
+"server, the error itself), never the question or the answer, since both "
+"can contain personal data. The agent program may keep its own "
+"conversation history; that is outside this application."
+msgstr ""
+"La aplicación no guarda lo que pregunta un agente. Su registro anota solo"
+" qué herramienta se ejecutó y cuánto tardó (y, si algo falla dentro del "
+"servidor, el propio error), nunca la pregunta ni la respuesta, ya que "
+"ambas pueden contener datos personales. El programa del agente puede "
+"conservar su propio historial de conversación; eso queda fuera de esta "
+"aplicación."
+
+#: ../../source/admin/ai_agent.md:132 e0053d333f6d43d1b321c96ab8aa9ac6
+msgid ""
+"The same records are reachable through the search pages, so the agent "
+"shows nothing that a logged-in administrator cannot already see."
+msgstr ""
+"Los mismos registros son accesibles mediante las páginas de búsqueda, de "
+"modo que el agente no muestra nada que un administrador con sesión "
+"iniciada no pueda ver ya."
+

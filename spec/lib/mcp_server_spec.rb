@@ -90,6 +90,11 @@ RSpec.describe Mcp::Server do
       expect(call({ 'text' => 'x', 'mode' => 'bad' })[:content].first[:text]).to eq('Error: Mode must be loud or quiet.')
     end
 
+    it 'logs that a call was rejected, never why (the reason can echo what the caller sent)' do
+      expect(described_class).to receive(:warn).with('[MCP] echo_for_spec rejected')
+      call({ 'text' => 'Álvarez Alfageme', 'mode' => 'bad' })
+    end
+
     it 'turns an unexpected failure into a generic message that leaks nothing' do
       allow(Kernel).to receive(:warn)
       result = call({ 'text' => 'x', 'mode' => 'crash' })

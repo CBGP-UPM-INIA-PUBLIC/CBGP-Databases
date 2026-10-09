@@ -12,6 +12,46 @@ here.
 
 ## [Unreleased]
 
+## [0.19.0] - 2026-10-09
+
+**Ontology change** (CBGP-Ontology `bb52835`): every form, and the `cbgp:forms` class,
+now has an `rdfs:comment` in English and Spanish saying what its records are. Push and
+publish the ontology first; the application reads these, and works (without them) if
+they are missing.
+
+### Added
+- **AI agent endpoint** (`POST /mcp`, Model Context Protocol). Read-only access for an
+  agent such as Hermes: `describe_form`, `search_records` (text, exact value, date
+  range, `today`/`hoy`, "or no value", count-only with `limit: 0`; fixed-list values by
+  id or by label in either language), `get_record`, `linked_records` (follows the
+  ontology's declared cross-references in both directions), `record_history` (versions
+  with field-level changes) and `render_timeline`. Nothing in it names a form or a field:
+  it all comes from the ontology. Off unless `MCP_TOKEN` is set (bearer token; a blank
+  value never means "open"). Only the staff-facing forms are offered. Replaces the first
+  MCP design, which was never released.
+- **What the agent is told about the data comes from the ontology**: the dataset
+  description and each form's description (first sentence in the one-line list, the rest
+  on request) are put into the server instructions and the tool descriptions, in both
+  languages, cached per loaded ontology (a refresh invalidates it).
+- **Timelines**: a labelled "today" line; bars, points and "still going" bars; the page
+  has a "Download SVG" link and a "Download PNG" button (made in the viewer's browser);
+  `output: png` returns a PNG image instead (made on the server by `rsvg-convert`).
+- `check_ontology.rb` warns about a form, or the dataset itself, with no description in a
+  required language (`form_without_description`).
+- Documentation (English and Spanish): "Asking questions through an AI agent" and the
+  `MCP_TOKEN` section in Configuration.
+
+### Changed
+- The Docker image installs `librsvg2-bin` and `fonts-dejavu-core` (the PNG converter and
+  a font). **Rebuild the image**; without them only the PNG attachment is unavailable.
+- `.env.example` lists `MCP_TOKEN`; the login filter lets `/mcp` through to its own token
+  check.
+
+### Upgrading
+Set `MCP_TOKEN` in `.env` to enable the endpoint, then recreate the container (a plain
+restart does not re-read `.env`). The Spanish text of the new page and of the form
+descriptions has not had a native read-through.
+
 ## [0.18.3] - 2026-10-07
 
 No ontology change.
